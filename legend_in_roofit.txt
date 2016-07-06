@@ -1,0 +1,55 @@
+The standard way is not working as plot objects are saved in RooPlot as objects (called items) independent from original ones. At first print their names:
+
+  RooPlot *frame2;
+....
+  bi2_model.plotOn(frame2);
+  bi2_model.plotOn(frame2,Components(bi2_bgr),LineStyle(kDashed),LineColor(kBlue));
+  bi2_model.plotOn(frame2,Components(bi2_K),LineColor(kRed));
+  bi2_model.plotOn(frame2,Components(bi2_L),LineColor(kGreen));
+  bi2_model.plotOn(frame2,Components(bi2_M),LineColor(kMagenta));
+
+  cout << "Frame2 objects:\n";
+  for (int i=0; i<frame2->numItems(); i++) {
+    TString obj_name=frame2->nameOf(i); if (obj_name=="") continue;
+    cout << Form("%d. '%s'\n",i,obj_name.Data());
+  }
+
+Which gives you the output:
+
+Frame2 objects:
+0. 'h_data2'
+1. 'bi2_model_Norm[ene2]'
+2. 'bi2_model_Norm[ene2]_Comp[bi2_bgr]'
+3. 'bi2_model_Norm[ene2]_Comp[bi2_K]'
+4. 'bi2_model_Norm[ene2]_Comp[bi2_L]'
+5. 'bi2_model_Norm[ene2]_Comp[bi2_M]'
+
+Then catch them by name and put in the legend:
+
+  TString names[] = {
+    "bi2_model_Norm[ene2]",
+    "bi2_model_Norm[ene2]_Comp[bi2_bgr]",
+    "bi2_model_Norm[ene2]_Comp[bi2_K]",
+    "bi2_model_Norm[ene2]_Comp[bi2_L]",
+    "bi2_model_Norm[ene2]_Comp[bi2_M]",
+    ""
+  };
+
+  TString signs[] = {
+    "Model",
+    "Background",
+    "CE K (976 keV)",
+    "CE L (1048 keV)",
+    "CE M (1060 keV)"
+  };
+
+  Int_t i=-1;
+  while ( names[++i] != "" ) {
+    TObject *obj = frame2->findObject(names[i].Data());
+    if (!obj) {
+      Warning("fitBi4",Form("Can't find item='%s' in the frame2!\n",names[i].Data()));
+      continue;
+    }
+    leg->AddEntry(obj,signs[i],"l");
+  }
+  leg->Draw();
