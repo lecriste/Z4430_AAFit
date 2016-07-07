@@ -179,7 +179,7 @@ int main(int argc, char** argv)
 
   TH1F* dataHisto = new TH1F("data","data",50,massKPi.lowerlimit,massKPi.upperlimit);
   // B^{0} -> psi(nS) #pi^{+} K^{-}
-  GooPdf* phaseSpace = new ThreeBodiesPsiPiK ("phasespace",&massKPi,&mBd,mPion,mKaon);
+  GooPdf* phaseSpace = new ThreeBodiesPsiPiK ("phasespace",&massKPi,&mBd,&mPion,&mKaon);
   //cout <<"\nBdToMuMuPiK_PHSP.getVal() =\n" <<BdToMuMuPiK_PHSP->getVal() <<endl; return;
 
   fptype roll=0.0;
@@ -194,7 +194,7 @@ int main(int argc, char** argv)
         TRandom ranGen(ms);
 
   			massKPi.value = ranGen.Uniform(massKPi.upperlimit-massKPi.lowerlimit)+massKPi.lowerlimit;
-  			func = background(massKPi.value);
+  			func = phaseSpaceFunction(massKPi.value);
   			roll = ranGen.Uniform(100);
   			if (roll > func) {
   				--j;
