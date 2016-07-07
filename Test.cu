@@ -226,7 +226,7 @@ int main(int argc, char** argv)
   	}
 
 
-  for (int i = 0; i < BINS; i++) {
+  for (int i = 1; i < BINS; i++) {
     dataSet.setBinContent(i-1,dataHisto->GetBinContent(i));
   }
   debug();
