@@ -177,7 +177,7 @@ int main(int argc, char** argv)
   //RooConstVar smear("smear", "smear", smearing) ;
   Variable smear("smear",smearing) ;
 
-  TH1F* dataHisto = new TH1F("data","data",50,massKPi.lowerlimit,massKPi.upperlimit);
+  TH1F* dataHisto = new TH1F("data","data",20,massKPi.lowerlimit,massKPi.upperlimit);
   // B^{0} -> psi(nS) #pi^{+} K^{-}
   GooPdf* phaseSpace = new ThreeBodiesPsiPiK ("phasespace",&massKPi,&mBd,&mPion,&mKaon,&mMuMu);
   //cout <<"\nBdToMuMuPiK_PHSP.getVal() =\n" <<BdToMuMuPiK_PHSP->getVal() <<endl; return;
