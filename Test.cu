@@ -75,7 +75,7 @@ fptype phaseSpaceFunction(fptype x,fptype mP,fptype m1,fptype m2,fptype m3)
 
 }
 
-void debug(){
+void debug();{
 
   #ifdef DEBUGGING
   std::cout<<"Debugging on line "<<__LINE__<<std::endl;
@@ -100,7 +100,7 @@ void printinstruction(){
 
 int main(int argc, char** argv)
 {
-  debug()
+  debug();
   SysInfo_t* s = new SysInfo_t();
   gSystem->GetSysInfo(s);
   Int_t nCPU = s->fCpus;
@@ -159,7 +159,7 @@ int main(int argc, char** argv)
   //RooRealVar cosKstar("cosKstar","cos(K*)",0.,-1,1); // cosine of the K* helicity angle
   //RooRealVar phi("phi","#phi",0.25,-TMath::Pi(),TMath::Pi());
   //RooArgSet kinematcVars(massKPi, cosMuMu, cosKstar, phi);
-  debug()
+  debug();
   //GooFit
   Variable massKPi("massKPi",1.,0.7,2.1); massKPi.numbins=BINS;
   BinnedDataSet dataSet(&massKPi);
@@ -190,7 +190,7 @@ int main(int argc, char** argv)
   const fptype smearing = 0. ;
   //RooConstVar smear("smear", "smear", smearing) ;
   Variable smear("smear",smearing) ;
-  debug()
+  debug();
   TH1F* dataHisto = new TH1F("data","data",BINS,massKPi.lowerlimit,massKPi.upperlimit);
   TH1F pdfBkgHist ("bkg","bkg",BINS,massKPi.lowerlimit,massKPi.upperlimit);
   // B^{0} -> psi(nS) #pi^{+} K^{-}
@@ -205,7 +205,7 @@ int main(int argc, char** argv)
   gettimeofday(&tp,NULL);
   ms = tp.tv_sec * 1000 + tp.tv_usec / 1000;
   TRandom ranGen(ms);
-  debug()
+  debug();
   for (int j = 0; j < events; ++j) {
 
 
@@ -229,7 +229,7 @@ int main(int argc, char** argv)
   for (int i = 0; i < BINS; i++) {
     dataSet.setBinContent(i-1,dataHisto->GetBinContent(i));
   }
-  debug()
+  debug();
   phaseSpace->setData(&dataSet);
 	phaseSpace->setFitControl(new BinnedNllFit());
 
@@ -238,7 +238,7 @@ int main(int argc, char** argv)
 	fitterNull.getMinuitValues();
 
 	vector<double> ValsFondo;
-  debug()
+  debug();
 	phaseSpace->evaluateAtPoints(&massKPi,ValsFondo);
 	fptype totalFondo=0.0;
 	for(int k=0;k<BINS;k++){
@@ -247,7 +247,7 @@ int main(int argc, char** argv)
 		totalFondo += ValsFondo[k];
 
   }
-  debug()
+  debug();
 	for(int k=0;k<BINS;k++){
 		fptype valTot = pdfBkgHist.GetBinContent(k+1);
 		valTot /= totalFondo;
@@ -255,14 +255,14 @@ int main(int argc, char** argv)
 		pdfBkgHist.SetBinContent(k+1, valTot);
 		//cout<<" "<<pdfBkgHist.GetBinContent(k+1)<<endl;
 		}
-    debug()
+    debug();
 		pdfBkgHist.SetFillStyle(3002);
 		pdfBkgHist.SetFillColor(kGreen);
 
 		double likeliHoodNull = 0.0;
 		double likeliHoodSignal = 0.0;
 
- debug()
+ debug();
  TCanvas canvas("canvas","canvas",1000,1000);
  dataHisto->Draw();
  pdfBkgHist.Draw("same");
