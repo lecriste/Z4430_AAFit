@@ -17,6 +17,9 @@
 //GooFit
 #include "Variable.hh"
 #include "ThreeBodiesPsiPiKPdf.hh"
+#include "FitManager.hh"
+#include "UnbinnedDataSet.hh"
+#include "BinnedDataSet.hh"
 
 #include "TCanvas.h"
 #include "TAxis.h"
@@ -34,6 +37,8 @@
 #include <sys/time.h> // for timeval
 #include <sys/times.h> // for tms
 #include "TSystem.h"
+
+#define BINS 50
 
 
 //ROOFIT
@@ -148,7 +153,8 @@ int main(int argc, char** argv)
   //RooArgSet kinematcVars(massKPi, cosMuMu, cosKstar, phi);
 
   //GooFit
-  Variable massKPi("massKPi",1.,0.7,2.1);
+  Variable massKPi("massKPi",1.,0.7,2.1); massKPi->numbins=BINS;
+  BinnedDataSet dataSet(massKPi);
   Variable cosMuMu("cosMuMu",0.,-1,1); // cosine of the psi(nS) helicity angle
   Variable cosKstar("cosKstar",0.,-1,1); // cosine of the K* helicity angle
   Variable phi("phi",0.25,-TMath::Pi(),TMath::Pi());
@@ -177,7 +183,8 @@ int main(int argc, char** argv)
   //RooConstVar smear("smear", "smear", smearing) ;
   Variable smear("smear",smearing) ;
 
-  TH1F* dataHisto = new TH1F("data","data",20,massKPi.lowerlimit,massKPi.upperlimit);
+  TH1F* dataHisto = new TH1F("data","data",BINS,massKPi.lowerlimit,massKPi.upperlimit);
+  TH1F pdfBkgHist ("bkg","bkg",BINS,massKPi.lowerlimit,massKPi.upperlimit);
   // B^{0} -> psi(nS) #pi^{+} K^{-}
   GooPdf* phaseSpace = new ThreeBodiesPsiPiK ("phasespace",&massKPi,&mBd,&mPion,&mKaon,&mMuMu);
   //cout <<"\nBdToMuMuPiK_PHSP.getVal() =\n" <<BdToMuMuPiK_PHSP->getVal() <<endl; return;
@@ -209,9 +216,48 @@ int main(int argc, char** argv)
   			dataHisto->Fill(massKPi.value);
 
   	}
+
+
+  for (int i = 0; i < BINS; i++) {
+    dataSet.setBinContent(i-1,dataHisto->GetBinContent(i));
+  }
+
+  phaseSpace->setData(&dataSet);
+	phaseSpace->setFitControl(new BinnedNllFit());
+
+	FitManager fitterNull(phaseSpace);
+	fitterNull.fit();
+	fitterNull.getMinuitValues();
+
+	vector<fptype> ValsFondo;
+
+	phaseSpace->evaluateAtPoints(massKPi,ValsFondo);
+	fptype totalFondo=0.0;
+	for(int k=0;k<BINS;k++){
+
+    pdfBkgHist.SetBinContent(k+1,ValsFondo[k]);
+		totalFondo += ValsFondo[k];
+
+  }
+
+	for(int k=0;k<BINS;k++){
+		fptype valTot = pdfBkgHist.GetBinContent(k+1);
+		valTot /= totalFondo;
+		valTot *= events;
+		pdfBkgHist.SetBinContent(k+1, valTot);
+		//cout<<" "<<pdfBkgHist.GetBinContent(k+1)<<endl;
+		}
+
+		pdfBkgHist.SetFillStyle(3002);
+		pdfBkgHist.SetFillColor(kGreen);
+
+		double likeliHoodNull = 0.0;
+		double likeliHoodSignal = 0.0;
+
+
  TCanvas canvas("canvas","canvas",1000,1000);
  dataHisto->Draw();
-
+ pdfBkgHist.Draw("same");
  canvas.SaveAs("./plots/test.png");
  return 0;
 
