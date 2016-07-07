@@ -187,11 +187,13 @@ int main(int argc, char** argv)
 
   long int ms; struct timeval tp;
 
+  gettimeofday(&tp,NULL);
+  ms = tp.tv_sec * 1000 + tp.tv_usec / 1000;
+  TRandom ranGen(ms);
+
   for (int j = 0; j < events; ++j) {
 
-        gettimeofday(&tp,NULL);
-        ms = tp.tv_sec * 1000 + tp.tv_usec / 1000;
-        TRandom ranGen(ms);
+
 
   			massKPi.value = ranGen.Uniform(massKPi.upperlimit-massKPi.lowerlimit)+massKPi.lowerlimit;
   			func = phaseSpaceFunction(massKPi.value,MBd,MPion,MKaon,massMuMu);
