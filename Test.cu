@@ -34,7 +34,6 @@
 #include <sys/times.h> // for tms
 #include "TSystem.h"
 
-#include "myPDF.h"
 
 //ROOFIT
 //using namespace RooFit ;
