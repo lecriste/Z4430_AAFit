@@ -185,10 +185,17 @@ int main(int argc, char** argv)
   fptype roll=0.0;
 	fptype func=0.0;
 
+  long int ms; struct timeval tp;
+
   for (int j = 0; j < events; ++j) {
-  			massKPi.value = donram.Uniform(massKPi.upperlimit-massKPi.lowerlimit)+massKPi.lowerlimit;
+
+        gettimeofday(&tp,NULL);
+        ms = tp.tv_sec * 1000 + tp.tv_usec / 1000;
+        TRandom ranGen(ms);
+
+  			massKPi.value = ranGen.Uniform(massKPi.upperlimit-massKPi.lowerlimit)+massKPi.lowerlimit;
   			func = background(massKPi.value);
-  			roll = donram.Uniform(100);
+  			roll = ranGen.Uniform(100);
   			if (roll > func) {
   				--j;
   				continue; }
