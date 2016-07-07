@@ -179,7 +179,7 @@ int main(int argc, char** argv)
 
   TH1F* dataHisto = new TH1F("data","data",50,massKPi.lowerlimit,massKPi.upperlimit);
   // B^{0} -> psi(nS) #pi^{+} K^{-}
-  GooPdf* phaseSpace = new ThreeBodiesPsiPiK (std::n,&massKPi,&mBd,,mPion,mKaon);
+  GooPdf* phaseSpace = new ThreeBodiesPsiPiK ("phasespace",&massKPi,&mBd,,mPion,mKaon);
   //cout <<"\nBdToMuMuPiK_PHSP.getVal() =\n" <<BdToMuMuPiK_PHSP->getVal() <<endl; return;
 
   fptype roll=0.0;
@@ -209,5 +209,7 @@ int main(int argc, char** argv)
   	}
  TCanvas canvas("canvas","canvas",1000,1000);
  dataHisto->Draw();
+
+ return 0;
 
 }
