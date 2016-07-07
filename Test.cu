@@ -39,7 +39,7 @@
 #include "TSystem.h"
 
 #define BINS 50
-
+#define DEBUGGING 50
 
 //ROOFIT
 //using namespace RooFit ;
@@ -75,6 +75,13 @@ fptype phaseSpaceFunction(fptype x,fptype mP,fptype m1,fptype m2,fptype m3)
 
 }
 
+void debug(){
+
+  #ifdef DEBUGGING
+  std::cout<<"Debugging on line "<<__LINE__<<std::endl;
+  #endif
+
+}
 
 void printinstruction(){
 
