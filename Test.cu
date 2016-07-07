@@ -148,10 +148,10 @@ int main(int argc, char** argv)
   //RooArgSet kinematcVars(massKPi, cosMuMu, cosKstar, phi);
 
   //GooFit
-  Variable massKPi("massKPi","m(K^{-}#pi^{+}) [GeV]",1.,0.6,2.2);
-  Variable cosMuMu("cosMuMu","cos(J/#psi)",0.,-1,1); // cosine of the psi(nS) helicity angle
-  Variable cosKstar("cosKstar","cos(K*)",0.,-1,1); // cosine of the K* helicity angle
-  Variable phi("phi","#phi",0.25,-TMath::Pi(),TMath::Pi());
+  Variable massKPi("massKPi",1.,0.6,2.2);
+  Variable cosMuMu("cosMuMu",0.,-1,1); // cosine of the psi(nS) helicity angle
+  Variable cosKstar("cosKstar",0.,-1,1); // cosine of the K* helicity angle
+  Variable phi("phi",0.25,-TMath::Pi(),TMath::Pi());
 
   const fptype dRadB0 = 5.0; const fptype dRadKs = 1.5;
   /*
@@ -162,9 +162,9 @@ int main(int argc, char** argv)
 
 
   //GooFit
-  Variable mBd("mBd", "m(B^{0})", MBd) ;
-  Variable mKaon("mKaon", "m(K^{-})", MKaon) ;
-  Variable mPion("mPion", "m(#pi^{+})", MPion) ;
+  Variable mBd("mBd", MBd) ;
+  Variable mKaon("mKaon", MKaon) ;
+  Variable mPion("mPion", MPion) ;
   fptype massMuMu = 0. ;
   if (psi_nS.EqualTo("1")) massMuMu = MJpsi ;
   else if (psi_nS.EqualTo("2")) massMuMu = MPsi2S ;
@@ -172,10 +172,10 @@ int main(int argc, char** argv)
     cout <<"psi_nS is neither 1 nor 2, please check it." <<endl;
     return ; }
   //RooConstVar mMuMu("mMuMu", "m(#mu^{+}#mu^{-})", massMuMu);
-  Variable mMuMu("mMuMu", "m(#mu^{+}#mu^{-})", massMuMu);
+  Variable mMuMu("mMuMu", massMuMu);
   const fptype smearing = 0. ;
   //RooConstVar smear("smear", "smear", smearing) ;
-  Variable smear("smear", "smear", smearing) ;
+  Variable smear("smear",smearing) ;
 
   TH1F* dataHisto = new TH1F("data","data",50,massKPi.lowerlimit,massKPi.upperlimit);
   // B^{0} -> psi(nS) #pi^{+} K^{-}
