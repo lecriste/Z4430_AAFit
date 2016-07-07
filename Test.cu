@@ -154,7 +154,7 @@ int main(int argc, char** argv)
 
   //GooFit
   Variable massKPi("massKPi",1.,0.7,2.1); massKPi->numbins=BINS;
-  BinnedDataSet dataSet(massKPi);
+  BinnedDataSet dataSet(&massKPi);
   Variable cosMuMu("cosMuMu",0.,-1,1); // cosine of the psi(nS) helicity angle
   Variable cosKstar("cosKstar",0.,-1,1); // cosine of the K* helicity angle
   Variable phi("phi",0.25,-TMath::Pi(),TMath::Pi());
