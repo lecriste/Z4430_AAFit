@@ -229,9 +229,9 @@ int main(int argc, char** argv)
 	fitterNull.fit();
 	fitterNull.getMinuitValues();
 
-	vector<fptype> ValsFondo;
+	vector<double> ValsFondo;
 
-	phaseSpace->evaluateAtPoints(massKPi,ValsFondo);
+	phaseSpace->evaluateAtPoints(&massKPi,ValsFondo);
 	fptype totalFondo=0.0;
 	for(int k=0;k<BINS;k++){
 
