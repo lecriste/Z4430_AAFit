@@ -1,6 +1,6 @@
 //
 //  Analysis.C
-//  
+//
 //  A simple AA analysis code.
 //  Created by Ivan Heredia de la Cruz on 4/25/16.
 //  Developed by Leonardo Cristella
@@ -39,14 +39,14 @@ using namespace RooFit ;
 /*
 timeval startFullFitTime, stopFullFullFitTime, totalFullFitTime;
 timeval startFullPlotTime, stopFullPlotTime, totalFullPlotTime;
-clock_t startFullFitCPU, stopFullFitCPU; 
-clock_t startFullPlotCPU, stopFullPlotCPU; 
-tms startFullFitProc, stopFullFitProc; 
-tms startFullPlotProc, stopFullPlotProc; 
+clock_t startFullFitCPU, stopFullFitCPU;
+clock_t startFullPlotCPU, stopFullPlotCPU;
+tms startFullFitProc, stopFullFitProc;
+tms startFullPlotProc, stopFullPlotProc;
 
 vector<timeval> fitTime, plotTime;
-vector<clock_t> fitCPU, plotCPU; 
-vector<tms> fitProc, plotProc; 
+vector<clock_t> fitCPU, plotCPU;
+vector<tms> fitProc, plotProc;
 */
 void Analysis()
 {
@@ -54,7 +54,7 @@ void Analysis()
   gSystem->GetSysInfo(s);
   Int_t nCPU = s->fCpus;
   /*
-  // Lambda*(1600)    
+  // Lambda*(1600)
   RooRealVar a1600L0S1("a1600L0S1","a1600L0S1",0.64, 0.,1.);
   RooRealVar b1600L0S1("b1600L0S1","b1600L0S1",0, 0.,1.); // see slide 12
   RooRealVar a1600L1S1("a1600L1S1","a1600L1S1",0.64, 0.,1.);
@@ -63,7 +63,7 @@ void Analysis()
   RooRealVar b1600L1S3("b1600L1S3","b1600L1S3",0, 0.,1.);
   RooRealVar a1600L2S3("a1600L2S3","a1600L2S3",0.64, 0.,1.);
   RooRealVar b1600L2S3("b1600L2S3","b1600L2S3",0, 0.,1.);
-  // Lambda*(1670)    
+  // Lambda*(1670)
   RooRealVar a1670L0S1("a1670L0S1","a1670L0S1",0.0145, 0.,1.);
   RooRealVar b1670L0S1("b1670L0S1","b1670L0S1",0, 0.,1.);
   RooRealVar a1670L1S1("a1670L1S1","a1670L1S1",0.0145, 0.,1.);
@@ -73,7 +73,7 @@ void Analysis()
   RooRealVar a1670L2S3("a1670L2S3","a1670L2S3",0.0145, 0.,1.);
   RooRealVar b1670L2S3("b1670L2S3","b1670L2S3",0, 0.,1.);
   RooArgSet starResonances(a1600L0S1, b1600L0S1, a1600L1S1, b1600L1S1, a1600L1S3, b1600L1S3, a1600L2S3, b1600L2S3, a1670L0S1, b1670L0S1, a1670L1S1, b1670L1S1, a1670L1S3, b1670L1S3, a1670L2S3, b1670L2S3);
-  // Lambda_b -> J/psi Lambda* -> mu+ mu- K- p        
+  // Lambda_b -> J/psi Lambda* -> mu+ mu- K- p
   RooRealVar massKPr("massKPr","m(pK^{-}) [GeV]",1.6,1.44,2.52);
   RooRealVar cosLambdaB("cosLambdaB","cosLambdaB",0.5,-1,1); // cosine of the angle between Lambda* and LambdaB in the rest fram of lambdaB
   RooRealVar cosJpsi("cosJpsi","cosJpsi",0.5,-1,1); // cosine of the J/psi helicity angle
@@ -86,13 +86,13 @@ void Analysis()
 	       a1600L0S1, b1600L0S1, a1600L1S1, b1600L1S1, a1600L1S3, b1600L1S3, a1600L2S3, b1600L2S3, a1670L0S1, b1670L0S1, a1670L1S1, b1670L1S1, a1670L1S3, b1670L1S3, a1670L2S3, b1670L2S3 ) ;
   */
   /*
-  // K*(892)    
+  // K*(892)
   RooRealVar a892m1("a892m1","a892m1",0.64, 0.,1.);
-  RooRealVar b892m1("b892m1","b892m1",0, -TMath::Pi(), TMath::Pi()); 
+  RooRealVar b892m1("b892m1","b892m1",0, -TMath::Pi(), TMath::Pi());
   RooRealVar a892z("a892z","a892z",0.64, 0.,1.);
-  RooRealVar b892z("b892z","b892z",0, -TMath::Pi(), TMath::Pi()); 
+  RooRealVar b892z("b892z","b892z",0, -TMath::Pi(), TMath::Pi());
   RooRealVar a892p1("a892p1","a892p1",0.64, 0.,1.);
-  RooRealVar b892p1("b892p1","b892p1",0, -TMath::Pi(), TMath::Pi()); 
+  RooRealVar b892p1("b892p1","b892p1",0, -TMath::Pi(), TMath::Pi());
   */
   /*
     LHCb strategy:
@@ -110,33 +110,33 @@ void Analysis()
   // Belle B0->J/psi K+ pi- values
   // 5h20' with K*(892) + PHSP (1K+1K events)
   // 20' with K*(800) + K*(1430)0 + K*(1430)2 (2K events)
- 
-  cout <<"Adding K*(892)..." <<endl; 
+
+  cout <<"Adding K*(892)..." <<endl;
   const Double_t M892 = 0.89581 ; const Double_t G892 = 0.0474; // From PDG neutral only K*(892)
   Kstar_spin.push_back( make_pair("892_1", make_pair(M892,G892) ) ) ;
   helJ_map["892_1_0"] = make_pair(1.,0.); helJ_map["892_1_p1"] = make_pair(0.844,3.14); helJ_map["892_1_m1"] = make_pair(0.196,-1.7);
- 
-  cout <<"Adding K*(800)..." <<endl;  
+
+  cout <<"Adding K*(800)..." <<endl;
   //const Double_t M800 = 0.682; const Double_t G800 = 0.547; // From PDG
   const Double_t M800 = 0.931; const Double_t G800 = 0.578; // From Belle
   Kstar_spin.push_back( make_pair("800_0", make_pair(M800,G800) ) ) ;
   helJ_map["800_0_0"] = make_pair(1.12,2.3);
 
-  cout <<"Adding K*(1410)..." <<endl; 
+  cout <<"Adding K*(1410)..." <<endl;
   const Double_t M1410 = 1.414; const Double_t G1410 = 0.232;
   Kstar_spin.push_back( make_pair("1410_1", make_pair(M1410,G1410) ) ) ;
   helJ_map["1410_1_0"] = make_pair(0.119,0.81); helJ_map["1410_1_p1"] = make_pair(0.123,-1.04); helJ_map["1410_1_m1"] = make_pair(0.036,0.67);
-  
-  cout <<"Adding K*(1430)_0..." <<endl; 
+
+  cout <<"Adding K*(1430)_0..." <<endl;
   const Double_t M1430_0 = 1.425; const Double_t G1430_0 = 0.270;
   Kstar_spin.push_back( make_pair("1430_0", make_pair(M1430_0,G1430_0) ) ) ;
   helJ_map["1430_0_0"] = make_pair(0.89,-2.17);
-  
+
   cout <<"Adding K*(1430)_2..." <<endl;
   const Double_t M1430_2 = 1.4324; const Double_t G1430_2 = 0.109; // From PDG neutral only
   Kstar_spin.push_back( make_pair("1430_2", make_pair(M1430_2,G1430_2) ) ) ;
   helJ_map["1430_2_0"] = make_pair(4.66,-0.32); helJ_map["1430_2_p1"] = make_pair(4.65,-3.05); helJ_map["1430_2_m1"] = make_pair(1.26,-1.92);
-  
+
   //const Double_t M1780_3 = 1.776; const Double_t G1780_3 = 0.159; // From PDG neutral only
   //Kstar_spin.push_back( make_pair("1780_3", make_pair(M1780_3,G1780_3) ) ) ;
   //helJ_map["1780_3_0"] = make_pair(16.8,-1.43); helJ_map["1780_3_p1"] = make_pair(19.1,2.03); helJ_map["1780_3_m1"] = make_pair(10.2,1.55);
@@ -165,12 +165,12 @@ void Analysis()
 	return ;
       }
     }
-  
+
   for (Int_t iVar=0; iVar<(Int_t)amplitudeRooRealVar.size(); ++iVar) {
     amplitudeVars.add( *amplitudeRooRealVar[iVar] ) ;
   }
 
-  // B^0 -> psi(nS) K* -> mu+ mu- K- pi+        
+  // B^0 -> psi(nS) K* -> mu+ mu- K- pi+
   RooRealVar massKPi("massKPi","m(K^{-}#pi^{+}) [GeV]",1.,0.6,2.2);
   RooRealVar cosMuMu("cosMuMu","cos(J/#psi)",0.,-1,1); // cosine of the psi(nS) helicity angle
   RooRealVar cosKstar("cosKstar","cos(K*)",0.,-1,1); // cosine of the K* helicity angle
@@ -186,21 +186,22 @@ void Analysis()
 	       Kstar_spin, varNames, amplitudeVars, psi_nS, dRadB0, dRadKs) ;
 
   //cout <<"\nsigPDF.getVal() =\n" <<sigPDF.getVal() <<endl; return;
-  
-  RooConstVar mBd("mBd", "m(B^{0})", MBd) ; 
-  RooConstVar mKaon("mKaon", "m(K^{-})", MKaon) ; 
+
+  RooConstVar mBd("mBd", "m(B^{0})", MBd) ;
+  RooConstVar mKaon("mKaon", "m(K^{-})", MKaon) ;
   RooConstVar mPion("mPion", "m(#pi^{+})", MPion) ;
-  Double_t massMuMu = 0. ; 
+  Double_t massMuMu = 0. ;
   if (psi_nS.EqualTo("1")) massMuMu = MJpsi ;
   else if (psi_nS.EqualTo("2")) massMuMu = MPsi2S ;
   else {
     cout <<"psi_nS is neither 1 nor 2, please check it." <<endl;
     return ; }
-  RooConstVar mMuMu("mMuMu", "m(#mu^{+}#mu^{-})", massMuMu); 
-  const Double_t smearing = 0. ; 
+  RooConstVar mMuMu("mMuMu", "m(#mu^{+}#mu^{-})", massMuMu);
+  const Double_t smearing = 0. ;
   RooConstVar smear("smear", "smear", smearing) ;
 
   // B^{0} -> psi(nS) #pi^{+} K^{-}
+  GooPdf* phaseSpace = new     ThreeBodiesPsiPiK ("BdToMuMuPiK_PHSP", Variable* _x,Variable* _mp,Variable* _m1,Variable* _m2,Variable* _m3);//,Variable* nBk);
   RooAbsPdf* BdToMuMuPiK_PHSP = new RooGenericPdf("BdToMuMuPiK_PHSP","3-body PHSP","sqrt( pow(massKPi,4) + pow(mPion,4) + pow(mKaon,4) - 2*pow(massKPi,2)*pow(mPion,2) - 2*pow(massKPi,2)*pow(mKaon,2) - 2*pow(mPion,2)*pow(mKaon,2) ) * sqrt( pow(mBd,4) + pow(massKPi,4) + pow(mMuMu,4) - 2*pow(mBd,2)*pow(massKPi,2) - 2*pow(mBd,2)*pow(mMuMu,2) - 2*pow(massKPi,2)*pow(mMuMu,2) ) / (massKPi)", RooArgSet(massKPi,mPion,mKaon,mBd,mMuMu)); // variables name used in the formula must be = name of the RooVariables in the list
   //cout <<"\nBdToMuMuPiK_PHSP.getVal() =\n" <<BdToMuMuPiK_PHSP->getVal() <<endl; return;
 
@@ -278,7 +279,7 @@ void Analysis()
 
 
   /*
-  RooFitResult* fitres = model->fitTo(*data, Hesse(kTRUE), Minos(kFALSE), Save(kTRUE), NumCPU(nCPU)) ; // 75' with 2000 events, 8 Lambda*, 1 NumCPU; 80' with 2000 events, 1 K*, 4 NumCPU 
+  RooFitResult* fitres = model->fitTo(*data, Hesse(kTRUE), Minos(kFALSE), Save(kTRUE), NumCPU(nCPU)) ; // 75' with 2000 events, 8 Lambda*, 1 NumCPU; 80' with 2000 events, 1 K*, 4 NumCPU
   fitres->Print("v");
   model->paramOn(massKP_frame);
   //model->paramOn(massKP_frame, Parameters(RooArgSet(a1600L0S1,b1600L0S1,a1600L1S1,b1600L1S1)), Layout(0.6,0.95,0.9));
@@ -312,8 +313,8 @@ void Analysis()
   b892p1.setVal(0.); b892p1.setConstant();
   a892z.setVal(0.); a892z.setConstant();
   b892z.setVal(0.); b892z.setConstant();
-  
-  RooAbsReal* onlyOneResonance = sigPDF.createIntegral(massKPr) ; 
+
+  RooAbsReal* onlyOneResonance = sigPDF.createIntegral(massKPr) ;
   Double_t onlyOneResonance_integral = onlyOneResonance->getVal(); cout <<"\nonlyOneResonance integral = " <<onlyOneResonance_integral <<endl;
   //cout <<"\n1600L0S1 fraction is: " << onlyOneResonance_integral / full_signal_integral * 100 <<"%" <<endl;
   cout <<"\nK*(892)_{-1} fraction is: " << onlyOneResonance_integral / full_signal_integral * 100 <<"%" <<endl;
@@ -324,7 +325,7 @@ void Analysis()
     vector< Double_t > Kstar_integral(nKstar,-1);
     for (Int_t iKstar_S=0; iKstar_S<nKstar; ++iKstar_S) {
       TString Kstar_name = Kstar_spin[iKstar_S].first;
-      
+
       for (Int_t iVar=0; iVar<(Int_t)varNames.size(); ++iVar) {
 	TString abName = varNames[iVar](1, varNames[iVar].Length());
 	if (helJ_map.find(abName) != helJ_map.end())
@@ -341,7 +342,7 @@ void Analysis()
 	else
 	  cout <<"Element \"" <<abName <<"\" not found in map helJ_map. Please check map filling." <<endl;
       }
-      
+
       TString legName = TString::Format("K*_{%s}(%s)", &Kstar_name(Kstar_name.Length() -1), (TString(Kstar_name(0, Kstar_name.Length() -2))).Data());
       cout <<"\n\nIntegrating with " <<legName <<" only..." <<endl;
       Kstar_integral[iKstar_S] = (sigPDF.createIntegral(*starResonancesMass))->getVal() ;
