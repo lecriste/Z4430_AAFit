@@ -153,7 +153,7 @@ int main(int argc, char** argv)
   //RooArgSet kinematcVars(massKPi, cosMuMu, cosKstar, phi);
 
   //GooFit
-  Variable massKPi("massKPi",1.,0.7,2.1); massKPi->numbins=BINS;
+  Variable massKPi("massKPi",1.,0.7,2.1); massKPi.numbins=BINS;
   BinnedDataSet dataSet(&massKPi);
   Variable cosMuMu("cosMuMu",0.,-1,1); // cosine of the psi(nS) helicity angle
   Variable cosKstar("cosKstar",0.,-1,1); // cosine of the K* helicity angle
