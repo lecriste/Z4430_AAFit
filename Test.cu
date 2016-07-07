@@ -75,7 +75,7 @@ fptype phaseSpaceFunction(fptype x,fptype mP,fptype m1,fptype m2,fptype m3)
 
 }
 
-void debug();{
+void debug(){
 
   #ifdef DEBUGGING
   std::cout<<"Debugging on line "<<__LINE__<<std::endl;
