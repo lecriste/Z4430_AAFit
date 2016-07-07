@@ -210,6 +210,7 @@ int main(int argc, char** argv)
  TCanvas canvas("canvas","canvas",1000,1000);
  dataHisto->Draw();
 
+ canvas.SaveAs("./plots/test.png");
  return 0;
 
 }
