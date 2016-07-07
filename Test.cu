@@ -61,7 +61,7 @@ const fptype MKaon = 0.493677;
 const fptype MPion = 0.13957018;
 
 
-fptype phaseSpaceFunction(fptype x,fptype mP,fptype m12,fptype m1,fptype m2,fptype m3)
+fptype phaseSpaceFunction(fptype x,fptype mP,fptype m1,fptype m2,fptype m3)
 {
 
   fptype function = sqrt(pow(x,4) + pow(m1,4) + pow(m2,4) - 2*pow(x,2)*pow(m1,2) - 2*pow(x,2)*pow(m2,2) - 2*pow(m1,2)*pow(m2,2)) * sqrt(pow(mP,4) + pow(x,4) + pow(m3,4) - 2*pow(mP,2)*pow(x,2) - 2*pow(mP,2)*pow(m3,2) - 2*pow(x,2)*pow(m3,2) ) / (x);
@@ -194,7 +194,7 @@ int main(int argc, char** argv)
         TRandom ranGen(ms);
 
   			massKPi.value = ranGen.Uniform(massKPi.upperlimit-massKPi.lowerlimit)+massKPi.lowerlimit;
-  			func = phaseSpaceFunction(massKPi.value);
+  			func = phaseSpaceFunction(massKPi.value,MBd,MPion,MKaon,massMuMu);
   			roll = ranGen.Uniform(100);
   			if (roll > func) {
   				--j;
