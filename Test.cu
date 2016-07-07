@@ -170,7 +170,7 @@ int main(int argc, char** argv)
   else if (psi_nS.EqualTo("2")) massMuMu = MPsi2S ;
   else {
     cout <<"psi_nS is neither 1 nor 2, please check it." <<endl;
-    return ; }
+    return 1; }
   //RooConstVar mMuMu("mMuMu", "m(#mu^{+}#mu^{-})", massMuMu);
   Variable mMuMu("mMuMu", massMuMu);
   const fptype smearing = 0. ;
@@ -179,7 +179,7 @@ int main(int argc, char** argv)
 
   TH1F* dataHisto = new TH1F("data","data",50,massKPi.lowerlimit,massKPi.upperlimit);
   // B^{0} -> psi(nS) #pi^{+} K^{-}
-  GooPdf* phaseSpace = new ThreeBodiesPsiPiK ("phasespace",&massKPi,&mBd,,mPion,mKaon);
+  GooPdf* phaseSpace = new ThreeBodiesPsiPiK ("phasespace",&massKPi,&mBd,mPion,mKaon);
   //cout <<"\nBdToMuMuPiK_PHSP.getVal() =\n" <<BdToMuMuPiK_PHSP->getVal() <<endl; return;
 
   fptype roll=0.0;
