@@ -74,7 +74,7 @@ fptype phaseSpaceFunction(fptype x,fptype mP,fptype m12,fptype m1,fptype m2,fpty
 void printinstruction(){
 
   std::cerr << "======= Instructions \n"
-  			<< "\t-h,--help \t\t\t\ Show this help message\n"
+  			<< "\t-h,--help \t\t\t\t Show this help message\n"
   			<< "\t-n <iter> \t\t\t\t Specify the number of points to use for the kdtree\n"
   			<< "\t-r <path> <stack> <index> \t\t\t\t Read MC Toys in <stack> with <index> previously generated in <path>\n"
   			<< "\t-x <x> \t\t\t\t Select sigma single peak cuts\n"
