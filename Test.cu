@@ -26,6 +26,7 @@
 #include "TRandom.h"
 
 #include <vector>
+#include <sstream>
 #include <utility> // std::make_pair
 #include "TLegend.h"
 
