@@ -16,7 +16,7 @@
 //#include "RooDataSet.h"
 //GooFit
 #include "Variable.hh"
-#include "ThreeBodiesPsiPiK.hh"
+#include "ThreeBodiesPsiPiKPdf.hh"
 
 #include "TCanvas.h"
 #include "TAxis.h"
@@ -51,6 +51,15 @@ vector<timeval> fitTime, plotTime;
 vector<clock_t> fitCPU, plotCPU;
 vector<tms> fitProc, plotProc;
 */
+
+const fptype MLb = 5.61951;
+const fptype MBd = 5.27961;
+const fptype MPsi2S = 3.686109;
+const fptype MJpsi = 3.096916;
+const fptype MProton = 0.938272046;
+const fptype MKaon = 0.493677;
+const fptype MPion = 0.13957018;
+
 
 fptype phaseSpaceFunction(fptype x,fptype mP,fptype m12,fptype m1,fptype m2,fptype m3)
 {
