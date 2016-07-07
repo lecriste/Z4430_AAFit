@@ -23,6 +23,7 @@
 #include "RooPlot.h"
 #include "TROOT.h"
 #include "TMath.h"
+#include "TRandom.h"
 
 #include <vector>
 #include <utility> // std::make_pair
@@ -126,78 +127,6 @@ int main(int argc, char** argv)
 				}
 			}
 		}
-  }
-
-
-  //vector< pair<TString, pair< pair<fptype, fptype>, pair<fptype, fptype> > > > Kstar_spin;
-  vector< pair<TString, pair<const fptype, const fptype> > > Kstar_spin;
-  map< TString, pair<fptype, fptype> > helJ_map;
-  // Belle B0->J/psi K+ pi- values
-  // 5h20' with K*(892) + PHSP (1K+1K events)
-  // 20' with K*(800) + K*(1430)0 + K*(1430)2 (2K events)
-
-  cout <<"Adding K*(892)..." <<endl;
-  const fptype M892 = 0.89581 ; const fptype G892 = 0.0474; // From PDG neutral only K*(892)
-  Kstar_spin.push_back( make_pair("892_1", make_pair(M892,G892) ) ) ;
-  helJ_map["892_1_0"] = make_pair(1.,0.); helJ_map["892_1_p1"] = make_pair(0.844,3.14); helJ_map["892_1_m1"] = make_pair(0.196,-1.7);
-
-  cout <<"Adding K*(800)..." <<endl;
-  //const fptype M800 = 0.682; const fptype G800 = 0.547; // From PDG
-  const fptype M800 = 0.931; const fptype G800 = 0.578; // From Belle
-  Kstar_spin.push_back( make_pair("800_0", make_pair(M800,G800) ) ) ;
-  helJ_map["800_0_0"] = make_pair(1.12,2.3);
-
-  cout <<"Adding K*(1410)..." <<endl;
-  const fptype M1410 = 1.414; const fptype G1410 = 0.232;
-  Kstar_spin.push_back( make_pair("1410_1", make_pair(M1410,G1410) ) ) ;
-  helJ_map["1410_1_0"] = make_pair(0.119,0.81); helJ_map["1410_1_p1"] = make_pair(0.123,-1.04); helJ_map["1410_1_m1"] = make_pair(0.036,0.67);
-
-  cout <<"Adding K*(1430)_0..." <<endl;
-  const fptype M1430_0 = 1.425; const fptype G1430_0 = 0.270;
-  Kstar_spin.push_back( make_pair("1430_0", make_pair(M1430_0,G1430_0) ) ) ;
-  helJ_map["1430_0_0"] = make_pair(0.89,-2.17);
-
-  cout <<"Adding K*(1430)_2..." <<endl;
-  const fptype M1430_2 = 1.4324; const fptype G1430_2 = 0.109; // From PDG neutral only
-  Kstar_spin.push_back( make_pair("1430_2", make_pair(M1430_2,G1430_2) ) ) ;
-  helJ_map["1430_2_0"] = make_pair(4.66,-0.32); helJ_map["1430_2_p1"] = make_pair(4.65,-3.05); helJ_map["1430_2_m1"] = make_pair(1.26,-1.92);
-
-  //const fptype M1780_3 = 1.776; const fptype G1780_3 = 0.159; // From PDG neutral only
-  //Kstar_spin.push_back( make_pair("1780_3", make_pair(M1780_3,G1780_3) ) ) ;
-  //helJ_map["1780_3_0"] = make_pair(16.8,-1.43); helJ_map["1780_3_p1"] = make_pair(19.1,2.03); helJ_map["1780_3_m1"] = make_pair(10.2,1.55);
-
-  //ROOFIT
-  //vector< RooRealVar* > amplitudeGooVar;
-  //GooFit
-  vector <Variable*> amplitudeGooVar
-  vector< TString > varNames;
-  RooArgSet amplitudeVars("amplitudeVars_set");
-  fptype aMin = -9999.; fptype aMax = +9999.;
-  fptype bMin = -9999.; fptype bMax = +9999.;
-  TString helJ[] = {"m1","0","p1"} ;
-
-  Int_t nKstar = Kstar_spin.size();
-  for (Int_t iKstar_S=0; iKstar_S<nKstar; ++iKstar_S)
-    for (Int_t iHelJ=0; iHelJ<3; ++iHelJ) {
-      if (Kstar_spin[iKstar_S].first.Contains("_0") && !helJ[iHelJ].EqualTo("0")) continue ;
-      TString name = Kstar_spin[iKstar_S].first + "_" + helJ[iHelJ] ;
-      if (helJ_map.find(name) != helJ_map.end()) {
-	pair<fptype, fptype> a_b = helJ_map.find(name)->second ;
-	TString aName = "a"+name; TString bName = "b"+name;
-	//a_b.first = aIvan; a_b.second = bIvan;
-  new Variable("Mass",18.0,0.001,14.0,50.0);
-
-	amplitudeGooVar.push_back( new Variable(aName,aName, a_b.first, aMin, aMax) ) ; varNames.push_back( aName ) ;
-	amplitudeGooVar.push_back( new Variable(bName,bName, a_b.second, bMin, bMax) ); varNames.push_back( bName ) ;
-      }
-      else {
-	cout <<"Element \"" <<name <<"\" not found in map helJ_map, please check map filling." <<endl;
-	return ;
-      }
-    }
-
-  for (Int_t iVar=0; iVar<(Int_t)amplitudeGooVar.size(); ++iVar) {
-    amplitudeVars.add( *amplitudeGooVar[iVar] ) ;
   }
 
   // B^0 -> psi(nS) K* -> mu+ mu- K- pi+
