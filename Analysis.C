@@ -30,7 +30,7 @@
 
 #include <sys/time.h> // for timeval
 #include <sys/times.h> // for tms
-#include "TSystem.h"
+#include "TSystem.h" // to get number of CPUs
 
 #include "myPDF.h"
 
@@ -38,16 +38,13 @@ using namespace RooFit ;
 
 /*
 timeval startFullFitTime, stopFullFullFitTime, totalFullFitTime;
-timeval startFullPlotTime, stopFullPlotTime, totalFullPlotTime;
 clock_t startFullFitCPU, stopFullFitCPU; 
-clock_t startFullPlotCPU, stopFullPlotCPU; 
 tms startFullFitProc, stopFullFitProc; 
-tms startFullPlotProc, stopFullPlotProc; 
-
-vector<timeval> fitTime, plotTime;
-vector<clock_t> fitCPU, plotCPU; 
-vector<tms> fitProc, plotProc; 
 */
+timeval start, stop;
+clock_t startCPU, stopCPU;
+tms startProc, stopProc;
+
 void Analysis()
 {
   SysInfo_t* s = new SysInfo_t();
@@ -210,8 +207,10 @@ void Analysis()
   //RooExtendPdf *extendedBkgPDF = new RooExtendPdf("extendedBkgPDF", "Signal 0 PDF", *bkgPDF, nBkg) ;
   //RooPlot* test_frame = massKPi.frame() ; test_frame->SetTitle( "Projection of "+massKPi.getTitle() ); extendedBkgPDF->plotOn(test_frame) ; test_frame->Draw() ; return;
 
-  RooRealVar nSig("nSig", "n_{SIG}", 2000, 0, 1E4);
-  nSig.setVal(10 * nSig.getVal());
+  Double_t nSignal = 2000;
+  nSignal *= 10;
+  RooRealVar nSig("nSig", "n_{SIG}", nSignal, 0, 1E4);
+  //nSig.setVal( 10*nSig.getVal() ); // Does not work on the fly
 
   TString modelName = sigPDF.GetName();
   TString modelTitle = TString::Format("%s*(%s)",nSig.GetTitle(),sigPDF.GetTitle());
@@ -235,25 +234,23 @@ void Analysis()
   RooPlot* massKP_frame = starResonancesMass->frame() ; massKP_frame->SetTitle( "Projection of "+starResonancesMass->getTitle() );
   Int_t nLegendEntries = 0;
 
-  timeval startGenTime, stopGenTime, genTime;
-  clock_t startGenCPU, stopGenCPU;
-  tms startGenProc, stopGenProc;
   // Generate toy data from pdf and plot data and p.d.f on frame
   cout <<"\nGenerating " <<nEvents.getVal() <<" events according to " <<model->GetName() <<" pdf..." <<endl;
-
-  gettimeofday(&startGenTime, NULL);
-  startGenCPU = times(&startGenProc);
+  timeval genTime;
+  gettimeofday(&start, NULL);
+  startCPU = times(&startProc);
+  //
   RooDataSet* data = model->generate(kinematcVars, nEvents.getVal()) ;
-  stopGenCPU = times(&stopGenProc);
-  gettimeofday(&stopGenTime, NULL);
-  timersub(&stopGenTime, &startGenTime, &genTime);
-  Double_t genTimeCPU = (stopGenCPU - startGenCPU)*10000;
-  Double_t procTime = (stopGenProc.tms_utime - startGenProc.tms_utime)*10000 ;
-
+  //
+  stopCPU = times(&stopProc);
+  gettimeofday(&stop, NULL);
+  timersub(&stop, &start, &genTime);
+  Double_t genTimeCPU = (stopCPU - startCPU)*10000;
+  Double_t genTimeProc = (stopProc.tms_utime - startProc.tms_utime)*10000 ;
   cout <<"\n" <<nEvents.getVal() <<" events have been genrated in\n" ;
   cout <<"Wallclock time: " << genTime.tv_sec + genTime.tv_usec/1000000.0 << " seconds\n" ;
   cout <<"Total CPU time: " << (genTimeCPU / CLOCKS_PER_SEC) <<" seconds\n" ;
-  cout <<"My processes time: " << (procTime / CLOCKS_PER_SEC) << " seconds (differences due to other processes on the same CPU)" << endl ;
+  cout <<"My processes time: " << (genTimeProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
 
   //return;
 
@@ -263,10 +260,25 @@ void Analysis()
   Int_t fullModelColor = 2; // 2 = kRed
   Int_t bkgColor = fullModelColor;
   TString modelEntry = "Full model";
+
+  timeval plotModelTime;
+  gettimeofday(&start, NULL);
+  startCPU = times(&startProc);
+  //
   model->plotOn(massKP_frame,LineColor(fullModelColor),Name(modelEntry)) ; nLegendEntries++;
   if (bkgPDF) {
     model->plotOn(massKP_frame,Components(*bkgPDF),LineColor(bkgColor),LineStyle(kDashed),Name("Bkg")) ; nLegendEntries++;
   }
+  //
+  stopCPU = times(&stopProc);
+  gettimeofday(&stop, NULL);
+  timersub(&stop, &start, &plotModelTime);
+  Double_t plotModelCPU = (stopCPU - startCPU)*10000;
+  Double_t plotModelProc = (stopProc.tms_utime - startProc.tms_utime)*10000 ;
+  cout <<"Wallclock time: " << plotModelTime.tv_sec + plotModelTime.tv_usec/1000000.0 << " seconds\n" ;
+  cout <<"Total CPU time: " << (plotModelCPU / CLOCKS_PER_SEC) <<" seconds\n" ;
+  cout <<"My processes time: " << (plotModelProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
+
   Float_t topRightCorner = 0.9;
   TLegend* leg = new TLegend(0.6, topRightCorner -(nLegendEntries+nKstar)*0.05, topRightCorner, topRightCorner);
   leg->AddEntry(data,"Data generated","ep");
@@ -289,39 +301,35 @@ void Analysis()
   //Here you can also project other variables.
 
   cout <<"\nIntegrating " <<sigPDF.GetName() <<" over " <<starResonancesMass->GetName() <<"..." <<endl;
+
+  // negligible
+  /*
+  timeval sigIntegralTime;
+  gettimeofday(&start, NULL);
+  startCPU = times(&startProc);
+  //
   RooAbsReal* sigPDF_integral = sigPDF.createIntegral( *starResonancesMass ) ;
   Double_t full_signal_integral = sigPDF_integral->getVal(); cout <<"\nFull signal integral = " <<full_signal_integral <<endl;
-  /*
-  a1600L1S1.setVal(0.); a1600L1S1.setConstant();
-  b1600L1S1.setVal(0.); b1600L1S1.setConstant();
-  a1600L1S3.setVal(0.); a1600L1S3.setConstant();
-  b1600L1S3.setVal(0.); b1600L1S3.setConstant();
-  a1600L2S3.setVal(0.); a1600L2S3.setConstant();
-  b1600L2S3.setVal(0.); b1600L2S3.setConstant();
-  a1670L0S1.setVal(0.); a1670L0S1.setConstant();
-  b1670L0S1.setVal(0.); b1670L0S1.setConstant();
-  a1670L1S1.setVal(0.); a1670L1S1.setConstant();
-  b1670L1S1.setVal(0.); b1670L1S1.setConstant();
-  a1670L1S3.setVal(0.); a1670L1S3.setConstant();
-  b1670L1S3.setVal(0.); b1670L1S3.setConstant();
-  a1670L2S3.setVal(0.); a1670L2S3.setConstant();
-  b1670L2S3.setVal(0.); b1670L2S3.setConstant();
+  //
+  stopCPU = times(&stopProc);
+  gettimeofday(&stop, NULL);
+  timersub(&stop, &start, &sigIntegralTime);
+  Double_t sigIntegralCPU = (stopCPU - startCPU)*10000;
+  Double_t sigIntegralProc = (stopProc.tms_utime - startProc.tms_utime)*10000 ;
+  cout <<"Wallclock time: " << sigIntegralTime.tv_sec + sigIntegralTime.tv_usec/1000000.0 << " seconds\n" ;
+  cout <<"Total CPU time: " << (sigIntegralCPU / CLOCKS_PER_SEC) <<" seconds\n" ;
+  cout <<"My processes time: " << (sigIntegralProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
   */
-  /*
-  a892p1.setVal(0.); a892p1.setConstant();
-  b892p1.setVal(0.); b892p1.setConstant();
-  a892z.setVal(0.); a892z.setConstant();
-  b892z.setVal(0.); b892z.setConstant();
-  
-  RooAbsReal* onlyOneResonance = sigPDF.createIntegral(massKPr) ; 
-  Double_t onlyOneResonance_integral = onlyOneResonance->getVal(); cout <<"\nonlyOneResonance integral = " <<onlyOneResonance_integral <<endl;
-  //cout <<"\n1600L0S1 fraction is: " << onlyOneResonance_integral / full_signal_integral * 100 <<"%" <<endl;
-  cout <<"\nK*(892)_{-1} fraction is: " << onlyOneResonance_integral / full_signal_integral * 100 <<"%" <<endl;
-  */
+  RooAbsReal* sigPDF_integral = sigPDF.createIntegral( *starResonancesMass ) ;
+  Double_t full_signal_integral = sigPDF_integral->getVal(); cout <<"\nFull signal integral = " <<full_signal_integral <<endl;
 
   if (nKstar > 1) {
     // 50' with 5 K*
     vector< Double_t > Kstar_integral(nKstar,-1);
+    vector<timeval> KstarIntegralTime(nKstar), KstarPlotTime(nKstar);
+    vector<Double_t> KstarIntegralCPU(nKstar,0), KstarPlotCPU(nKstar,0);
+    vector<Double_t> KstarIntegralProc(nKstar,0), KstarPlotProc(nKstar,0);
+
     for (Int_t iKstar_S=0; iKstar_S<nKstar; ++iKstar_S) {
       TString Kstar_name = Kstar_spin[iKstar_S].first;
       
@@ -344,12 +352,44 @@ void Analysis()
       
       TString legName = TString::Format("K*_{%s}(%s)", &Kstar_name(Kstar_name.Length() -1), (TString(Kstar_name(0, Kstar_name.Length() -2))).Data());
       cout <<"\n\nIntegrating with " <<legName <<" only..." <<endl;
+      // negligible
+      /*
+      gettimeofday(&start, NULL);
+      startCPU = times(&startProc);
+      //
       Kstar_integral[iKstar_S] = (sigPDF.createIntegral(*starResonancesMass))->getVal() ;
+      //
+      stopCPU = times(&stopProc);
+      gettimeofday(&stop, NULL);
+      timersub(&stop, &start, &KstarIntegralTime[iKstar_S]);
+      KstarIntegralCPU[iKstar_S] = (stopCPU - startCPU)*10000;
+      KstarIntegralProc[iKstar_S] = (stopProc.tms_utime - startProc.tms_utime)*10000 ;
+      cout <<"Wallclock time: " << KstarIntegralTime[iKstar_S].tv_sec + KstarIntegralTime[iKstar_S].tv_usec/1000000.0 << " seconds\n" ;
+      cout <<"Total CPU time: " << (KstarIntegralCPU[iKstar_S] / CLOCKS_PER_SEC) <<" seconds\n" ;
+      cout <<"My processes time: " << (KstarIntegralProc[iKstar_S] / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
+      //
+      */
+      Kstar_integral[iKstar_S] = (sigPDF.createIntegral(*starResonancesMass))->getVal() ;
+
       cout <<"Integral with " <<legName <<" only is: " <<Kstar_integral[iKstar_S] <<endl;
       Double_t fraction = (Kstar_integral[iKstar_S] / full_signal_integral)*(sigFrac.getVal());
       cout <<legName <<" fraction is: " <<fraction*100 <<"%" <<endl;
-      cout <<"\nPlotting " <<legName <<" only..." <<endl;
+      cout <<"\nPlotting " <<legName <<" only..." <<endl;    
+
+      gettimeofday(&start, NULL);
+      startCPU = times(&startProc);
+      //
       model->plotOn(massKP_frame,LineColor(iKstar_S + fullModelColor+1), Name(Kstar_name), Normalization(fraction,RooAbsReal::Relative)) ;
+      //
+      stopCPU = times(&stopProc);
+      gettimeofday(&stop, NULL);
+      timersub(&stop, &start, &KstarPlotTime[iKstar_S]);
+      KstarPlotCPU[iKstar_S] = (stopCPU - startCPU)*10000;
+      KstarPlotProc[iKstar_S] = (stopProc.tms_utime - startProc.tms_utime)*10000 ;
+      cout <<"Wallclock time: " << KstarPlotTime[iKstar_S].tv_sec + KstarPlotTime[iKstar_S].tv_usec/1000000.0 << " seconds\n" ;
+      cout <<"Total CPU time: " << (KstarPlotCPU[iKstar_S] / CLOCKS_PER_SEC) <<" seconds\n" ;
+      cout <<"My processes time: " << (KstarPlotProc[iKstar_S] / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
+
       leg->AddEntry(massKP_frame->findObject(Kstar_name),TString::Format("%s (%.1f%%)",legName.Data(),fraction*100),"l");
     }
   }

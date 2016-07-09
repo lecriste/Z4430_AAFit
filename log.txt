@@ -1,0 +1,128 @@
+
+Processing run_Analysys.sh...
+(class myPDF)41428640
+Adding K*(892)...
+Adding K*(800)...
+Adding K*(1410)...
+Adding K*(1430)_0...
+Adding K*(1430)_2...
+
+Generating 10000 events according to Kstars_signal pdf...
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,massKPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(massKPi,cosMuMu,cosKstar,phi)
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,massKPi,phi]) evaluation requires 4-D numeric integration step. Evaluation may be slow, sufficient numeric precision for fitting & minimization is not guaranteed
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstars_signal) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 1
+
+10000 events have been genrated in
+Wallclock time: 379.26 seconds
+Total CPU time: 379.2 seconds
+My processes time: 378.87 seconds (differences due to other users' processes on the same CPU)
+
+Plotting data...
+
+Plotting Kstars_signal pdf...
+[#1] INFO:Plotting -- RooAbsReal::plotOn(Kstars_signal) plot on massKPi integrates over variables (cosMuMu,cosKstar,phi)
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,phi]_Norm[cosKstar,cosMuMu,massKPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(cosMuMu,cosKstar,phi)
+Wallclock time: 721.394 seconds
+Total CPU time: 721.29 seconds
+My processes time: 720.65 seconds (differences due to other users' processes on the same CPU)
+
+Integrating Kstars_signal over massKPi...
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[massKPi]) using numeric integrator RooIntegrator1D to calculate Int(massKPi)
+
+Full signal integral = 0.686627
+Wallclock time: 0.03993 seconds
+Total CPU time: 0.04 seconds
+My processes time: 0.04 seconds (differences due to other users' processes on the same CPU)
+
+
+Integrating with K*_{1}(892) only...
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[massKPi]) using numeric integrator RooIntegrator1D to calculate Int(massKPi)
+Wallclock time: 0.019566 seconds
+Total CPU time: 0.02 seconds
+My processes time: 0.02 seconds (differences due to other users' processes on the same CPU)
+Integral with K*_{1}(892) only is: 0.260613
+K*_{1}(892) fraction is: 37.9555%
+
+Plotting K*_{1}(892) only...
+[#1] INFO:Plotting -- RooAbsReal::plotOn(Kstars_signal) plot on massKPi integrates over variables (cosMuMu,cosKstar,phi)
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,massKPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(cosMuMu,cosKstar,phi,massKPi)
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,massKPi,phi]) evaluation requires 4-D numeric integration step. Evaluation may be slow, sufficient numeric precision for fitting & minimization is not guaranteed
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,phi]_Norm[cosKstar,cosMuMu,massKPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(cosMuMu,cosKstar,phi)
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstars_signal) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 1
+Wallclock time: 975.024 seconds
+Total CPU time: 974.87 seconds
+My processes time: 974.12 seconds (differences due to other users' processes on the same CPU)
+
+
+Integrating with K*_{0}(800) only...
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[massKPi]) using numeric integrator RooIntegrator1D to calculate Int(massKPi)
+Wallclock time: 0.032084 seconds
+Total CPU time: 0.04 seconds
+My processes time: 0.03 seconds (differences due to other users' processes on the same CPU)
+Integral with K*_{0}(800) only is: 0.109839
+K*_{0}(800) fraction is: 15.9969%
+
+Plotting K*_{0}(800) only...
+[#1] INFO:Plotting -- RooAbsReal::plotOn(Kstars_signal) plot on massKPi integrates over variables (cosMuMu,cosKstar,phi)
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,massKPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(cosMuMu,cosKstar,phi,massKPi)
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,massKPi,phi]) evaluation requires 4-D numeric integration step. Evaluation may be slow, sufficient numeric precision for fitting & minimization is not guaranteed
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,phi]_Norm[cosKstar,cosMuMu,massKPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(cosMuMu,cosKstar,phi)
+Wallclock time: 0.510588 seconds
+Total CPU time: 0.51 seconds
+My processes time: 0.51 seconds (differences due to other users' processes on the same CPU)
+
+
+Integrating with K*_{1}(1410) only...
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[massKPi]) using numeric integrator RooIntegrator1D to calculate Int(massKPi)
+Wallclock time: 0.001136 seconds
+Total CPU time: 0 seconds
+My processes time: 0.01 seconds (differences due to other users' processes on the same CPU)
+Integral with K*_{1}(1410) only is: 0.0014402
+K*_{1}(1410) fraction is: 0.209751%
+
+Plotting K*_{1}(1410) only...
+[#1] INFO:Plotting -- RooAbsReal::plotOn(Kstars_signal) plot on massKPi integrates over variables (cosMuMu,cosKstar,phi)
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,massKPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(cosMuMu,cosKstar,phi,massKPi)
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,massKPi,phi]) evaluation requires 4-D numeric integration step. Evaluation may be slow, sufficient numeric precision for fitting & minimization is not guaranteed
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,phi]_Norm[cosKstar,cosMuMu,massKPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(cosMuMu,cosKstar,phi)
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstars_signal) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 1
+Wallclock time: 1040.35 seconds
+Total CPU time: 1040.19 seconds
+My processes time: 1039.35 seconds (differences due to other users' processes on the same CPU)
+
+
+Integrating with K*_{0}(1430) only...
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[massKPi]) using numeric integrator RooIntegrator1D to calculate Int(massKPi)
+Wallclock time: 0.00418 seconds
+Total CPU time: 0 seconds
+My processes time: 0 seconds (differences due to other users' processes on the same CPU)
+Integral with K*_{0}(1430) only is: 0.091576
+K*_{0}(1430) fraction is: 13.3371%
+
+Plotting K*_{0}(1430) only...
+[#1] INFO:Plotting -- RooAbsReal::plotOn(Kstars_signal) plot on massKPi integrates over variables (cosMuMu,cosKstar,phi)
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,massKPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(cosMuMu,cosKstar,phi,massKPi)
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,massKPi,phi]) evaluation requires 4-D numeric integration step. Evaluation may be slow, sufficient numeric precision for fitting & minimization is not guaranteed
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,phi]_Norm[cosKstar,cosMuMu,massKPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(cosMuMu,cosKstar,phi)
+Wallclock time: 0.597589 seconds
+Total CPU time: 0.6 seconds
+My processes time: 0.6 seconds (differences due to other users' processes on the same CPU)
+
+
+Integrating with K*_{2}(1430) only...
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[massKPi]) using numeric integrator RooIntegrator1D to calculate Int(massKPi)
+Wallclock time: 0.008168 seconds
+Total CPU time: 0.01 seconds
+My processes time: 0.01 seconds (differences due to other users' processes on the same CPU)
+Integral with K*_{2}(1430) only is: 0.0586366
+K*_{2}(1430) fraction is: 8.53981%
+
+Plotting K*_{2}(1430) only...
+[#1] INFO:Plotting -- RooAbsReal::plotOn(Kstars_signal) plot on massKPi integrates over variables (cosMuMu,cosKstar,phi)
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,massKPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(cosMuMu,cosKstar,phi,massKPi)
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,massKPi,phi]) evaluation requires 4-D numeric integration step. Evaluation may be slow, sufficient numeric precision for fitting & minimization is not guaranteed
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,phi]_Norm[cosKstar,cosMuMu,massKPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(cosMuMu,cosKstar,phi)
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstars_signal) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 1
+Wallclock time: 2110.81 seconds
+Total CPU time: 2110.49 seconds
+My processes time: 2108.65 seconds (differences due to other users' processes on the same CPU)
