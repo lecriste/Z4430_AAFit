@@ -16,6 +16,7 @@
 #include "RooAbsCategory.h"
 #include "TComplex.h"
 
+#include "utilities.h"
 
 const Double_t MLb = 5.61951;
 const Double_t MBd = 5.27961;
@@ -105,7 +106,7 @@ public:
 	// B^0 -> psi(nS) K* -> mu+ mu- K- pi+
 	RooAbsReal& _mKP,
 	RooAbsReal& _cJ,
-	RooAbsReal& _cKs,
+	RooAbsReal& _mPsiP,
 	RooAbsReal& _phi,
 	/*
 	   // K*(892)    
@@ -206,7 +207,7 @@ protected:
   // B^0 -> psi(nS) K* -> mu+ mu- K- pi+
   RooRealProxy mKP ;
   RooRealProxy cJ ;
-  RooRealProxy cKs ;
+  RooRealProxy mPsiP ;
   RooRealProxy phi ;
   /*
     // K*(892)    
@@ -226,6 +227,7 @@ protected:
     
 
 private:
+  Double_t MPsi_nS, cKs;
   //vector< pair<TString, pair< pair<Double_t, Double_t>, pair<Double_t, Double_t> > > > Kstar_spin;
   vector< pair<TString, pair<const Double_t, const Double_t> > > Kstar_spin;
   vector< TString > varNames;

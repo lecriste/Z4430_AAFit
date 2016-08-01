@@ -46,7 +46,7 @@ ClassImp(myPDF)
 	      // B^0 -> psi(nS) K* -> mu+ mu- K- pi+
 	      RooAbsReal& _mKP,
 	      RooAbsReal& _cJ,
-	      RooAbsReal& _cKs,
+	      RooAbsReal& _mPsiP,
 	      RooAbsReal& _phi,
 	      /*
 	      // K*(892)    
@@ -93,7 +93,7 @@ ClassImp(myPDF)
    // B^0 -> psi(nS) K* -> mu+ mu- K- pi+
    mKP("mKP","mKP",this,_mKP),
    cJ("cJ","cJ",this,_cJ),
-   cKs("cKs","cKs",this,_cKs),
+   mPsiP("mPsiP","mPsiP",this,_mPsiP),
    phi("phi","phi",this,_phi),
    /*
    // K*(892)    
@@ -110,6 +110,7 @@ ClassImp(myPDF)
    psi_nS(_psi_nS),
    dRadB0(_dRadB0), dRadKs(_dRadKs)
 { 
+  // Remember to add any global variable you use in this constructor in the "other" constructor as variable(other.variable)
 
   for (Int_t iAmplitudevar=0; iAmplitudevar<amplitudeVars.getSize(); ++iAmplitudevar) {
     TString varName = varNames[iAmplitudevar];
@@ -117,9 +118,30 @@ ClassImp(myPDF)
     //amplitudeVarProxy_map[varName] = new RooRealProxy(varName,varName,amplitudeVars.find(varName),(RooAbsReal&)(*(amplitudeVars.find(varName)))) ;
   } 
 
+  if (psi_nS.EqualTo("1")) 
+    MPsi_nS = MJpsi;
+  else if (psi_nS.EqualTo("2"))
+    MPsi_nS = MPsi2S;
+  else {
+    cout <<"psi_nS = " <<psi_nS <<" not allowed at the moment." <<endl;
+    return;
+  }
+
+  // cos(theta(K*)) from masses
+  Double_t mKP2 = mKP*mKP;
+  Double_t mPsiP2 = mPsiP*mPsiP;
+  Double_t MPsi_nS2 = MPsi_nS*MPsi_nS;
+  /*
+  Double_t num = (mKP2/2)*(MBd2 + MKaon2 - mPsiP2) - (1./4.)*(MBd2 - MPsi_nS2 + mKP2)*(mKP2 - MPion2 + MKaon2) ;
+  Double_t denom2 = ((1./4.)*pow(MBd2 - MPsi_nS2 + mKP2,2) - mKP2*MBd2) * ((1./4.)*pow(mKP2 - MPion2 + MKaon2,2) - mKP2*MKaon2) ;
+  //
+  cKs = num / TMath::Sqrt(denom2) ;
+  */
+  cKs = cosTheta_FromMasses(mKP2, mPsiP2, MPsi_nS2, MBd2, MKaon2, MPion2);
+
 } 
 
- myPDF::myPDF(const myPDF& other, const char* name) :  
+myPDF::myPDF(const myPDF& other, const char* name) :  
    RooAbsPdf(other,name), 
    /*
    mKP("mKP",this,other.mKP),
@@ -148,7 +170,7 @@ b1670L2S3("b1670L2S3",this,other.b1670L2S3)
    // B^0 -> psi(nS) K* -> mu+ mu- K- pi+
    mKP("mKP",this,other.mKP),
    cJ("cJ",this,other.cJ),
-   cKs("cKs",this,other.cKs),
+   mPsiP("mPsiP",this,other.mPsiP),
    phi("phi",this,other.phi),
    /*
 // K*(892)    
@@ -159,6 +181,8 @@ b892z("b892z",this,other.b892z),
 a892p1("a892p1",this,other.a892p1),
 b892p1("b892p1",this,other.b892p1)
    */
+MPsi_nS(other.MPsi_nS),
+cKs(other.cKs),
 Kstar_spin(other.Kstar_spin),
 varNames(other.varNames),
 amplitudeVars(other.amplitudeVars),
@@ -170,21 +194,24 @@ dRadB0(other.dRadB0), dRadKs(other.dRadKs)
 
  Double_t myPDF::evaluate() const 
  {
-
    // ENTER EXPRESSION IN TERMS OF VARIABLE ARGUMENTS HERE
-   Double_t MPsi_nS = 0.;
-    if (psi_nS.EqualTo("1")) 
-      MPsi_nS = MJpsi;
-    else if (psi_nS.EqualTo("2"))
-      MPsi_nS = MPsi2S;
-    else
-      cout <<"psi_nS = " <<psi_nS <<" not allowed in the \"evaluate\" function at the moment. Keeping MPsi_nS to 0" <<endl;
-
-   if ((mKP < MKaon + MPion) || (mKP > MBd - MPsi_nS))
+   if ((mKP < MKaon + MPion) || (mKP > MBd - MPsi_nS) || (mPsiP < MPsi_nS + MPion) || (mPsiP > MBd - MKaon))
      return 0.;
-   else
-     return PDF();
-
+   /*
+   else { // Dalitz border from PDG KINEMATICS 43.4.3.1. 
+     // Particle energies in the mPsiP rest frame
+     Float_t E_P = (mPsiP*mPsiP - MJpsi2 + MPion2)/(2*mPsiP) ;
+     Float_t E_K = (MBd2 - mPsiP*mPsiP - MKaon2)/(2*mPsiP) ;
+     Float_t E_PpE_K_2 = TMath::Power((E_P + E_K),2);
+     Float_t sqrt_E_P2mMP2 = TMath::Sqrt(E_P*E_P - MPion2);
+     Float_t sqrt_E_K2mMK2 = TMath::Sqrt(E_K*E_K - MKaon2);
+     Float_t mKP2_min = E_PpE_K_2 - TMath::Power(sqrt_E_P2mMP2 + sqrt_E_K2mMK2,2);
+     Float_t mKP2_max = E_PpE_K_2 - TMath::Power(sqrt_E_P2mMP2 - sqrt_E_K2mMK2,2);
+     if ((mKP*mKP < mKP2_min) || (mKP*mKP > mKP2_max))
+       return 0.;
+   }
+   */
+   return PDF();
  }
 
  Int_t myPDF::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* ) const //rangeName
