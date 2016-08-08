@@ -498,9 +498,9 @@ TComplex myPDF::Cfterm(string helLs, string helJ, string help, string helDmu) co
 //Double_t myPDF::Wignerd_R(string spinR, string helJ) const 
 Double_t myPDF::Wignerd_R(TString spinR, string helJ) const 
 {
-  if (spinR=="0")
+  if (spinR=="0") {
     return 1. ;
-  else if (spinR=="1")
+  } else if (spinR=="1") {
     if (helJ=="m1")
       return +(TMath::Sin(TMath::ACos(cKs)) / TMath::Sqrt2()) ;
     else if (helJ=="0")
@@ -510,7 +510,7 @@ Double_t myPDF::Wignerd_R(TString spinR, string helJ) const
     else { cout <<"helJ = " <<helJ <<" is not allowed for spinR-" <<spinR <<" Wigner d^{spinR}_{helJ,0} functions. Returning 0" <<endl;
       return 0 ;
     }
-  else if (spinR=="2")
+  } else if (spinR=="2") {
     if (helJ=="m1")
       return +(TMath::Sin(2*TMath::ACos(cKs)) * TMath::Sqrt(3./8.)) ;
     else if (helJ=="0")
@@ -520,7 +520,7 @@ Double_t myPDF::Wignerd_R(TString spinR, string helJ) const
     else { cout <<"helJ = " <<helJ <<" is not allowed for spinR-" <<spinR <<" Wigner d^{spinR}_{helJ,0} functions. Returning 0" <<endl;
       return 0 ;
     }
-  else if (spinR=="3")
+  } else if (spinR=="3") {
     if (helJ=="m1")
       return +(TMath::Sin(TMath::ACos(cKs))*(5*TMath::Cos(2*TMath::ACos(cKs)) + 3.) * TMath::Sqrt(3.)/8.) ;
     else if (helJ=="0")
@@ -530,7 +530,7 @@ Double_t myPDF::Wignerd_R(TString spinR, string helJ) const
     else { cout <<"helJ = " <<helJ <<" is not allowed for spinR-" <<spinR <<" Wigner d^{spinR}_{helJ,0} functions. Returning 0" <<endl;
       return 0 ;
     }
-  else {
+  } else {
     cout <<"spinR = " <<spinR <<" is not implemented for Wigner d^{spinR}_{helJ,0} functions at the moment. Returning 0 -> \"AngularTerm\" = 0" <<endl;
     return 0 ;
   }
@@ -573,16 +573,16 @@ TComplex myPDF::ME( string helDmu ) const
   // any other K* should be added above   
   */
   TComplex matrixElement = 0.;
-  // K+ and pi- have 0 spin -> second last argument of K* RFunction is = spin(K*)
+  // K+ and pi- have 0 spin -> third last argument of K* RFunction is = spin(K*)
   for (Int_t iKstar_S=0; iKstar_S<(Int_t)Kstar_spin.size(); ++iKstar_S) {
     TString R = Kstar_spin[iKstar_S].first ;
     TString spin = R(Kstar_spin[iKstar_S].first.Length() -1) ;
     TString mass = R(0, Kstar_spin[iKstar_S].first.Length() -2) ;
     TComplex matrixElement_R = 0.;
-    if (spin.EqualTo("0")) { // for spin0 K*, third last argument = spin(psi_nS) = spin.Atoi() + 1 = 1
+    if (spin.EqualTo("0")) { // for spin0 K*, fourth last argument = spin(psi_nS) = spin.Atoi() + 1 = 1
       matrixElement_R = RFunction(Kstar_spin[iKstar_S].second.first, Kstar_spin[iKstar_S].second.second, MBd, spin.Atoi()+1, spin.Atoi(), dRadB0, dRadKs) *
 	               AngularTerm(R, spin, "0", helDmu) ;
-    } else { // for non-0 spin K*, third last argument = spin(K*) - spin(psi_nS) = spin.Atoi() - 1
+    } else { // for non-0 spin K*, fourth last argument = spin(K*) - spin(psi_nS) = spin.Atoi() - 1
       matrixElement_R = RFunction(Kstar_spin[iKstar_S].second.first, Kstar_spin[iKstar_S].second.second, MBd, spin.Atoi()-1, spin.Atoi(), dRadB0, dRadKs) *
 	               ( AngularTerm(R, spin, "m1", helDmu) + AngularTerm(R, spin, "0", helDmu) + AngularTerm(R, spin, "p1", helDmu) ) ;
     }
@@ -648,8 +648,8 @@ Double_t myPDF::ME2() const
 Double_t myPDF::PDF() const
 {
   //cout <<"\nME2() = " <<ME2() <<endl;
-  return ME2() * PhiPHSP(mKP); // missing * efficiency(from reconstructed PHSP MC)
-
+  //return ME2() * PhiPHSP(mKP); // missing * efficiency(from reconstructed PHSP MC)
+  return ME2() ; // missing PHSP * efficiency(from reconstructed PHSP MC)
 }
 
 /*
