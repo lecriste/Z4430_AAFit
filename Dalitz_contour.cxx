@@ -70,6 +70,3 @@ ClassImp(Dalitz_contour)
 
    return 1.0 ; 
  } 
-
-
-

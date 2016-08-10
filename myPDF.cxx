@@ -127,18 +127,6 @@ ClassImp(myPDF)
     return;
   }
 
-  // cos(theta(K*)) from masses
-  Double_t mKP2 = mKP*mKP;
-  Double_t mPsiP2 = mPsiP*mPsiP;
-  Double_t MPsi_nS2 = MPsi_nS*MPsi_nS;
-  /*
-  Double_t num = (mKP2/2)*(MBd2 + MKaon2 - mPsiP2) - (1./4.)*(MBd2 - MPsi_nS2 + mKP2)*(mKP2 - MPion2 + MKaon2) ;
-  Double_t denom2 = ((1./4.)*pow(MBd2 - MPsi_nS2 + mKP2,2) - mKP2*MBd2) * ((1./4.)*pow(mKP2 - MPion2 + MKaon2,2) - mKP2*MKaon2) ;
-  //
-  cKs = num / TMath::Sqrt(denom2) ;
-  */
-  cKs = cosTheta_FromMasses(mKP2, mPsiP2, MPsi_nS2, MBd2, MKaon2, MPion2);
-
 } 
 
 myPDF::myPDF(const myPDF& other, const char* name) :  
@@ -182,7 +170,7 @@ a892p1("a892p1",this,other.a892p1),
 b892p1("b892p1",this,other.b892p1)
    */
 MPsi_nS(other.MPsi_nS),
-cKs(other.cKs),
+   //cKs(other.cKs),
 Kstar_spin(other.Kstar_spin),
 varNames(other.varNames),
 amplitudeVars(other.amplitudeVars),
@@ -192,26 +180,26 @@ dRadB0(other.dRadB0), dRadKs(other.dRadKs)
  {
  }
 
+
  Double_t myPDF::evaluate() const 
  {
    // ENTER EXPRESSION IN TERMS OF VARIABLE ARGUMENTS HERE
    if ((mKP < MKaon + MPion) || (mKP > MBd - MPsi_nS) || (mPsiP < MPsi_nS + MPion) || (mPsiP > MBd - MKaon))
      return 0.;
-   /*
-   else { // Dalitz border from PDG KINEMATICS 43.4.3.1. 
-     // Particle energies in the mPsiP rest frame
-     Float_t E_P = (mPsiP*mPsiP - MJpsi2 + MPion2)/(2*mPsiP) ;
-     Float_t E_K = (MBd2 - mPsiP*mPsiP - MKaon2)/(2*mPsiP) ;
-     Float_t E_PpE_K_2 = TMath::Power((E_P + E_K),2);
-     Float_t sqrt_E_P2mMP2 = TMath::Sqrt(E_P*E_P - MPion2);
-     Float_t sqrt_E_K2mMK2 = TMath::Sqrt(E_K*E_K - MKaon2);
-     Float_t mKP2_min = E_PpE_K_2 - TMath::Power(sqrt_E_P2mMP2 + sqrt_E_K2mMK2,2);
-     Float_t mKP2_max = E_PpE_K_2 - TMath::Power(sqrt_E_P2mMP2 - sqrt_E_K2mMK2,2);
-     if ((mKP*mKP < mKP2_min) || (mKP*mKP > mKP2_max))
-       return 0.;
+
+   // cos(theta(K*)) from masses
+   Double_t mKP2 = mKP*mKP;
+   Double_t mPsiP2 = mPsiP*mPsiP;
+   Double_t MPsi_nS2 = MPsi_nS*MPsi_nS;
+   Double_t cKs = cosTheta_FromMasses(mKP2, mPsiP2, MPsi_nS2, MBd2, MKaon2, MPion2);
+   //cout <<"cKs = " <<cKs <<" for mKP2 = " <<mKP2 <<" and mPsiP2 = " <<mPsiP2 <<endl;
+   
+   if (fabs(cKs) > 1) {
+     //cout <<"cKs = " <<cKs <<" for mKP2 = " <<mKP2 <<" and mPsiP2 = " <<mPsiP2 <<endl;
+     return 0.;
    }
-   */
-   return PDF();
+   
+   return PDF(cKs);
  }
 
  Int_t myPDF::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* ) const //rangeName
@@ -496,7 +484,7 @@ TComplex myPDF::Cfterm(string helLs, string helJ, string help, string helDmu) co
 }
 */
 //Double_t myPDF::Wignerd_R(string spinR, string helJ) const 
-Double_t myPDF::Wignerd_R(TString spinR, string helJ) const 
+Double_t myPDF::Wignerd_R(Double_t cKs, TString spinR, string helJ) const 
 {
   if (spinR=="0") {
     return 1. ;
@@ -537,11 +525,11 @@ Double_t myPDF::Wignerd_R(TString spinR, string helJ) const
 }
 
 //TComplex myPDF::AngularTerm(string R, string spinR, string helJ, string helDmu) const
-TComplex myPDF::AngularTerm(TString R, TString spinR, string helJ, string helDmu) const
+TComplex myPDF::AngularTerm(Double_t cKs, TString R, TString spinR, string helJ, string helDmu) const
 {
   //cout <<"\nAngularTerm for K* " <<R <<" and helDmu = " <<helDmu <<" and helJ = " <<helJ <<" is made of Wignerd_R(spinR, helJ) * cWignerD_J(helJ, helDmu, phi) = " <<Wignerd_R(spinR, helJ) <<" * " <<cWignerD_J( WignerD_J(helJ, helDmu, phi) ) <<endl;
   //cout <<"It is multiplied by H(R,helJ) = H(" <<R <<"," <<helJ <<") = " <<H(R,helJ) <<endl;
-  return H(R,helJ) * Wignerd_R(spinR, helJ) * cWignerD_J( WignerD_J(helJ, helDmu, phi) ) ;
+  return H(R,helJ) * Wignerd_R(cKs, spinR, helJ) * cWignerD_J( WignerD_J(helJ, helDmu, phi) ) ;
 
 }
 /*
@@ -560,7 +548,7 @@ TComplex myPDF::ME(string helLb, string help, string helDmu) const
     
 }
 */
-TComplex myPDF::ME( string helDmu ) const
+TComplex myPDF::ME( Double_t cKs, string helDmu ) const
 {
   /*
   // K+ and pi- have 0 spin -> second last argument of K* RFunction is = spin(K*)
@@ -581,10 +569,10 @@ TComplex myPDF::ME( string helDmu ) const
     TComplex matrixElement_R = 0.;
     if (spin.EqualTo("0")) { // for spin0 K*, fourth last argument = spin(psi_nS) = spin.Atoi() + 1 = 1
       matrixElement_R = RFunction(Kstar_spin[iKstar_S].second.first, Kstar_spin[iKstar_S].second.second, MBd, spin.Atoi()+1, spin.Atoi(), dRadB0, dRadKs) *
-	               AngularTerm(R, spin, "0", helDmu) ;
+	                AngularTerm(cKs, R, spin, "0", helDmu) ;
     } else { // for non-0 spin K*, fourth last argument = spin(K*) - spin(psi_nS) = spin.Atoi() - 1
       matrixElement_R = RFunction(Kstar_spin[iKstar_S].second.first, Kstar_spin[iKstar_S].second.second, MBd, spin.Atoi()-1, spin.Atoi(), dRadB0, dRadKs) *
-	               ( AngularTerm(R, spin, "m1", helDmu) + AngularTerm(R, spin, "0", helDmu) + AngularTerm(R, spin, "p1", helDmu) ) ;
+	                ( AngularTerm(cKs, R, spin, "m1", helDmu) + AngularTerm(cKs, R, spin, "0", helDmu) + AngularTerm(cKs, R, spin, "p1", helDmu) ) ;
     }
     //cout <<"\nAngularTerm.Rho() for " <<R <<" = " <<(AngularTerm(R, spin, "0", helDmu)).Rho() <<endl;
     //cout <<"matrixElement for (R,helDmu) = (" <<R <<"," <<helDmu <<") = H(R,helJ) * RFunction * AngularTerm = " <<matrixElement_R <<endl;
@@ -637,19 +625,19 @@ TComplex myPDF::ME2() const
     ;
 }
 */
-Double_t myPDF::ME2() const
+Double_t myPDF::ME2(Double_t cKs) const
 {
   //cout <<"\nME(\"m1\") + ME(\"p1\") = " <<ME("m1") <<" + " <<ME("p1") <<endl;
   //cout <<"ME(\"m1\").Rho2() + ME(\"p1\").Rho2() = " <<ME("m1").Rho2() <<" + " <<ME("p1").Rho2() <<endl;
-  return ME("m1").Rho2() + ME("p1").Rho2() ;
+  return ME(cKs,"m1").Rho2() + ME(cKs,"p1").Rho2() ;
 }
 
 //TComplex myPDF::PDF() const
-Double_t myPDF::PDF() const
+Double_t myPDF::PDF(Double_t cKs) const
 {
   //cout <<"\nME2() = " <<ME2() <<endl;
-  //return ME2() * PhiPHSP(mKP); // missing * efficiency(from reconstructed PHSP MC)
-  return ME2() ; // missing PHSP * efficiency(from reconstructed PHSP MC)
+  return ME2(cKs) * PhiPHSP(mKP); // missing * efficiency(from reconstructed PHSP MC)
+  //return ME2() ; // missing PHSP * efficiency(from reconstructed PHSP MC)
 }
 
 /*

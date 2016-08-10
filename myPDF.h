@@ -140,7 +140,7 @@ public:
     TComplex cWignerD_J(TComplex WignerD_J) const ;
     //
     //Double_t Wignerd_R(string spinR, string helJ) const ;
-    Double_t Wignerd_R(TString spinR, string helJ) const ;
+    Double_t Wignerd_R(Double_t cKs, TString spinR, string helJ) const ;
     /*
     TComplex HLb1600(string helLs, string helJ) const ;
     TComplex HLb1670(string helLs, string helJ) const ;
@@ -166,13 +166,13 @@ public:
     */
     //
     //TComplex AngularTerm(string R, string spinR, string helJ, string helDmu) const ;
-    TComplex AngularTerm(TString R, TString spinR, string helJ, string helDmu) const ;
-    TComplex ME(string helDmu) const ;
+    TComplex AngularTerm(Double_t cKs, TString R, TString spinR, string helJ, string helDmu) const ;
+    TComplex ME(Double_t cKs, string helDmu) const ;
     //
     //TComplex ME2() const ;
     //TComplex PDF() const ;
-    Double_t ME2() const ;
-    Double_t PDF() const ;
+    Double_t ME2(Double_t cKs) const ;
+    Double_t PDF(Double_t cKs) const ;
     
 
 protected:
@@ -223,11 +223,11 @@ protected:
   //vector< TString > varNames;
   //RooArgSet amplitudeVars;
 
-  //Double_t evaluate() const ;
+  Double_t evaluate() const ;
     
 
 private:
-  Double_t MPsi_nS, cKs;
+  Double_t MPsi_nS;
   //vector< pair<TString, pair< pair<Double_t, Double_t>, pair<Double_t, Double_t> > > > Kstar_spin;
   vector< pair<TString, pair<const Double_t, const Double_t> > > Kstar_spin;
   vector< TString > varNames;
@@ -235,8 +235,6 @@ private:
   map< TString,RooRealProxy* > amplitudeVarProxy_map;
   TString psi_nS;
   Double_t dRadB0, dRadKs;
-
-  Double_t evaluate() const ;
     
   ClassDef(myPDF,1) // Your description goes here...
 };

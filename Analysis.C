@@ -200,11 +200,13 @@ void Analysis()
   RooArgSet kinematicVars(massVars, angleVars);
   RooArgSet kinematicVars_m2(mass2Vars, angleVars);
 
-
+  /*
+  // not accessible on cmssusyX
   TString path = "/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/";
   TString inputFileName = "MC_JPsi_Bd2MuMuKpi_2p0Sig_4p0to6p0SB.root";
   TString fullInputFileName = path+inputFileName ;
-  TFile *inputFile = TFile::Open( fullInputFileName );
+  //TFile *inputFile = TFile::Open( fullInputFileName );
+  TFile *inputFile = TFile::Open( inputFileName );
   if (!inputFile) {
     cout <<"Warning: unable to open file \"" <<fullInputFileName <<"\"" <<endl;
     return;
@@ -223,6 +225,7 @@ void Analysis()
   RooDataSet *dataGen_B0bar = new RooDataSet("dataGen_B0bar","Generated B0bar data", dataNTuple, kinematicVars_withBeauty, "B0beauty < 0");
   cout <<"\nImported TTree with " <<dataGen_B0bar->numEntries() <<" B0bar" <<endl ;
   //return ;
+  */
   const Double_t dRadB0 = 5.0; const Double_t dRadKs = 1.5;
 
   myPDF* sigPDF = 0;
@@ -291,32 +294,30 @@ void Analysis()
   if (sigPDF) {
     cout <<"Building " <<sigPDF->GetTitle() <<endl;
     nSig.setVal( totEvents );
-    modelTitle = TString::Format("%s*(%s)",nSig.GetTitle(),sigPDF->GetTitle());
     model = (RooAbsPdf*)sigPDF;
     if (bkgPDF) {
       cout <<"Adding " <<bkgPDF->GetTitle() <<endl;
       nSig.setVal( totEvents/2 ); nBkg.setVal( totEvents/2 );
-      modelName.Append(TString::Format("_plus_%s",bkgPDF->GetName()));
-      modelTitle.Append(TString::Format(" + %s*(%s(",nBkg.GetTitle(),bkgPDF->GetTitle()));
-      model = (RooAbsPdf*) new RooAddPdf(modelName,modelTitle,RooArgList(*sigPDF,*bkgPDF),RooArgList(nSig,nBkg)) ;
+      model = (RooAbsPdf*) new RooAddPdf("","",RooArgList(*sigPDF,*bkgPDF),RooArgList(nSig,nBkg)) ;
+      model->SetName( TString::Format("%s_plus_%s",sigPDF->GetName(),bkgPDF->GetName()) );
+      model->SetTitle( TString::Format("%s + %s",model->GetTitle(),bkgPDF->GetTitle()) );
     } 
   } else if (bkgPDF) {
     cout <<"Building " <<bkgPDF->GetTitle() <<endl;
     nBkg.setVal( totEvents );
-    modelTitle = TString::Format("%s*(%s)",nBkg.GetTitle(),bkgPDF->GetTitle());
+    //modelTitle = TString::Format("%s*(%s)",nBkg.GetTitle(),bkgPDF->GetTitle());
     model = bkgPDF ;
   } else {
     cout <<"Neither sigPDF nor bkgPDF is != 0! please check";
     return;
   }
   modelName = model->GetName();
-  model->SetTitle(modelTitle);
-
-  TString noKinConstr = "noKinConstr";
-  model->SetName( model->GetName()+noKinConstr );
-  RooProdPdf* modelWithKinCheck = new RooProdPdf(modelName,model->GetTitle(),RooArgSet(*kinematicCheck,*model)) ;
-  model = modelWithKinCheck;
-
+  
+  TString noKinConstr = "_noKinConstr";
+  //model->SetName( model->GetName()+noKinConstr );
+  // Dalitz boundary
+  //RooProdPdf* modelWithKinCheck = new RooProdPdf(modelName,model->GetTitle(),RooArgSet(*kinematicCheck,*model)) ; model = modelWithKinCheck;
+  
   RooRealVar nEvents("nEvents","nEvents",nSig.getVal() + nBkg.getVal()) ; nEvents.setConstant(kTRUE);
   RooFormulaVar sigFrac("sigFraction",TString::Format("%s fraction",nSig.GetTitle()),"nSig/nEvents",RooArgSet(nSig,nEvents));
   RooFormulaVar bkgFrac("bkgFraction",TString::Format("%s fraction",nBkg.GetTitle()),"nBkg/nEvents",RooArgSet(nBkg,nEvents));
@@ -333,7 +334,7 @@ void Analysis()
   gettimeofday(&start, NULL);
   startCPU = times(&startProc);
   //
-  RooDataSet* dataGenPDF = model->generate(kinematicVars, nEvents.getVal(), Name("Generated data from PDF")) ;
+  RooDataSet* dataGenPDF = model->generate(kinematicVars, nEvents.getVal(), Verbose(kTRUE), Name("Generated_data_from_PDF")) ; dataGenPDF->SetTitle("Generated data from PDF");
   //
   stopCPU = times(&stopProc);
   gettimeofday(&stop, NULL);
@@ -390,8 +391,9 @@ void Analysis()
 
   TString plotName = model->GetName();
 
+  Float_t rightMargin = 0.12;
   cout <<"\nPlotting angles scatter plot..." <<endl;
-  TCanvas* scatter_C = new TCanvas("Angles_scatter_plot","Angles scatter plot",800,600) ;
+  TCanvas* scatter_C = new TCanvas("Angles_scatter_plot","Angles scatter plot",800,600) ; scatter_C->SetRightMargin(rightMargin);
   scatter_C->cd();
   Float_t cos_limit = 1.02; Float_t cos_margin = 0.02;
   Float_t phi_limit = 3.2; Float_t phi_margin = 0.05;
@@ -407,7 +409,7 @@ void Analysis()
   scatter_C->SaveAs(TString::Format("%s/%s_%s.png",dir.Data(),scatter_C->GetName(),plotName.Data()));
 
   cout <<"\nPlotting Dalitz..." <<endl;
-  TCanvas* dalitz_C = new TCanvas("Dalitz_C","Dalitz",800,600) ;
+  TCanvas* dalitz_C = new TCanvas("Dalitz_C","Dalitz",800,600) ; dalitz_C->SetRightMargin(rightMargin);
   dalitz_C->cd();
   Float_t KPiMass2_low = 0., KPiMass2_high = 5.; Int_t KPiMass2_bins = 100;
   Float_t MuMuPiMass2_low = 9., MuMuPiMass2_high = 25.; Int_t MuMuPiMass2_bins = 128;
@@ -419,9 +421,9 @@ void Analysis()
   dalitz->Draw("colz"); 	
   //dalitz->Draw("lego"); 	
   dalitz_C->SaveAs(TString::Format("%s/%s_%s.png",dir.Data(),dalitz_C->GetTitle(),plotName.Data()));
-  return;
+  //return;
   cout <<"\nPlotting rectangular Dalitz..." <<endl;
-  TCanvas* dalitzRect_C = new TCanvas("DalitzRect_C","Rectangular Dalitz",800,600) ;
+  TCanvas* dalitzRect_C = new TCanvas("DalitzRect_C","Rectangular_Dalitz",800,600) ; dalitzRect_C->SetRightMargin(rightMargin);
   dalitzRect_C->cd();
   TH2F* dalitz_rect = (TH2F*)dataGenPDF_m2->createHistogram("DalitzRect", mass2KPi, Binning(KPiMass2_bins,KPiMass2_low,KPiMass2_high), YVar(cosKstar, Binning(cos_bins,-cos_limit,cos_limit)) ) ; dalitz_rect->SetTitle( TString::Format("Rectangular Dalitz;%s;%s",mass2KPi.GetTitle(),cosKstar.GetTitle()) ) ;
   gStyle->SetOptStat( 10 ) ;
@@ -434,15 +436,14 @@ void Analysis()
   massPsiP_C->cd();
   massPsiP_frame->Draw() ;
   massPsiP_C->SaveAs(TString::Format("%s/%s_MuMuPi.png",dir.Data(),plotName.Data())); //return;
-
+  return;
   Int_t fullModelColor = 2; // 2 = kRed
   Int_t bkgColor = fullModelColor;
   TString modelEntry = "Full model";
-  /*
+  
   cout <<"\nPlotting m(KPi)..." <<endl;
   dataGenPDF->plotOn(massKP_frame) ; nLegendEntries++;
   cout <<"\nPlotting " <<model->GetName() <<" pdf..." <<endl;
-  //return ;
   timeval plotModelTime;
   gettimeofday(&start, NULL);
   startCPU = times(&startProc);
@@ -460,7 +461,7 @@ void Analysis()
   cout <<"Wallclock time: " << plotModelTime.tv_sec + plotModelTime.tv_usec/1000000.0 << " seconds\n" ;
   cout <<"Total CPU time: " << (plotModelCPU / CLOCKS_PER_SEC) <<" seconds\n" ;
   cout <<"My processes time: " << (plotModelProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
-  */
+  
   Float_t topRightCorner = 0.9;
   TLegend* leg = new TLegend(0.6, topRightCorner -(nLegendEntries+nKstar)*0.05, topRightCorner, topRightCorner);
   leg->AddEntry(dataGenPDF,"","ep");
@@ -472,12 +473,14 @@ void Analysis()
     
 
   // Fitting 
-  Bool_t fitting = kFALSE; fitting = kTRUE;
+  Bool_t fitting = kFALSE; //fitting = kTRUE;
   RooFitResult* fitres = 0;
   if (fitting) {
-    fitres = model->fitTo(*dataGenPDF, Hesse(kTRUE), Minos(kFALSE), Save(kTRUE), NumCPU(nCPU)) ; // 75' with 2000 events, 8 Lambda*, 1 NumCPU; 80' with 2000 events, 1 K*, 4 NumCPU 
+    fitres = model->fitTo(*dataGenPDF, Hesse(kTRUE), Minos(kFALSE), Save(kTRUE), NumCPU(nCPU)) ; // 75' with 2000 events, 8 Lambda*, 1 NumCPU; 80' with 2000 events, 1 K*, 4 NumCPU;
+    // with cos(theta_K*) formula:
+    // 15h with 2000 events, 1K*, 24 CPUs  
     fitres->Print("v");
-    model->paramOn(massKP_frame);
+    model->paramOn(massKP_frame, Parameters(amplitudeVars));
     //model->paramOn(massKP_frame, Parameters(RooArgSet(a1600L0S1,b1600L0S1,a1600L1S1,b1600L1S1)), Layout(0.6,0.95,0.9));
     model->plotOn(massKP_frame, LineColor(kRed)) ;
     plotName += "_fit";
