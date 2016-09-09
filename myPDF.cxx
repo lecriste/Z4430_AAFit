@@ -217,7 +217,6 @@ dRadB0(other.dRadB0), dRadKs(other.dRadKs)
  } 
 
 
-
  Double_t myPDF::analyticalIntegral(Int_t code, const char* rangeName) const  
  { 
    // RETURN ANALYTICAL INTEGRAL DEFINED BY RETURN CODE ASSIGNED BY getAnalyticalIntegral
@@ -383,30 +382,32 @@ Double_t myPDF::PhiPHSP(Double_t mkp) const
 }
 
 
-Double_t myPDF::BlattWeisskopf(Int_t Lmin, Double_t q, Double_t q0, Double_t D) const
+Double_t myPDF::BlattWeisskopf_half(Int_t Lmin, Double_t qOrq0, Double_t D) const
 {
-    Double_t Dq = D*q;
-    Double_t Dq0 = D*q0;
-    Double_t Dq2 = Dq*Dq;
-    Double_t Dq02 = Dq0*Dq0;
-    Double_t Dq4 = Dq2*Dq2;
-    Double_t Dq04 = Dq02*Dq02;
-    Double_t Dq6 = Dq4*Dq2;
-    Double_t Dq06 = Dq04*Dq02;
-    Double_t rootterm = -1;
+    Double_t x2 = (D*qOrq0)*(D*qOrq0);
     
     if (Lmin==0)
-      return 1.;
+      return 1. ;
     else if (Lmin==1)
-      rootterm =                     (1. + Dq02) / (1. + Dq2) ;
+      return (1. + x2) ;
     else if (Lmin==2)
-      rootterm =             (9. + 3*Dq02 +Dq04) / (9. + 3*Dq2 +Dq4) ;
+      return (9. + x2*(3 + x2)) ;
     else if (Lmin==3)
-      rootterm = (225. + 45*Dq02 + 6*Dq04 + Dq06) / (225. + 45*Dq2 + 6*Dq4 + Dq6) ;
-    else { cout <<"WARNING! Lmin = " <<Lmin <<" is not implemented for BlattWeisskopf functions at the moment. Returning 1 -> \"AngularTerm\" = 0" <<endl;
+      return (225. + x2*(45 + x2*(6 + x2))) ;
+    else if (Lmin==4)
+      return (11025. + x2*(1575 + x2*(135 + x2*(10 + x2)))) ;
+    else if (Lmin==5)
+      return (893025. + x2*(99225 + x2*(6300 + x2*(315 + x2*(15 + x2))))) ;
+    else { cout <<"WARNING! Lmin = " <<Lmin <<" is not implemented for BlattWeisskopf_half function at the moment. Returning 1" <<endl;
       return 1.;
     }    
     
+}
+
+Double_t myPDF::BlattWeisskopf(Int_t Lmin, Double_t q, Double_t q0, Double_t D) const
+{
+    Double_t rootterm = BlattWeisskopf_half(Lmin, q0, D) / BlattWeisskopf_half(Lmin, q, D) ;
+        
     if (rootterm > 0)
         return TMath::Sqrt( rootterm );
     else { cout <<"WARNING! In \"BlattWeisskopf\" function: rootterm <= 0 -> returning 1" <<endl;
@@ -486,42 +487,39 @@ TComplex myPDF::Cfterm(string helLs, string helJ, string help, string helDmu) co
 //Double_t myPDF::Wignerd_R(string spinR, string helJ) const 
 Double_t myPDF::Wignerd_R(Double_t cKs, TString spinR, string helJ) const 
 {
+  Double_t helJ_m1 = 0, helJ_0 = 0;
+
   if (spinR=="0") {
-    return 1. ;
+    helJ_0 = 1. ;
+    if (helJ!="0") 
+      cout <<"helJ = " <<helJ <<" is not allowed for spinR-" <<spinR <<" Wigner d^{spinR}_{helJ,0} functions. Returning 0" <<endl;
   } else if (spinR=="1") {
-    if (helJ=="m1")
-      return +(TMath::Sin(TMath::ACos(cKs)) / TMath::Sqrt2()) ;
-    else if (helJ=="0")
-      return cKs ;
-    else if (helJ=="p1")
-      return -(TMath::Sin(TMath::ACos(cKs)) / TMath::Sqrt2()) ;
-    else { cout <<"helJ = " <<helJ <<" is not allowed for spinR-" <<spinR <<" Wigner d^{spinR}_{helJ,0} functions. Returning 0" <<endl;
-      return 0 ;
-    }
+    helJ_0 = cKs ;
+    helJ_m1 = +(TMath::Sin(TMath::ACos(cKs)) / TMath::Sqrt2()) ;
   } else if (spinR=="2") {
-    if (helJ=="m1")
-      return +(TMath::Sin(2*TMath::ACos(cKs)) * TMath::Sqrt(3./8.)) ;
-    else if (helJ=="0")
-      return +(3*TMath::Power(cKs,2) -1)/2. ;
-    else if (helJ=="p1")
-      return -(TMath::Sin(2*TMath::ACos(cKs)) * TMath::Sqrt(3./8.)) ;
-    else { cout <<"helJ = " <<helJ <<" is not allowed for spinR-" <<spinR <<" Wigner d^{spinR}_{helJ,0} functions. Returning 0" <<endl;
-      return 0 ;
-    }
+    helJ_0 = +(3*TMath::Power(cKs,2) -1)/2. ;
+    helJ_m1 = +(TMath::Sin(2*TMath::ACos(cKs)) * TMath::Sqrt(3./8.)) ;
   } else if (spinR=="3") {
-    if (helJ=="m1")
-      return +(TMath::Sin(TMath::ACos(cKs))*(5*TMath::Cos(2*TMath::ACos(cKs)) + 3.) * TMath::Sqrt(3.)/8.) ;
-    else if (helJ=="0")
-      return +(5*TMath::Power(cKs,3) - 3*cKs)/2. ;
-    else if (helJ=="p1")
-      return -(TMath::Sin(TMath::ACos(cKs))*(5*TMath::Cos(2*TMath::ACos(cKs)) + 3.) * TMath::Sqrt(3.)/8.) ;
-    else { cout <<"helJ = " <<helJ <<" is not allowed for spinR-" <<spinR <<" Wigner d^{spinR}_{helJ,0} functions. Returning 0" <<endl;
-      return 0 ;
-    }
+    helJ_0 = +(5*TMath::Power(cKs,3) - 3*cKs)/2. ;
+    helJ_m1 = +(TMath::Sin(TMath::ACos(cKs)) * (5*TMath::Cos(2*TMath::ACos(cKs)) + 3.) * TMath::Sqrt(3.)/8.) ;
+  } else if (spinR=="5") {
+    helJ_0 = +(63*TMath::Power(cKs,5) - 70*TMath::Power(cKs,3) + 15*cKs)/8. ;
+    helJ_m1 = +(TMath::Sin(2*TMath::ACos(cKs)) * (21*TMath::Power(cKs,4) - 14*TMath::Power(cKs,2) + 1) * TMath::Sqrt(15./2.)) / 8. ;
   } else {
     cout <<"spinR = " <<spinR <<" is not implemented for Wigner d^{spinR}_{helJ,0} functions at the moment. Returning 0 -> \"AngularTerm\" = 0" <<endl;
     return 0 ;
   }
+
+  if (helJ=="0")
+    return helJ_0 ;
+  else if (helJ=="m1")
+    return helJ_m1 ;
+  else if (helJ=="p1")
+    return -helJ_m1 ;
+  else { cout <<"helJ = " <<helJ <<" is not allowed for spinR-" <<spinR <<" Wigner d^{spinR}_{helJ,0} functions. Returning 0" <<endl;
+    return 0 ;
+  }
+
 }
 
 //TComplex myPDF::AngularTerm(string R, string spinR, string helJ, string helDmu) const
@@ -711,7 +709,9 @@ Double_t myPDF::HLs1670(string help) const
     
 }
 
+// a + i*b
 //TComplex myPDF::H(string R, string helJ) const
+// a*exp(i*b)
 TComplex myPDF::H(TString R, string helJ) const
 {
   /*    
@@ -732,16 +732,17 @@ TComplex myPDF::H(TString R, string helJ) const
   }
   */
   TString name_helJ = R+"_"+helJ;
-  RooRealProxy* a = amplitudeVarProxy_map.find("a"+name_helJ)->second ;
-  RooRealProxy* b = amplitudeVarProxy_map.find("b"+name_helJ)->second ;
+  TString a_helJ = "a"+name_helJ; TString b_helJ = "b"+name_helJ;
+  RooRealProxy* a = amplitudeVarProxy_map.find(a_helJ)->second ;
+  RooRealProxy* b = amplitudeVarProxy_map.find(b_helJ)->second ;
   if ( a ) {
     if ( b )
       return (RooRealProxy)(*a) * TComplex::Exp(TComplex::I()*(RooRealProxy)(*b)) ;
     else {
-      cout <<"RooRealProxy = \"b"+name_helJ+"\" not found in amplitudeVarProxy_map. Returning 0" <<endl;
+      cout <<"RooRealProxy = \""+b_helJ+"\" not found in amplitudeVarProxy_map. Returning 0" <<endl;
       return 0.; }  
   } else {
-    cout <<"RooRealProxy = \"a"+name_helJ+"\" not found in amplitudeVarProxy_map. Returning 0" <<endl;
+    cout <<"RooRealProxy = \""+a_helJ+"\" not found in amplitudeVarProxy_map. Returning 0" <<endl;
     return 0.;
   }  
 

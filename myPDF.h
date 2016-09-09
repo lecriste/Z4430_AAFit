@@ -155,6 +155,7 @@ public:
     Double_t Qmom(Double_t mkp) const ;
     Double_t PhiPHSP(Double_t mkp) const ;
 
+    Double_t BlattWeisskopf_half(Int_t Lmin, Double_t qOrq0, Double_t D) const ;
     Double_t BlattWeisskopf(Int_t Lmin, Double_t q, Double_t q0, Double_t D) const ;
     Double_t BWGamma(Double_t RMass, Double_t RGamma, Int_t Lmin, Double_t D) const ;
     TComplex BW(Double_t RMass, Double_t RGamma, Int_t Lmin, Double_t D) const ;

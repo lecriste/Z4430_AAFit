@@ -113,37 +113,49 @@ void Analysis()
   // Belle B0->J/psi K+ pi- values
   // 5h20' with K*(892) + PHSP (1K+1K events)
   // 20' with K*(800) + K*(1430)0 + K*(1430)2 (2K events)
-  
+  /*
   cout <<"Adding K*(892)..." <<endl; 
   const Double_t M892 = 0.89581 ; const Double_t G892 = 0.0474; // From PDG neutral only K*(892)
   Kstar_spin.push_back( make_pair("892_1", make_pair(M892,G892) ) ) ;
-  helJ_map["892_1_0"] = make_pair(1.,0.); helJ_map["892_1_p1"] = make_pair(0.844,3.14); helJ_map["892_1_m1"] = make_pair(0.196,-1.7);
-  /*
+  //helJ_map["892_1_0"] = make_pair(1.,0.); //helJ_map["892_1_p1"] = make_pair(0.844,3.14); helJ_map["892_1_m1"] = make_pair(0.196,-1.7);
+  //helJ_map["892_1_p1"] = make_pair(0.,3.14); helJ_map["892_1_m1"] = make_pair(0.,-1.7); // to show spin+1 lobes
+  helJ_map["892_1_0"] = make_pair(0.,0.); helJ_map["892_1_p1"] = make_pair(0.844,3.14); helJ_map["892_1_m1"] = make_pair(0.196,-1.7);
+  *//*
   cout <<"Adding K*(800)..." <<endl;  
   //const Double_t M800 = 0.682; const Double_t G800 = 0.547; // From PDG
   const Double_t M800 = 0.931; const Double_t G800 = 0.578; // From Belle
   Kstar_spin.push_back( make_pair("800_0", make_pair(M800,G800) ) ) ;
   helJ_map["800_0_0"] = make_pair(1.12,2.3);
-  
+  *//*
   cout <<"Adding K*(1410)..." <<endl; 
   const Double_t M1410 = 1.414; const Double_t G1410 = 0.232;
   Kstar_spin.push_back( make_pair("1410_1", make_pair(M1410,G1410) ) ) ;
   helJ_map["1410_1_0"] = make_pair(0.119,0.81); helJ_map["1410_1_p1"] = make_pair(0.123,-1.04); helJ_map["1410_1_m1"] = make_pair(0.036,0.67);
-  
+  *//*
   cout <<"Adding K*(1430)_0..." <<endl; 
   const Double_t M1430_0 = 1.425; const Double_t G1430_0 = 0.270;
   Kstar_spin.push_back( make_pair("1430_0", make_pair(M1430_0,G1430_0) ) ) ;
   helJ_map["1430_0_0"] = make_pair(0.89,-2.17);
-  
+    *//*
   cout <<"Adding K*(1430)_2..." <<endl;
   const Double_t M1430_2 = 1.4324; const Double_t G1430_2 = 0.109; // From PDG neutral only
   Kstar_spin.push_back( make_pair("1430_2", make_pair(M1430_2,G1430_2) ) ) ;
   helJ_map["1430_2_0"] = make_pair(4.66,-0.32); helJ_map["1430_2_p1"] = make_pair(4.65,-3.05); helJ_map["1430_2_m1"] = make_pair(1.26,-1.92);
-  *//*
-  //const Double_t M1780_3 = 1.776; const Double_t G1780_3 = 0.159; // From PDG neutral only
-  //Kstar_spin.push_back( make_pair("1780_3", make_pair(M1780_3,G1780_3) ) ) ;
-  //helJ_map["1780_3_0"] = make_pair(16.8,-1.43); helJ_map["1780_3_p1"] = make_pair(19.1,2.03); helJ_map["1780_3_m1"] = make_pair(10.2,1.55);
+  //helJ_map["1430_2_p1"] = make_pair(0.,-3.05); helJ_map["1430_2_m1"] = make_pair(0.,-1.92); // to show spin+1 lobes
   */
+  cout <<"Adding K*(1780)_3..." <<endl;
+  const Double_t M1780_3 = 1.776; const Double_t G1780_3 = 0.159; // From PDG neutral only
+  Kstar_spin.push_back( make_pair("1780_3", make_pair(M1780_3,G1780_3) ) ) ;
+  helJ_map["1780_3_0"] = make_pair(16.8,-1.43); helJ_map["1780_3_p1"] = make_pair(19.1,2.03); helJ_map["1780_3_m1"] = make_pair(10.2,1.55);
+  helJ_map["1780_3_p1"] = make_pair(19.1,2.03); helJ_map["1780_3_m1"] = make_pair(10.2,1.55);
+  /*
+  cout <<"Adding K*(2380)_5..." <<endl;
+  const Double_t M2380_5 = 2.382; const Double_t G2380_5 = 0.178; // From PDG
+  Kstar_spin.push_back( make_pair("2380_5", make_pair(M2380_5,G2380_5) ) ) ;
+  helJ_map["2380_5_0"] = make_pair(1.,0.); helJ_map["2380_5_p1"] = make_pair(0.,0.); helJ_map["2380_5_m1"] = make_pair(0.,0.);
+  */
+  TString Hel = ""; Hel = "_hel0";
+
   vector< RooRealVar* > amplitudeRooRealVar;
   vector< TString > varNames;
   RooArgSet amplitudeVars("amplitudeVars_set");
@@ -157,6 +169,10 @@ void Analysis()
       if (Kstar_spin[iKstar_S].first.Contains("_0") && !helJ[iHelJ].EqualTo("0")) continue ;
       TString name = Kstar_spin[iKstar_S].first + "_" + helJ[iHelJ] ;
       if (helJ_map.find(name) != helJ_map.end()) {
+
+	if (Hel.Contains("_hel0") && !helJ[iHelJ].EqualTo("0")) 
+	  helJ_map.find(name)->second.first = 0.; // switching off any amplitude with helicity != 0 
+	
 	pair<Double_t, Double_t> a_b = helJ_map.find(name)->second ;
 	TString aName = "a"+name; TString bName = "b"+name;
 	//a_b.first = aIvan; a_b.second = bIvan;
@@ -200,10 +216,10 @@ void Analysis()
   RooArgSet kinematicVars(massVars, angleVars);
   RooArgSet kinematicVars_m2(mass2Vars, angleVars);
 
-  /*
+  
   // not accessible on cmssusyX
   TString path = "/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/";
-  TString inputFileName = "MC_JPsi_Bd2MuMuKpi_2p0Sig_4p0to6p0SB.root";
+  TString inputFileName = "MC_K892_JPsi_Bd2MuMuKpi_2p0Sig_4p0to6p0SB.root";
   TString fullInputFileName = path+inputFileName ;
   //TFile *inputFile = TFile::Open( fullInputFileName );
   TFile *inputFile = TFile::Open( inputFileName );
@@ -225,7 +241,9 @@ void Analysis()
   RooDataSet *dataGen_B0bar = new RooDataSet("dataGen_B0bar","Generated B0bar data", dataNTuple, kinematicVars_withBeauty, "B0beauty < 0");
   cout <<"\nImported TTree with " <<dataGen_B0bar->numEntries() <<" B0bar" <<endl ;
   //return ;
-  */
+  RooPlot* phi_frame = phi.frame(Name(massKPi.getTitle()+"_frame"),Title("Projection of "+massKPi.getTitle())) ; 
+  //dataGen_B0->plotOn(phi_frame); dataGen_B0bar->plotOn(phi_frame, LineColor(kRed)); phi_frame->Draw() ; return;
+  
   const Double_t dRadB0 = 5.0; const Double_t dRadKs = 1.5;
 
   myPDF* sigPDF = 0;
@@ -235,7 +253,20 @@ void Analysis()
   */
   TString psi_nS = "1"; //psi_nS = "2";
   
-  sigPDF = new myPDF("Kstars_signal","K*s signal", massKPi, cosMuMu, massPsiPi, phi,
+  TString sigName = "Kstar_signal";
+  if (nKstar == 1)
+    sigName.ReplaceAll("signal",Kstar_spin.front().first);
+  else {
+    sigName.ReplaceAll("Kstar","Kstars").ReplaceAll("signal","");
+    for (Int_t iKstar_S=0; iKstar_S<nKstar; ++iKstar_S) {
+      if (iKstar_S>0)
+	sigName.Append("__");
+      sigName.Append(Kstar_spin[iKstar_S].first);
+    }
+  }
+  sigName.Append(Hel);
+
+  sigPDF = new myPDF(sigName,"K*s signal", massKPi, cosMuMu, massPsiPi, phi,
 		     Kstar_spin, varNames, amplitudeVars, psi_nS, dRadB0, dRadKs) ;
   
   if (sigPDF && !nKstar) {
@@ -329,7 +360,7 @@ void Analysis()
   Int_t nLegendEntries = 0;
 
   // Generate toy data from pdf and plot data and p.d.f on frame
-  cout <<"\nGenerating " <<nEvents.getVal() <<" events according to " <<model->GetTitle() <<" pdf..." <<endl;
+  cout <<"\nGenerating " <<nEvents.getVal() <<" events according to " <<model->GetTitle() <<" pdf for " <<model->GetName() <<endl;
   timeval genTime;
   gettimeofday(&start, NULL);
   startCPU = times(&startProc);
@@ -350,6 +381,8 @@ void Analysis()
   // Create corresponding m2 dataset + K* helicity angle if absent
   if ( !kinematicVars_m2.contains(cosKstar) )
     kinematicVars_m2.add(cosKstar);
+  RooDataSet* dataGenPDF_withCos = (RooDataSet*)dataGenPDF->emptyClone(); 	
+  dataGenPDF_withCos->addColumn(cosKstar);
 
   RooDataSet* dataGenPDF_m2 = new RooDataSet(dataGenPDF->GetName(), dataGenPDF->GetTitle(), kinematicVars_m2 ) ;
   for (Int_t iEvent=0; iEvent<dataGenPDF->numEntries(); ++iEvent) {
@@ -357,7 +390,7 @@ void Analysis()
     //kinematicVars.Print("extras") ; cout <<endl; kinematicVars_m2.Print("extras") ;
     TIterator *massVarsIter = massVars.createIterator() ;
     if (!massVarsIter) {
-      cout <<"Cannor create massVars.createIterator()! Please check" <<endl; return;
+      cout <<"Cannot create massVars.createIterator()! Please check" <<endl; return;
     }
     RooRealVar* temp = 0;
     while ( (temp = (RooRealVar*)massVarsIter->Next()) ) {
@@ -375,10 +408,14 @@ void Analysis()
     // set K* helicity angle value
     cosKstar.setVal( cosTheta_FromMasses(mass2KPiFor.getVal(), mass2PsiPiFor.getVal(), massMuMu, MBd2, MKaon2, MPion2) );
 
-    dataGenPDF_m2->add( kinematicVars_m2 ) ;     
+    dataGenPDF_m2->add( kinematicVars_m2 ) ;
+    dataGenPDF_withCos->add( RooArgSet(kinematicVars,cosKstar) );     
   }
   if (dataGenPDF->numEntries() != dataGenPDF_m2->numEntries()) {
     cout <<"dataGenPDF->numEntries() (" <<dataGenPDF->numEntries() <<") != dataGenPDF_m2->numEntries() (" <<dataGenPDF_m2->numEntries() <<")! Please check" <<endl; return;
+  }
+  if (dataGenPDF->numEntries() != dataGenPDF_withCos->numEntries()) {
+    cout <<"dataGenPDF->numEntries() (" <<dataGenPDF->numEntries() <<") != dataGenPDF_withCos->numEntries() (" <<dataGenPDF_withCos->numEntries() <<")! Please check" <<endl; return;
   }
 
 
@@ -407,6 +444,7 @@ void Analysis()
   gStyle->SetOptStat( 10 ) ;
   scatter->Draw("colz"); 	
   scatter_C->SaveAs(TString::Format("%s/%s_%s.png",dir.Data(),scatter_C->GetName(),plotName.Data()));
+  //scatter_C->SaveAs(TString::Format("%s/%s_%s_noHel0.png",dir.Data(),scatter_C->GetName(),plotName.Data()));
 
   cout <<"\nPlotting Dalitz..." <<endl;
   TCanvas* dalitz_C = new TCanvas("Dalitz_C","Dalitz",800,600) ; dalitz_C->SetRightMargin(rightMargin);
@@ -421,21 +459,24 @@ void Analysis()
   dalitz->Draw("colz"); 	
   //dalitz->Draw("lego"); 	
   dalitz_C->SaveAs(TString::Format("%s/%s_%s.png",dir.Data(),dalitz_C->GetTitle(),plotName.Data()));
+  //dalitz_C->SaveAs(TString::Format("%s/%s_%s_noHel0.png",dir.Data(),dalitz_C->GetTitle(),plotName.Data()));
   //return;
   cout <<"\nPlotting rectangular Dalitz..." <<endl;
   TCanvas* dalitzRect_C = new TCanvas("DalitzRect_C","Rectangular_Dalitz",800,600) ; dalitzRect_C->SetRightMargin(rightMargin);
   dalitzRect_C->cd();
-  TH2F* dalitz_rect = (TH2F*)dataGenPDF_m2->createHistogram("DalitzRect", mass2KPi, Binning(KPiMass2_bins,KPiMass2_low,KPiMass2_high), YVar(cosKstar, Binning(cos_bins,-cos_limit,cos_limit)) ) ; dalitz_rect->SetTitle( TString::Format("Rectangular Dalitz;%s;%s",mass2KPi.GetTitle(),cosKstar.GetTitle()) ) ;
+  TH2F* dalitz_rect = (TH2F*)dataGenPDF_withCos->createHistogram("DalitzRect", massKPi, YVar(cosKstar, Binning(cos_bins,-cos_limit,cos_limit)) ) ; dalitz_rect->SetTitle( TString::Format("Rectangular Dalitz;%s;%s",massKPi.GetTitle(),cosKstar.GetTitle()) ) ;
   gStyle->SetOptStat( 10 ) ;
   dalitz_rect->Draw("colz"); 	
   dalitzRect_C->SaveAs(TString::Format("%s/%s_%s.png",dir.Data(),dalitzRect_C->GetTitle(),plotName.Data()));
-  
+  //dalitzRect_C->SaveAs(TString::Format("%s/%s_%s_noHel0.png",dir.Data(),dalitzRect_C->GetTitle(),plotName.Data()));
+ 
   cout <<"\nPlotting m(psiPi)..." <<endl;
   dataGenPDF->plotOn(massPsiP_frame) ;
   TCanvas* massPsiP_C = new TCanvas( TString::Format("%s_C",massPsiPi.GetName()), massPsiPi.GetName(), 800,600) ;
   massPsiP_C->cd();
   massPsiP_frame->Draw() ;
-  massPsiP_C->SaveAs(TString::Format("%s/%s_MuMuPi.png",dir.Data(),plotName.Data())); //return;
+  massPsiP_C->SaveAs(TString::Format("%s/%s__MuMuPi.png",dir.Data(),plotName.Data())); //return;
+  //massPsiP_C->SaveAs(TString::Format("%s/%s__MuMuPi_noHel0.png",dir.Data(),plotName.Data())); //return;
   return;
   Int_t fullModelColor = 2; // 2 = kRed
   Int_t bkgColor = fullModelColor;
@@ -448,7 +489,7 @@ void Analysis()
   gettimeofday(&start, NULL);
   startCPU = times(&startProc);
   //
-  model->plotOn(massKP_frame,LineColor(fullModelColor),Name(modelEntry)) ; nLegendEntries++;
+  model->plotOn(massKP_frame,LineColor(fullModelColor),LineStyle(kDashed),Name(modelEntry)) ; nLegendEntries++;
   if (sigPDF && bkgPDF) {
     model->plotOn(massKP_frame,Components(*bkgPDF),LineColor(bkgColor),LineStyle(kDashed),Name("Bkg")) ; nLegendEntries++;
   }
@@ -463,7 +504,7 @@ void Analysis()
   cout <<"My processes time: " << (plotModelProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
   
   Float_t topRightCorner = 0.9;
-  TLegend* leg = new TLegend(0.6, topRightCorner -(nLegendEntries+nKstar)*0.05, topRightCorner, topRightCorner);
+  TLegend* leg = new TLegend(0.6, topRightCorner -(nLegendEntries+nKstar)*0.05, topRightCorner, topRightCorner); leg->SetFillColor(kWhite);
   leg->AddEntry(dataGenPDF,"","ep");
   if (sigPDF && bkgPDF) {
     leg->AddEntry(massKP_frame->findObject(modelEntry),modelEntry,"l");
@@ -476,13 +517,27 @@ void Analysis()
   Bool_t fitting = kFALSE; //fitting = kTRUE;
   RooFitResult* fitres = 0;
   if (fitting) {
-    fitres = model->fitTo(*dataGenPDF, Hesse(kTRUE), Minos(kFALSE), Save(kTRUE), NumCPU(nCPU)) ; // 75' with 2000 events, 8 Lambda*, 1 NumCPU; 80' with 2000 events, 1 K*, 4 NumCPU;
-    // with cos(theta_K*) formula:
+    timeval fitModelTime;
+    gettimeofday(&start, NULL);
+    startCPU = times(&startProc);
+    //
+    fitres = model->fitTo(*dataGenPDF, Hesse(kFALSE), Minos(kFALSE), Save(kTRUE), NumCPU(nCPU), Verbose(kTRUE), PrintLevel(3)) ; // 75' with 2000 events, 8 Lambda*, 1 NumCPU; 80' with 2000 events, 1 K*, 4 NumCPU;
+    // with cos(theta_K*) formula in the wrong place:
     // 15h with 2000 events, 1K*, 24 CPUs  
+    //
+    stopCPU = times(&stopProc);
+    gettimeofday(&stop, NULL);
+    timersub(&stop, &start, &fitModelTime);
+    Double_t fitModelCPU = (stopCPU - startCPU)*10000;
+    Double_t fitModelProc = (stopProc.tms_utime - startProc.tms_utime)*10000 ;
+    cout <<"\nWallclock time: " << fitModelTime.tv_sec + fitModelTime.tv_usec/1000000.0 << " seconds\n" ;
+    cout <<"Total CPU time: " << (fitModelCPU / CLOCKS_PER_SEC) <<" seconds\n" ;
+    cout <<"My processes time: " << (fitModelProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
+
     fitres->Print("v");
     model->paramOn(massKP_frame, Parameters(amplitudeVars));
     //model->paramOn(massKP_frame, Parameters(RooArgSet(a1600L0S1,b1600L0S1,a1600L1S1,b1600L1S1)), Layout(0.6,0.95,0.9));
-    model->plotOn(massKP_frame, LineColor(kRed)) ;
+    model->plotOn(massKP_frame, LineColor(fullModelColor)) ;
     plotName += "_fit";
     //return;  
   }
@@ -593,10 +648,10 @@ void Analysis()
   massKP_frame->Draw() ;
   leg->Draw();
   
-  massKP_C->SaveAs(TString::Format("%s/%s.png",dir.Data(),plotName.Data()));
-  //massKP_C->SaveAs(TString::Format("%s/%s_test.png",dir.Data(),plotName.Data()));
+  //massKP_C->SaveAs(TString::Format("%s/%s.png",dir.Data(),plotName.Data()));
+  massKP_C->SaveAs(TString::Format("%s/%s_hel0.png",dir.Data(),plotName.Data()));
   gPad->SetLogy();
-  massKP_C->SaveAs(TString::Format("%s/%s_logy.png",dir.Data(),plotName.Data()));
-  //massKP_C->SaveAs(TString::Format("%s/%s_logy_test.png",dir.Data(),plotName.Data()));
+  //massKP_C->SaveAs(TString::Format("%s/%s_logy.png",dir.Data(),plotName.Data()));
+  massKP_C->SaveAs(TString::Format("%s/%s_logy_hel0.png",dir.Data(),plotName.Data()));
 }
 
