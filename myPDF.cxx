@@ -736,9 +736,10 @@ TComplex myPDF::H(TString R, string helJ) const
   RooRealProxy* a = amplitudeVarProxy_map.find(a_helJ)->second ;
   RooRealProxy* b = amplitudeVarProxy_map.find(b_helJ)->second ;
   if ( a ) {
-    if ( b )
+    if ( b ) {
       return (RooRealProxy)(*a) * TComplex::Exp(TComplex::I()*(RooRealProxy)(*b)) ;
-    else {
+      //return (RooRealProxy)(*a) * (TMath::Cos((RooRealProxy)(*b)) + TComplex::I()*TMath::Sin((RooRealProxy)(*b))) ; // no improvement
+    } else {
       cout <<"RooRealProxy = \""+b_helJ+"\" not found in amplitudeVarProxy_map. Returning 0" <<endl;
       return 0.; }  
   } else {

@@ -29,6 +29,8 @@
 #include "RooExtendPdf.h"
 #include "RooAddPdf.h"
 #include "RooProdPdf.h"
+#include "RooAddition.h"
+#include "RooMinuit.h"
 
 #include <sys/time.h> // for timeval
 #include <sys/times.h> // for tms
@@ -42,11 +44,6 @@
 
 using namespace RooFit ;
 
-/*
-timeval startFullFitTime, stopFullFullFitTime, totalFullFitTime;
-clock_t startFullFitCPU, stopFullFitCPU; 
-tms startFullFitProc, stopFullFitProc; 
-*/
 timeval start, stop;
 clock_t startCPU, stopCPU;
 tms startProc, stopProc;
@@ -113,14 +110,12 @@ void Analysis()
   // Belle B0->J/psi K+ pi- values
   // 5h20' with K*(892) + PHSP (1K+1K events)
   // 20' with K*(800) + K*(1430)0 + K*(1430)2 (2K events)
-  /*
+  
   cout <<"Adding K*(892)..." <<endl; 
   const Double_t M892 = 0.89581 ; const Double_t G892 = 0.0474; // From PDG neutral only K*(892)
   Kstar_spin.push_back( make_pair("892_1", make_pair(M892,G892) ) ) ;
-  //helJ_map["892_1_0"] = make_pair(1.,0.); //helJ_map["892_1_p1"] = make_pair(0.844,3.14); helJ_map["892_1_m1"] = make_pair(0.196,-1.7);
-  //helJ_map["892_1_p1"] = make_pair(0.,3.14); helJ_map["892_1_m1"] = make_pair(0.,-1.7); // to show spin+1 lobes
-  helJ_map["892_1_0"] = make_pair(0.,0.); helJ_map["892_1_p1"] = make_pair(0.844,3.14); helJ_map["892_1_m1"] = make_pair(0.196,-1.7);
-  *//*
+  helJ_map["892_1_0"] = make_pair(1.,0.); helJ_map["892_1_p1"] = make_pair(0.844,3.14); helJ_map["892_1_m1"] = make_pair(0.196,-1.7);
+  /*
   cout <<"Adding K*(800)..." <<endl;  
   //const Double_t M800 = 0.682; const Double_t G800 = 0.547; // From PDG
   const Double_t M800 = 0.931; const Double_t G800 = 0.578; // From Belle
@@ -141,26 +136,29 @@ void Analysis()
   const Double_t M1430_2 = 1.4324; const Double_t G1430_2 = 0.109; // From PDG neutral only
   Kstar_spin.push_back( make_pair("1430_2", make_pair(M1430_2,G1430_2) ) ) ;
   helJ_map["1430_2_0"] = make_pair(4.66,-0.32); helJ_map["1430_2_p1"] = make_pair(4.65,-3.05); helJ_map["1430_2_m1"] = make_pair(1.26,-1.92);
-  //helJ_map["1430_2_p1"] = make_pair(0.,-3.05); helJ_map["1430_2_m1"] = make_pair(0.,-1.92); // to show spin+1 lobes
-  */
+  *//*
   cout <<"Adding K*(1780)_3..." <<endl;
   const Double_t M1780_3 = 1.776; const Double_t G1780_3 = 0.159; // From PDG neutral only
   Kstar_spin.push_back( make_pair("1780_3", make_pair(M1780_3,G1780_3) ) ) ;
   helJ_map["1780_3_0"] = make_pair(16.8,-1.43); helJ_map["1780_3_p1"] = make_pair(19.1,2.03); helJ_map["1780_3_m1"] = make_pair(10.2,1.55);
-  helJ_map["1780_3_p1"] = make_pair(19.1,2.03); helJ_map["1780_3_m1"] = make_pair(10.2,1.55);
-  /*
+    *//*
   cout <<"Adding K*(2380)_5..." <<endl;
   const Double_t M2380_5 = 2.382; const Double_t G2380_5 = 0.178; // From PDG
   Kstar_spin.push_back( make_pair("2380_5", make_pair(M2380_5,G2380_5) ) ) ;
   helJ_map["2380_5_0"] = make_pair(1.,0.); helJ_map["2380_5_p1"] = make_pair(0.,0.); helJ_map["2380_5_m1"] = make_pair(0.,0.);
   */
-  TString Hel = ""; Hel = "_hel0";
+  TString Hel = ""; //Hel = "_hel0"; //Hel = "_noHel0";
+  if (Hel.Contains("_hel0"))
+    cout <<"with helicity=0 amplitude only\n" <<endl; 
+  else if (Hel.Contains("_noHel0"))
+    cout <<"without helicity=0 amplitude\n" <<endl; 
 
   vector< RooRealVar* > amplitudeRooRealVar;
   vector< TString > varNames;
   RooArgSet amplitudeVars("amplitudeVars_set");
-  Double_t aMin = -9999.; Double_t aMax = +9999.;
-  Double_t bMin = -9999.; Double_t bMax = +9999.;
+  Double_t aMin = 0.; Double_t aMax = +9999.;
+  Double_t bMin = -9999.; //bMin = -TMath::Pi();
+  Double_t bMax = -bMin;
   TString helJ[] = {"m1","0","p1"} ;
 
   Int_t nKstar = Kstar_spin.size();
@@ -172,7 +170,9 @@ void Analysis()
 
 	if (Hel.Contains("_hel0") && !helJ[iHelJ].EqualTo("0")) 
 	  helJ_map.find(name)->second.first = 0.; // switching off any amplitude with helicity != 0 
-	
+	else if (Hel.Contains("_noHel0") && helJ[iHelJ].EqualTo("0"))
+	  helJ_map.find(name)->second.first = 0.; // switching off the amplitude with helicity == 0 
+
 	pair<Double_t, Double_t> a_b = helJ_map.find(name)->second ;
 	TString aName = "a"+name; TString bName = "b"+name;
 	//a_b.first = aIvan; a_b.second = bIvan;
@@ -185,8 +185,14 @@ void Analysis()
       }
     }
   
-  for (Int_t iVar=0; iVar<(Int_t)amplitudeRooRealVar.size(); ++iVar) {
-    amplitudeVars.add( *amplitudeRooRealVar[iVar] ) ;
+  Int_t NAmpl = amplitudeRooRealVar.size();
+  if (NAmpl > 0)
+    for (Int_t iVar=0; iVar<NAmpl; ++iVar) {
+      amplitudeVars.add( *amplitudeRooRealVar[iVar] ) ;
+    }
+  else {
+    cout <<"amplitudeRooRealVar is empty! Please check" <<endl;
+    return;
   }
 
 
@@ -241,7 +247,7 @@ void Analysis()
   RooDataSet *dataGen_B0bar = new RooDataSet("dataGen_B0bar","Generated B0bar data", dataNTuple, kinematicVars_withBeauty, "B0beauty < 0");
   cout <<"\nImported TTree with " <<dataGen_B0bar->numEntries() <<" B0bar" <<endl ;
   //return ;
-  RooPlot* phi_frame = phi.frame(Name(massKPi.getTitle()+"_frame"),Title("Projection of "+massKPi.getTitle())) ; 
+  //RooPlot* phi_frame = phi.frame(Name(massKPi.getTitle()+"_frame"),Title("Projection of "+massKPi.getTitle())) ; 
   //dataGen_B0->plotOn(phi_frame); dataGen_B0bar->plotOn(phi_frame, LineColor(kRed)); phi_frame->Draw() ; return;
   
   const Double_t dRadB0 = 5.0; const Double_t dRadKs = 1.5;
@@ -275,7 +281,6 @@ void Analysis()
   }
   //cout <<"\nsigPDF->getVal() =\n" <<sigPDF->getVal() <<endl; return;
 
-  Dalitz_contour* kinematicCheck = new Dalitz_contour("kinematicCheck","kinematic check", massKPi, massPsiPi, psi_nS) ;
   
   RooConstVar mBd("mBd", "m(B^{0})", MBd) ; 
   RooConstVar m2Bd("m2Bd", "m^{2}(B^{0})", MBd2) ; 
@@ -308,11 +313,11 @@ void Analysis()
   RooAbsPdf* BdToPsiPiK_PHSP = new RooGenericPdf("BdToPsiPiK_PHSP","3-body PHSP","sqrt( pow(mass2KPiFor,2) + pow(m2Pion,2) + pow(m2Kaon,2) - 2*mass2KPiFor*m2Pion - 2*mass2KPiFor*m2Kaon - 2*m2Pion*m2Kaon ) * sqrt( pow(m2Bd,2) + pow(mass2KPiFor,2) + pow(m2Psi,2) - 2*m2Bd*mass2KPiFor - 2*m2Bd*m2Psi - 2*mass2KPiFor*m2Psi ) / sqrt(mass2KPiFor)", RooArgSet(mass2KPiFor,m2Pion,m2Kaon,m2Bd,m2Psi)); // variables name used in the formula must be = name of the RooVariables in the list
   //cout <<"\nBdToPsiPiK_PHSP.getVal() =\n" <<BdToPsiPiK_PHSP->getVal() <<endl; return;
 
-  RooAbsPdf* bkgPDF = 0;
-  //bkgPDF = BdToPsiPiK_PHSP;
+  RooAbsPdf* bkgPDF = BdToPsiPiK_PHSP; bkgPDF = 0;
 
   Double_t totEvents = 2000;
-  totEvents *= 10;
+  //totEvents *= 10;
+  //totEvents /= 2;
   RooRealVar nSig("nSig", "n_{SIG}", 0, 0, 1E6);
   //nSig.setVal( 10*nSig.getVal() ); // Does not work on the fly
   RooRealVar nBkg("nBkg", "n_{BKG}", 0, 0, 1E6);
@@ -347,6 +352,7 @@ void Analysis()
   TString noKinConstr = "_noKinConstr";
   //model->SetName( model->GetName()+noKinConstr );
   // Dalitz boundary
+  //Dalitz_contour* kinematicCheck = new Dalitz_contour("kinematicCheck","kinematic check", massKPi, massPsiPi, psi_nS) ;
   //RooProdPdf* modelWithKinCheck = new RooProdPdf(modelName,model->GetTitle(),RooArgSet(*kinematicCheck,*model)) ; model = modelWithKinCheck;
   
   RooRealVar nEvents("nEvents","nEvents",nSig.getVal() + nBkg.getVal()) ; nEvents.setConstant(kTRUE);
@@ -459,7 +465,6 @@ void Analysis()
   dalitz->Draw("colz"); 	
   //dalitz->Draw("lego"); 	
   dalitz_C->SaveAs(TString::Format("%s/%s_%s.png",dir.Data(),dalitz_C->GetTitle(),plotName.Data()));
-  //dalitz_C->SaveAs(TString::Format("%s/%s_%s_noHel0.png",dir.Data(),dalitz_C->GetTitle(),plotName.Data()));
   //return;
   cout <<"\nPlotting rectangular Dalitz..." <<endl;
   TCanvas* dalitzRect_C = new TCanvas("DalitzRect_C","Rectangular_Dalitz",800,600) ; dalitzRect_C->SetRightMargin(rightMargin);
@@ -468,16 +473,14 @@ void Analysis()
   gStyle->SetOptStat( 10 ) ;
   dalitz_rect->Draw("colz"); 	
   dalitzRect_C->SaveAs(TString::Format("%s/%s_%s.png",dir.Data(),dalitzRect_C->GetTitle(),plotName.Data()));
-  //dalitzRect_C->SaveAs(TString::Format("%s/%s_%s_noHel0.png",dir.Data(),dalitzRect_C->GetTitle(),plotName.Data()));
  
   cout <<"\nPlotting m(psiPi)..." <<endl;
   dataGenPDF->plotOn(massPsiP_frame) ;
   TCanvas* massPsiP_C = new TCanvas( TString::Format("%s_C",massPsiPi.GetName()), massPsiPi.GetName(), 800,600) ;
   massPsiP_C->cd();
   massPsiP_frame->Draw() ;
-  massPsiP_C->SaveAs(TString::Format("%s/%s__MuMuPi.png",dir.Data(),plotName.Data())); //return;
-  //massPsiP_C->SaveAs(TString::Format("%s/%s__MuMuPi_noHel0.png",dir.Data(),plotName.Data())); //return;
-  return;
+  massPsiP_C->SaveAs(TString::Format("%s/%s__MuMuPi.png",dir.Data(),plotName.Data()));
+  //return;
   Int_t fullModelColor = 2; // 2 = kRed
   Int_t bkgColor = fullModelColor;
   TString modelEntry = "Full model";
@@ -489,9 +492,12 @@ void Analysis()
   gettimeofday(&start, NULL);
   startCPU = times(&startProc);
   //
-  model->plotOn(massKP_frame,LineColor(fullModelColor),LineStyle(kDashed),Name(modelEntry)) ; nLegendEntries++;
-  if (sigPDF && bkgPDF) {
-    model->plotOn(massKP_frame,Components(*bkgPDF),LineColor(bkgColor),LineStyle(kDashed),Name("Bkg")) ; nLegendEntries++;
+  Bool_t fitting = kFALSE; fitting = kTRUE;
+  if (!fitting) {
+    model->plotOn(massKP_frame,LineColor(fullModelColor),LineStyle(kDashed),Name(modelEntry)) ; 
+    if (sigPDF && bkgPDF) {
+      model->plotOn(massKP_frame,Components(*bkgPDF),LineColor(bkgColor),LineStyle(kDashed),Name("Bkg")) ;
+    }
   }
   //
   stopCPU = times(&stopProc);
@@ -502,28 +508,70 @@ void Analysis()
   cout <<"Wallclock time: " << plotModelTime.tv_sec + plotModelTime.tv_usec/1000000.0 << " seconds\n" ;
   cout <<"Total CPU time: " << (plotModelCPU / CLOCKS_PER_SEC) <<" seconds\n" ;
   cout <<"My processes time: " << (plotModelProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
-  
+  nLegendEntries++; // either for generation or fit
+
   Float_t topRightCorner = 0.9;
-  TLegend* leg = new TLegend(0.6, topRightCorner -(nLegendEntries+nKstar)*0.05, topRightCorner, topRightCorner); leg->SetFillColor(kWhite);
+  Float_t yLegLow = topRightCorner -(nLegendEntries+nKstar)*0.05 ;
+  Float_t xMin = 0.6;
+  TLegend* leg = new TLegend(xMin, yLegLow, topRightCorner, topRightCorner); leg->SetFillColor(kWhite);
   leg->AddEntry(dataGenPDF,"","ep");
-  if (sigPDF && bkgPDF) {
-    leg->AddEntry(massKP_frame->findObject(modelEntry),modelEntry,"l");
-    leg->AddEntry(massKP_frame->findObject("Bkg"),TString::Format("%s (%.1f%%)",bkgPDF->GetTitle(),bkgFrac.getVal()*100),"l");
-  } else
-    leg->AddEntry(massKP_frame->findObject(modelEntry),model->GetTitle(),"l");
-    
+  if (!fitting) {
+    if (sigPDF && bkgPDF) {
+      leg->AddEntry(massKP_frame->findObject(modelEntry),modelEntry,"l");
+      leg->AddEntry(massKP_frame->findObject("Bkg"),TString::Format("%s (%.1f%%)",bkgPDF->GetTitle(),bkgFrac.getVal()*100),"l");
+    } else
+      leg->AddEntry(massKP_frame->findObject(modelEntry),model->GetTitle(),"l");
+  }
 
   // Fitting 
-  Bool_t fitting = kFALSE; //fitting = kTRUE;
   RooFitResult* fitres = 0;
   if (fitting) {
+    cout <<"\nFitting ..." <<endl ;
+    vector <TString> toSetConst;
+    toSetConst.push_back("a892_1_0"); toSetConst.push_back("b892_1_0"); // by convention
+    //toSetConst.push_back("a892_1_m1"); toSetConst.push_back("b892_1_m1");
+    for (Int_t iConst=0; iConst<(Int_t)toSetConst.size(); ++iConst) {
+      RooRealVar* toSetConstVar = (RooRealVar*)amplitudeVars.find(toSetConst[iConst]);
+      if (toSetConstVar) toSetConstVar->setConstant(kTRUE);
+    }
+    
+    RooAbsReal* nll = model->createNLL(*dataGenPDF,Extended(kTRUE),NumCPU(nCPU), Verbose(kTRUE), PrintLevel(3)) ;
+    RooArgSet toMinimize(*nll);
+    vector <TString> toPenalize;
+    //toPenalize.push_back("a892_1_p1"); toPenalize.push_back("b892_1_p1");
+    //toPenalize.push_back("a892_1_m1"); toPenalize.push_back("b892_1_m1");
+    for (Int_t iPenalty=0; iPenalty<(Int_t)toPenalize.size(); ++iPenalty) {
+      RooFormulaVar penalty("penaltyFor_"+toPenalize[iPenalty],"pow(@0 - @1,2)", RooArgSet(*(RooRealVar*)amplitudeVars.find(toPenalize[iPenalty]), RooConstVar(toPenalize[iPenalty]+"_RooConst",toPenalize[iPenalty]+"_RooConst",helJ_map.find(toPenalize[iPenalty])->second.first)));
+      toMinimize.add( penalty );
+    }
+    RooAddition nllp("nllp","nllp",toMinimize);
+    RooMinuit m(nllp); m.setVerbose();
+    
     timeval fitModelTime;
     gettimeofday(&start, NULL);
     startCPU = times(&startProc);
     //
-    fitres = model->fitTo(*dataGenPDF, Hesse(kFALSE), Minos(kFALSE), Save(kTRUE), NumCPU(nCPU), Verbose(kTRUE), PrintLevel(3)) ; // 75' with 2000 events, 8 Lambda*, 1 NumCPU; 80' with 2000 events, 1 K*, 4 NumCPU;
+    fitres = model->fitTo(*dataGenPDF, Hesse(kTRUE), Minos(kFALSE), Save(kTRUE), NumCPU(nCPU), Verbose(kTRUE), PrintLevel(3)) ;
+    // 75' with 2000 events, 8 Lambda*, 1 NumCPU; 80' with 2000 events, 1 K*, 4 NumCPU;
     // with cos(theta_K*) formula in the wrong place:
-    // 15h with 2000 events, 1K*, 24 CPUs  
+    // 15h with 2000 events, K*(892), 24 CPUs  
+    //
+    // with cos(theta_K*) formula in the right place:
+    // 1h for 118 calls with Hesse and 2000 events, 2/4 K*(892) parameters with a/b892_1_0 fixed, 24 CPUs, a and b constrained  
+    // 45' for 83 calls with Hesse and 2000 events, 2/4 K*(892) parameters with a/b892_1_0 fixed, 24 CPUs, a constrained  
+    // 43' for ?? calls with Hesse and 1000 events, 2/4 K*(892) parameters with a/b892_1_0 fixed, 24 CPUs, a constrained  
+    // 48' for 94 calls without Hesse and 2000 events, 2/4 K*(892) parameters with a/b892_1_0 fixed, 24 CPUs, a and b constrained  
+    // MIGRAD MINIMIZATION HAS CONVERGED but ERR MATRIX NOT POS-DEF in 36' for 63 calls without Hesse and 2000 events, 2/4 K*(892) parameters with a/b892_1_0 fixed, 24 CPUs, a constrained
+    //
+    // 130' for 231 calls with Hesse and 2000 events, 4/4 K*(892) parameters with a/b892_1_0 fixed, 24 CPUs, a constrained  
+    //
+    // with a*[cos(b) + i*sen(b)]
+    // 64' for 118 calls with Hesse and 2000 events, 2/4 K*(892) parameters with a/b892_1_0 fixed, 24 CPUs, a and b constrained  
+    /*
+    m.migrad() ; 
+    m.hesse() ;
+    //m.minos() ;
+    */
     //
     stopCPU = times(&stopProc);
     gettimeofday(&stop, NULL);
@@ -535,9 +583,10 @@ void Analysis()
     cout <<"My processes time: " << (fitModelProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
 
     fitres->Print("v");
-    model->paramOn(massKP_frame, Parameters(amplitudeVars));
+    model->paramOn(massKP_frame, Parameters(amplitudeVars), Layout(xMin,0.99,yLegLow));
     //model->paramOn(massKP_frame, Parameters(RooArgSet(a1600L0S1,b1600L0S1,a1600L1S1,b1600L1S1)), Layout(0.6,0.95,0.9));
-    model->plotOn(massKP_frame, LineColor(fullModelColor)) ;
+    model->plotOn(massKP_frame, LineColor(fullModelColor), Name("4D fit projection")) ;
+    leg->AddEntry(massKP_frame->findObject("4D fit projection"),"4D fit projection","l");
     plotName += "_fit";
     //return;  
   }
@@ -648,10 +697,8 @@ void Analysis()
   massKP_frame->Draw() ;
   leg->Draw();
   
-  //massKP_C->SaveAs(TString::Format("%s/%s.png",dir.Data(),plotName.Data()));
-  massKP_C->SaveAs(TString::Format("%s/%s_hel0.png",dir.Data(),plotName.Data()));
+  massKP_C->SaveAs(TString::Format("%s/%s.png",dir.Data(),plotName.Data()));
   gPad->SetLogy();
-  //massKP_C->SaveAs(TString::Format("%s/%s_logy.png",dir.Data(),plotName.Data()));
-  massKP_C->SaveAs(TString::Format("%s/%s_logy_hel0.png",dir.Data(),plotName.Data()));
+  massKP_C->SaveAs(TString::Format("%s/%s_logy.png",dir.Data(),plotName.Data()));
 }
 
