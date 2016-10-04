@@ -47,7 +47,7 @@ const fptype M1410 = 1.414; const fptype G1410 = 0.232; // K*1410
 const fptype M800 = 0.931; const fptype G800 = 0.578; // K*800
 const fptype M1430_0 = 1.425; const fptype G1430_0 = 0.270; // K*1430_0
 const fptype M1430_2 = 1.4324; const fptype G1430_2 = 0.109; // K*1430_2
-
+const fptype M1780_3 = 1.776; const fptype G1780_3 = 0.159; // K*1780_3
 
 fptype phaseSpaceFunction(fptype x,fptype mP,fptype m1,fptype m2,fptype m3)
 {
@@ -99,6 +99,7 @@ void printinstruction(){
         << "\t-k1410 \t\t\t\t Add K*(1410) to p.d.f.\n"
         << "\t-k1430_0 \t\t\t\t Add K*(1430_0) to p.d.f.\n"
         << "\t-k1430_2 \t\t\t\t Add K*(1430_2) to p.d.f.\n"
+        << "\t-k1780 \t\t\t\t Add K*(1430_3) to p.d.f.\n"
         //<< "\t-e <number of events> \t\t\t Select sigma cuts\n"
         <<std::endl;
 
@@ -134,6 +135,7 @@ int main(int argc, char** argv)
   bool k1410Star = false;
   bool k1430Star0 = false;
   bool k1430Star2 = false;
+  bool k1780Star = false;
 
   std::string datasetname = "dataset";
   std::string plotsname = "./plots/plot";
@@ -315,6 +317,11 @@ int main(int argc, char** argv)
   			k1430Star2 = true;
         ++nOfKstar;
   		}
+      else if (arg == "-k1780")
+  		{
+  			k1780Star = true;
+        ++nOfKstar;
+  		}
       else if (arg == "-dP")
   		{
         if (i + 1 < argc) // Make sure we aren't at the end of argv!
@@ -332,7 +339,7 @@ int main(int argc, char** argv)
 
   }
 
-  if(!(k1430Star0 || k1430Star2 || k1410Star || k800Star ||k892Star)){
+  if(!(k1430Star0 || k1430Star2 || k1410Star || k800Star ||k892Star || k1780Star)){
 
     cout<<"No K* selected (K892,K800,K1410,K1430) please see instructions below"<<endl;
     printinstruction();
@@ -370,8 +377,13 @@ int main(int argc, char** argv)
       datasetname +="k14302";
       plotsname +="k14302";
       kStarNames.push_back("K*(1430_2)");}
+    if(k1780Star) {
+      cout<<" - K*(1780_3)"<<endl;
+      datasetname +="k17803";
+      plotsname +="k17803";
+      kStarNames.push_back("K*(k1780_3)");}
 
-  }
+}
 
   datasetname += ".txt";
 
@@ -603,7 +615,7 @@ int main(int argc, char** argv)
 
    Masses.push_back(new Variable("K_1430_2_Mass_0",M1430_2));
    Gammas.push_back(new Variable("K_1430_2_Gamma_0",G1430_2));
-   Spins.push_back(new Variable("K_1430_2_Spin_0",1.0));
+   Spins.push_back(new Variable("K_1430_2_Spin_0",2.0));
    as.push_back(new Variable("a_K_1430_2_0",4.66,aMin,aMax) );
    bs.push_back(new Variable("b_K_1430_2_0",-0.32,bMin,bMax) );
 
@@ -623,8 +635,32 @@ int main(int argc, char** argv)
    bs.push_back(new Variable("b_K_1430_2_m1",-1.92,bMin,bMax));
 
  }
+ if(k1780Star){
 
+   cout <<"Adding K*(1780)_3..." <<endl;
 
+   Masses.push_back(new Variable("K_1780_3_Mass_0",M1780_3));
+   Gammas.push_back(new Variable("K_1780_3_Gamma_0",G1780_3));
+   Spins.push_back(new Variable("K_1780_3_Spin_0",3.0));
+   as.push_back(new Variable("a_K_1780_3_0",16.8,aMin,aMax) );
+   bs.push_back(new Variable("b_K_1780_3_0",-1.43,bMin,bMax) );
+
+   //as.push_back(new Variable("a_K_1780_3_0",0.844));
+   //bs.push_back(new Variable("b_K_1780_3_0",3.14,bMin,bMax));
+
+   Masses.push_back(new Variable("K_1780_3_Mass_p1",M1780_3) );
+   Gammas.push_back(new Variable("K_1780_3_Gamma_p1",G1780_3) );
+   Spins.push_back(new Variable("K_1780_3_Spin_p1",3.0) );
+   as.push_back(new Variable("a_K_1780_3_p1",19.1,aMin,aMax) );
+   bs.push_back(new Variable("b_K_1780_3_p1",2.03,bMin,bMax) );
+
+   Masses.push_back(new Variable("K_1780_3_Mass_m1",M1780_3) );
+   Gammas.push_back(new Variable("K_1780_3_Gamma_m1",G1780_3) );
+   Spins.push_back(new Variable("K_1780_3_Spin_m1",3.0));
+   as.push_back(new Variable("a_K_1780_3_m1",10.2,aMin,aMax));
+   bs.push_back(new Variable("b_K_1780_3_m1",1.55,bMin,bMax));
+
+ }
 
 
  GooPdf* matrix = new MatrixPdf("Kstars_signal", massKPi, cosMuMu, cosKstar, phi,Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
