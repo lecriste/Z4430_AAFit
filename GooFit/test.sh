@@ -5,7 +5,7 @@
 #PBS -e /lustre/home/adrianodif/testAA.err
 #PBS -o /lustre/home/adrianodif/testAA.out
 #PBS -q bigmpi2@sauron.recas.ba.infn.it
-#PBS -l gpus=1 
+#PBS -l gpus=1
 #PBS -l ncpus=1
 
 ##########################################
@@ -30,7 +30,7 @@ let HOSTNAME = "$(hostname)"
 echo HOST: "$(hostname)"
 echo -----------------------------------------------------
 
-module load cuda/cuda-75 
+module load cuda/cuda-75
 
 #CUDA + GOOFIT
 source /lustre/home/adrianodif/login.sh
@@ -41,7 +41,7 @@ cd /lustre/home/adrianodif/Git/Z4430_AAFitDif
 
 gmake
 
-time ./Test -n 10000
+time ./AmplitudeAnalysis -n 10000
 
 date
 

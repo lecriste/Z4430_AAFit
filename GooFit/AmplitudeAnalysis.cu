@@ -15,6 +15,7 @@
 #include "TMath.h"
 #include "TRandom.h"
 #include "TMultiGraph.h"
+#include "TPaveText.h"
 
 #include <vector>
 #include <string>
@@ -382,7 +383,6 @@ int main(int argc, char** argv)
       datasetname +="k17803";
       plotsname +="k17803";
       kStarNames.push_back("K*(k1780_3)");}
-
 }
 
   datasetname += ".txt";
@@ -671,6 +671,10 @@ int main(int argc, char** argv)
 
  //ifstream dataTxt("dataset.txt");
  ifstream dataTxt(datasetname.c_str());
+ if(!(dataTxt.good())){
+   std::cout<<" No valid input at : "<<datasetname<<" provided. Returning."<<std::endl;
+   return 1;
+ }
 
  fptype var1, var2, var3, var4;
 
@@ -794,6 +798,7 @@ int main(int argc, char** argv)
  ////////////////////////////////////////////////////////////////////////////////
 
  TLegend *legPlot = new TLegend(0.65,0.80,0.95,0.99,"Legend");
+ TPaveText *pt = new TPaveText(0.65, .45, .95, .80, "NDC");
 
  std::cout<<"- Evaluating the total P.d.f."<<std::endl;
  matrix->setData(&currData);
@@ -868,6 +873,32 @@ int main(int argc, char** argv)
   fptype compsIntegral = 0.0;
   std::cout<<"Total Normalisation Factor = "<<totalIntegral<<std::endl;
 
+  int kCounter = 0;
+
+  for (size_t u = 0; u < as.size(); ++u) {
+
+      if(Spins[u]->value==0.0){
+
+        pt->AddText(TString::Format(" ---- %s", kStarNames[kCounter].c_str()));
+        pt->AddText(TString::Format(" a_{0} = %.3f #pm %.3f b_{0} = %.3f #pm %.3f",as[u]->value,as[u]->error,bs[u]->value,bs[u]->error));
+
+      }else{
+
+        pt->AddText(TString::Format(" ---- %s", kStarNames[kCounter].c_str()));
+        pt->AddText(TString::Format(" a_{0} = %.3f #pm %.3f b_{0} = %.3f #pm %.3f",as[u]->value,as[u]->error,bs[u]->value,bs[u]->error));
+        pt->AddText(TString::Format(" a_{p1} = %.3f #pm %.3f b_{p1} = %.3f #pm %.3f",as[u+1]->value,as[u+1]->error,bs[u+1]->value,bs[u+1]->error));
+        pt->AddText(TString::Format(" a_{m1} = %.3f #pm %.3f b_{m1} = %.3f #pm %.3f",as[u+2]->value,as[u+2]->error,bs[u+2]->value,bs[u+2]->error));
+
+        u+=2;
+      }
+
+      ++kCounter;
+  }
+
+  pt->SetTextAlign(12);
+  pt->SetShadowColor(0);
+  pt->SetFillColor(0);
+
   matrix->clearCurrentFit();
 
   legPlot->AddEntry(&mKPHisto,"Generated Data","f");
@@ -886,7 +917,7 @@ int main(int argc, char** argv)
       originalBs.push_back(bs[i]->value);
   }
 
-  int kCounter = 0;
+  kCounter = 0;
 
   std::vector<Variable*> MassesPlot;
   std::vector<Variable*> GammasPlot;
@@ -1067,6 +1098,7 @@ int main(int argc, char** argv)
   mKPHisto.Draw("same");
   //signalTotalPlot.Draw("sameL");
   legPlot->Draw();
+  pt->Draw();
 
   canvas->SetLogy(1);
 

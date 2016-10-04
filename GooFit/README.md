@@ -10,7 +10,7 @@ REQUIREMENTS
 INSTRUCTIONS
 =============
 
-=To build
+=To Build
 - Setup GooFit
 - Edit the Makefile so that the $(GOOFITDIRECTORY) point to the directory where GooFit is installed (I'd add it to gitignore to avoid conflicts)
 - ... to be completed
