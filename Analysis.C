@@ -107,41 +107,39 @@ void Analysis()
   //vector< pair<TString, pair< pair<Double_t, Double_t>, pair<Double_t, Double_t> > > > Kstar_spin;
   vector< pair<TString, pair<const Double_t, const Double_t> > > Kstar_spin;
   map< TString, pair<Double_t, Double_t> > helJ_map;
-  // Belle B0->J/psi K+ pi- values
-  // 5h20' with K*(892) + PHSP (1K+1K events)
-  // 20' with K*(800) + K*(1430)0 + K*(1430)2 (2K events)
-  
+  // Belle B0->J/psi K+ pi- values    
   cout <<"Adding K*(892)..." <<endl; 
   const Double_t M892 = 0.89581 ; const Double_t G892 = 0.0474; // From PDG neutral only K*(892)
   Kstar_spin.push_back( make_pair("892_1", make_pair(M892,G892) ) ) ;
   helJ_map["892_1_0"] = make_pair(1.,0.); helJ_map["892_1_p1"] = make_pair(0.844,3.14); helJ_map["892_1_m1"] = make_pair(0.196,-1.7);
-  /*
+  
   cout <<"Adding K*(800)..." <<endl;  
   //const Double_t M800 = 0.682; const Double_t G800 = 0.547; // From PDG
   const Double_t M800 = 0.931; const Double_t G800 = 0.578; // From Belle
   Kstar_spin.push_back( make_pair("800_0", make_pair(M800,G800) ) ) ;
   helJ_map["800_0_0"] = make_pair(1.12,2.3);
-  *//*
+  
   cout <<"Adding K*(1410)..." <<endl; 
   const Double_t M1410 = 1.414; const Double_t G1410 = 0.232;
   Kstar_spin.push_back( make_pair("1410_1", make_pair(M1410,G1410) ) ) ;
   helJ_map["1410_1_0"] = make_pair(0.119,0.81); helJ_map["1410_1_p1"] = make_pair(0.123,-1.04); helJ_map["1410_1_m1"] = make_pair(0.036,0.67);
-  *//*
+  
   cout <<"Adding K*(1430)_0..." <<endl; 
   const Double_t M1430_0 = 1.425; const Double_t G1430_0 = 0.270;
   Kstar_spin.push_back( make_pair("1430_0", make_pair(M1430_0,G1430_0) ) ) ;
   helJ_map["1430_0_0"] = make_pair(0.89,-2.17);
-    *//*
+  //helJ_map["1430_0_0"] = make_pair(1.,0.);
+  
   cout <<"Adding K*(1430)_2..." <<endl;
   const Double_t M1430_2 = 1.4324; const Double_t G1430_2 = 0.109; // From PDG neutral only
   Kstar_spin.push_back( make_pair("1430_2", make_pair(M1430_2,G1430_2) ) ) ;
   helJ_map["1430_2_0"] = make_pair(4.66,-0.32); helJ_map["1430_2_p1"] = make_pair(4.65,-3.05); helJ_map["1430_2_m1"] = make_pair(1.26,-1.92);
-  *//*
+  
   cout <<"Adding K*(1780)_3..." <<endl;
   const Double_t M1780_3 = 1.776; const Double_t G1780_3 = 0.159; // From PDG neutral only
   Kstar_spin.push_back( make_pair("1780_3", make_pair(M1780_3,G1780_3) ) ) ;
   helJ_map["1780_3_0"] = make_pair(16.8,-1.43); helJ_map["1780_3_p1"] = make_pair(19.1,2.03); helJ_map["1780_3_m1"] = make_pair(10.2,1.55);
-    *//*
+  /*
   cout <<"Adding K*(2380)_5..." <<endl;
   const Double_t M2380_5 = 2.382; const Double_t G2380_5 = 0.178; // From PDG
   Kstar_spin.push_back( make_pair("2380_5", make_pair(M2380_5,G2380_5) ) ) ;
@@ -156,8 +154,12 @@ void Analysis()
   vector< RooRealVar* > amplitudeRooRealVar;
   vector< TString > varNames;
   RooArgSet amplitudeVars("amplitudeVars_set");
-  Double_t aMin = 0.; Double_t aMax = +9999.;
+  Double_t aMax = +9999.;
+
+  // set boundaries:
+  Double_t aMin = 0.; //aMin = -aMax;
   Double_t bMin = -9999.; //bMin = -TMath::Pi();
+
   Double_t bMax = -bMin;
   TString helJ[] = {"m1","0","p1"} ;
 
@@ -240,6 +242,7 @@ void Analysis()
   cout <<"\nImported TTree with " <<dataGen->numEntries() <<" entries and the following variables:" <<endl ;
   dataGen->printArgs(cout) ; cout <<"\n" ;
   //cout <<"\n"; kinematicVars.Print("extras") ;
+  cout <<"\nImporting dataNTuple..." <<endl;
   RooRealVar B0beauty("B0beauty","B^{0} beauty",0,-2,2);
   RooArgSet kinematicVars_withBeauty(kinematicVars, B0beauty, TString::Format("%s_with%s",kinematicVars.GetName(),B0beauty.GetName())) ;
   RooDataSet *dataGen_B0 = new RooDataSet("dataGen_B0","Generated B0 data", dataNTuple, kinematicVars_withBeauty, "B0beauty > 0");
@@ -259,10 +262,11 @@ void Analysis()
   */
   TString psi_nS = "1"; //psi_nS = "2";
   
-  TString sigName = "Kstar_signal";
-  if (nKstar == 1)
+  TString sigName = "Kstar_signal", sigTitle = "K*s signal";
+  if (nKstar == 1) {
     sigName.ReplaceAll("signal",Kstar_spin.front().first);
-  else {
+    sigTitle.ReplaceAll("K*s","K*");
+  } else {
     sigName.ReplaceAll("Kstar","Kstars").ReplaceAll("signal","");
     for (Int_t iKstar_S=0; iKstar_S<nKstar; ++iKstar_S) {
       if (iKstar_S>0)
@@ -272,9 +276,12 @@ void Analysis()
   }
   sigName.Append(Hel);
 
-  sigPDF = new myPDF(sigName,"K*s signal", massKPi, cosMuMu, massPsiPi, phi,
+  TString sigPDF_var[4] = {massKPi.GetName(),cosMuMu.GetName(),massPsiPi.GetName(),phi.GetName()};
+  sigPDF = new myPDF(sigName,sigTitle,
+		     //massKPi, cosMuMu, massPsiPi, phi,
+		     (RooRealVar&)(kinematicVars[sigPDF_var[0]]), (RooRealVar&)(kinematicVars[sigPDF_var[1]]), (RooRealVar&)(kinematicVars[sigPDF_var[2]]), (RooRealVar&)(kinematicVars[sigPDF_var[3]]),
 		     Kstar_spin, varNames, amplitudeVars, psi_nS, dRadB0, dRadKs) ;
-  
+
   if (sigPDF && !nKstar) {
     cout <<"sigPDF set up with no K*! Please check" <<endl;
     return ;
@@ -316,7 +323,11 @@ void Analysis()
   RooAbsPdf* bkgPDF = BdToPsiPiK_PHSP; bkgPDF = 0;
 
   Double_t totEvents = 2000;
-  //totEvents *= 10;
+  //totEvents *= 2.5;
+  //totEvents *= 5;
+  totEvents *= 10;
+  //totEvents *= 10; totEvents *= 5;
+  //totEvents *= 10; totEvents *= 3;
   //totEvents /= 2;
   RooRealVar nSig("nSig", "n_{SIG}", 0, 0, 1E6);
   //nSig.setVal( 10*nSig.getVal() ); // Does not work on the fly
@@ -392,7 +403,7 @@ void Analysis()
 
   RooDataSet* dataGenPDF_m2 = new RooDataSet(dataGenPDF->GetName(), dataGenPDF->GetTitle(), kinematicVars_m2 ) ;
   for (Int_t iEvent=0; iEvent<dataGenPDF->numEntries(); ++iEvent) {
-    kinematicVars = *(dataGenPDF->get(iEvent)) ; // this get method will propagate the RooRealVars values of the event to all the corresponding RooRealVars   
+    kinematicVars = *(dataGenPDF->get(iEvent)) ; // this get method will propagate the RooRealVars values of the event to all the corresponding RooRealVars in kinematicVars  
     //kinematicVars.Print("extras") ; cout <<endl; kinematicVars_m2.Print("extras") ;
     TIterator *massVarsIter = massVars.createIterator() ;
     if (!massVarsIter) {
@@ -433,6 +444,7 @@ void Analysis()
     dir.Append("psi2S");
 
   TString plotName = model->GetName();
+  TString extension = ".png"; //extension.Prepend("_test");
 
   Float_t rightMargin = 0.12;
   cout <<"\nPlotting angles scatter plot..." <<endl;
@@ -449,8 +461,7 @@ void Analysis()
   TH2F* scatter = (TH2F*)dataGenPDF_m2->createHistogram("Angles_scatter_plot", cosMuMu, Binning(cos_bins,-cos_limit,cos_limit), YVar(phi, Binning(phi_bins,-phi_limit,phi_limit)) ) ; scatter->SetTitle( TString::Format("Angles scatter plot;%s;%s",cosMuMu.GetTitle(),phi.GetTitle()) ) ;
   gStyle->SetOptStat( 10 ) ;
   scatter->Draw("colz"); 	
-  scatter_C->SaveAs(TString::Format("%s/%s_%s.png",dir.Data(),scatter_C->GetName(),plotName.Data()));
-  //scatter_C->SaveAs(TString::Format("%s/%s_%s_noHel0.png",dir.Data(),scatter_C->GetName(),plotName.Data()));
+  scatter_C->SaveAs(TString::Format("%s/%s_%s%s",dir.Data(),scatter_C->GetName(),plotName.Data(),extension.Data()));
 
   cout <<"\nPlotting Dalitz..." <<endl;
   TCanvas* dalitz_C = new TCanvas("Dalitz_C","Dalitz",800,600) ; dalitz_C->SetRightMargin(rightMargin);
@@ -464,7 +475,7 @@ void Analysis()
   gStyle->SetOptStat( 10 ) ;
   dalitz->Draw("colz"); 	
   //dalitz->Draw("lego"); 	
-  dalitz_C->SaveAs(TString::Format("%s/%s_%s.png",dir.Data(),dalitz_C->GetTitle(),plotName.Data()));
+  dalitz_C->SaveAs(TString::Format("%s/%s_%s%s",dir.Data(),dalitz_C->GetTitle(),plotName.Data(),extension.Data()));
   //return;
   cout <<"\nPlotting rectangular Dalitz..." <<endl;
   TCanvas* dalitzRect_C = new TCanvas("DalitzRect_C","Rectangular_Dalitz",800,600) ; dalitzRect_C->SetRightMargin(rightMargin);
@@ -472,14 +483,14 @@ void Analysis()
   TH2F* dalitz_rect = (TH2F*)dataGenPDF_withCos->createHistogram("DalitzRect", massKPi, YVar(cosKstar, Binning(cos_bins,-cos_limit,cos_limit)) ) ; dalitz_rect->SetTitle( TString::Format("Rectangular Dalitz;%s;%s",massKPi.GetTitle(),cosKstar.GetTitle()) ) ;
   gStyle->SetOptStat( 10 ) ;
   dalitz_rect->Draw("colz"); 	
-  dalitzRect_C->SaveAs(TString::Format("%s/%s_%s.png",dir.Data(),dalitzRect_C->GetTitle(),plotName.Data()));
+  dalitzRect_C->SaveAs(TString::Format("%s/%s_%s%s",dir.Data(),dalitzRect_C->GetTitle(),plotName.Data(),extension.Data()));
  
   cout <<"\nPlotting m(psiPi)..." <<endl;
   dataGenPDF->plotOn(massPsiP_frame) ;
   TCanvas* massPsiP_C = new TCanvas( TString::Format("%s_C",massPsiPi.GetName()), massPsiPi.GetName(), 800,600) ;
   massPsiP_C->cd();
   massPsiP_frame->Draw() ;
-  massPsiP_C->SaveAs(TString::Format("%s/%s__MuMuPi.png",dir.Data(),plotName.Data()));
+  massPsiP_C->SaveAs(TString::Format("%s/%s__MuMuPi%s",dir.Data(),plotName.Data(),extension.Data()));
   //return;
   Int_t fullModelColor = 2; // 2 = kRed
   Int_t bkgColor = fullModelColor;
@@ -487,31 +498,43 @@ void Analysis()
   
   cout <<"\nPlotting m(KPi)..." <<endl;
   dataGenPDF->plotOn(massKP_frame) ; nLegendEntries++;
-  cout <<"\nPlotting " <<model->GetName() <<" pdf..." <<endl;
-  timeval plotModelTime;
-  gettimeofday(&start, NULL);
-  startCPU = times(&startProc);
   //
-  Bool_t fitting = kFALSE; fitting = kTRUE;
+  Bool_t fitting = kFALSE; //fitting = kTRUE;
   if (!fitting) {
-    model->plotOn(massKP_frame,LineColor(fullModelColor),LineStyle(kDashed),Name(modelEntry)) ; 
+    cout <<"\nPlotting \"" <<model->GetName() <<"\" pdf..." <<endl;
+    timeval plotModelTime;
+    gettimeofday(&start, NULL);
+    startCPU = times(&startProc);
+    //
+    model->plotOn(massKP_frame,LineColor(fullModelColor),LineStyle(kDashed),Name(modelEntry)) ;
+    // 2k events
+    // 5h20' with K*(892) + PHSP (1K+1K events)
+    // 20' with K*_0(800) + K*_0(1430) + K*_2(1430)
+    //
+    // 5k events
+    // 24' with K*_0(800) + K*_1(892) + K*_1(1410) + K*_0(1430) + K*_2(1430) + K*_3(1780)
+    //
+    // 20k events and single K* components
+    // 220' with K*_0(800) (16'') + K*_1(892) (1035'') + K*_1(1410) (1075'') + K*_0(1430) (15'') + K*_2(1430) (2982'') + K*_3(1780) (6168'')
+    //
     if (sigPDF && bkgPDF) {
       model->plotOn(massKP_frame,Components(*bkgPDF),LineColor(bkgColor),LineStyle(kDashed),Name("Bkg")) ;
     }
+    //
+    stopCPU = times(&stopProc);
+    gettimeofday(&stop, NULL);
+    timersub(&stop, &start, &plotModelTime);
+    Double_t plotModelCPU = (stopCPU - startCPU)*10000;
+    Double_t plotModelProc = (stopProc.tms_utime - startProc.tms_utime)*10000 ;
+    cout <<"Wallclock time: " << plotModelTime.tv_sec + plotModelTime.tv_usec/1000000.0 << " seconds\n" ;
+    cout <<"Total CPU time: " << (plotModelCPU / CLOCKS_PER_SEC) <<" seconds\n" ;
+    cout <<"My processes time: " << (plotModelProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
   }
-  //
-  stopCPU = times(&stopProc);
-  gettimeofday(&stop, NULL);
-  timersub(&stop, &start, &plotModelTime);
-  Double_t plotModelCPU = (stopCPU - startCPU)*10000;
-  Double_t plotModelProc = (stopProc.tms_utime - startProc.tms_utime)*10000 ;
-  cout <<"Wallclock time: " << plotModelTime.tv_sec + plotModelTime.tv_usec/1000000.0 << " seconds\n" ;
-  cout <<"Total CPU time: " << (plotModelCPU / CLOCKS_PER_SEC) <<" seconds\n" ;
-  cout <<"My processes time: " << (plotModelProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
   nLegendEntries++; // either for generation or fit
 
   Float_t topRightCorner = 0.9;
-  Float_t yLegLow = topRightCorner -(nLegendEntries+nKstar)*0.05 ;
+  Bool_t plotSingleKstars = kTRUE; //plotSingleKstars = kFALSE; 
+  Float_t yLegLow = topRightCorner -(nLegendEntries+(plotSingleKstars ? nKstar : 1))*0.05 ;
   Float_t xMin = 0.6;
   TLegend* leg = new TLegend(xMin, yLegLow, topRightCorner, topRightCorner); leg->SetFillColor(kWhite);
   leg->AddEntry(dataGenPDF,"","ep");
@@ -529,7 +552,7 @@ void Analysis()
     cout <<"\nFitting ..." <<endl ;
     vector <TString> toSetConst;
     toSetConst.push_back("a892_1_0"); toSetConst.push_back("b892_1_0"); // by convention
-    //toSetConst.push_back("a892_1_m1"); toSetConst.push_back("b892_1_m1");
+    toSetConst.push_back("a892_1_m1"); toSetConst.push_back("b892_1_m1");
     for (Int_t iConst=0; iConst<(Int_t)toSetConst.size(); ++iConst) {
       RooRealVar* toSetConstVar = (RooRealVar*)amplitudeVars.find(toSetConst[iConst]);
       if (toSetConstVar) toSetConstVar->setConstant(kTRUE);
@@ -551,22 +574,55 @@ void Analysis()
     gettimeofday(&start, NULL);
     startCPU = times(&startProc);
     //
-    fitres = model->fitTo(*dataGenPDF, Hesse(kTRUE), Minos(kFALSE), Save(kTRUE), NumCPU(nCPU), Verbose(kTRUE), PrintLevel(3)) ;
-    // 75' with 2000 events, 8 Lambda*, 1 NumCPU; 80' with 2000 events, 1 K*, 4 NumCPU;
+    fitres = model->fitTo(*dataGenPDF, Hesse(kFALSE), Minos(kFALSE), Save(kTRUE), NumCPU(nCPU), Verbose(kTRUE), PrintLevel(3)) ;
+    // 75' with 2k events, 8 Lambda*, 1 NumCPU; 80' with 2k events, 1 K*, 4 NumCPU;
     // with cos(theta_K*) formula in the wrong place:
-    // 15h with 2000 events, K*(892), 24 CPUs  
+    // 15h with 2k events, K*(892), 24 CPUs  
+    //
+    //
     //
     // with cos(theta_K*) formula in the right place:
-    // 1h for 118 calls with Hesse and 2000 events, 2/4 K*(892) parameters with a/b892_1_0 fixed, 24 CPUs, a and b constrained  
-    // 45' for 83 calls with Hesse and 2000 events, 2/4 K*(892) parameters with a/b892_1_0 fixed, 24 CPUs, a constrained  
-    // 43' for ?? calls with Hesse and 1000 events, 2/4 K*(892) parameters with a/b892_1_0 fixed, 24 CPUs, a constrained  
-    // 48' for 94 calls without Hesse and 2000 events, 2/4 K*(892) parameters with a/b892_1_0 fixed, 24 CPUs, a and b constrained  
-    // MIGRAD MINIMIZATION HAS CONVERGED but ERR MATRIX NOT POS-DEF in 36' for 63 calls without Hesse and 2000 events, 2/4 K*(892) parameters with a/b892_1_0 fixed, 24 CPUs, a constrained
     //
-    // 130' for 231 calls with Hesse and 2000 events, 4/4 K*(892) parameters with a/b892_1_0 fixed, 24 CPUs, a constrained  
     //
-    // with a*[cos(b) + i*sen(b)]
-    // 64' for 118 calls with Hesse and 2000 events, 2/4 K*(892) parameters with a/b892_1_0 fixed, 24 CPUs, a and b constrained  
+    // with a/b892_1_0 fixed:
+    //
+    // 1k
+    // - 43' for ??  calls (?+?)   with Hesse and 1k events, 2/4 K*(892) parameters free, 24 CPUs, a constrained
+    // 2k
+    // - 35' for 63  calls (40+12[4]+11[3]) without Hesse and 2k events, 2/4 K*(892) parameters free, 24 CPUs, a constrained  
+    // - 48' for 94  calls (94+0)  without Hesse and 2k events, 2/4 K*(892) parameters free, 24 CPUs, a and b constrained  
+    // - 45' for 83  calls (?+?)   with Hesse and 2k events, 2/4 K*(892) parameters free, 24 CPUs, a constrained  
+    // - 1h  for 118 calls (?+?)   with Hesse and 2k events, 2/4 K*(892) parameters free, 24 CPUs, a and b constrained
+    // - 51' for 96  calls (80+16) with Hesse and 2k events, 2/4 K*(892) parameters free, 24 CPUs
+    // - 130' for 231 calls (?+?) with Hesse and 2k events, 4/4 K*(892) parameters free, 24 CPUs, a constrained
+    // 5k
+    // - 40' for 77  calls (63+14) without Hesse and 5k events, 2/4 K*(892) parameters free, 24 CPUs, a constrained
+    // 10k
+    // - 29' for 51  calls (51+0)  without Hesse and 10k events, 2/4 K*(892) parameters free, 24 CPUs, a and b constrained but b goes at limit (+TMath::Pi)
+    // - 27' for 47  calls (47+0)  without Hesse and 10k events, 2/4 K*(892) parameters free, 24 CPUs, a constrained
+    // 20k
+    // - 24' for 40  calls (30+10) with Hesse and 20k events, 2/4 K*(892) parameters free, 24 CPUs, a and b constrained but b goes at limit (+TMath::Pi)
+    // - 34' for 59  calls (49+10) with Hesse and 20k events, 2/4 K*(892) parameters free, 24 CPUs, a constrained
+    // - 28' for 49  calls (49+0)  without Hesse and 20k events, 2/4 K*(892) parameters free, 24 CPUs, a constrained
+    // - 19' for 30  calls (30+0)  without Hesse and 20k events, 2/4 K*(892) parameters free, 24 CPUs, a and b constrained but b goes at limit (+TMath::Pi)
+    // 60k
+    // - 27' for 48  calls (48+0)  without Hesse and 60k events, 2/4 K*(892) parameters free, 24 CPUs, a constrained
+    // 100k
+    // - 45' for 88  calls and NO  convergence even if plot looks reasonable without Hesse and 100k events, 2/4 K*(892) parameters free, 24 CPUs, a constrained
+    // - 56' for 108 calls and NO  convergence even if plot looks reasonable without Hesse and 100k events, 2/4 K*(892) parameters free, 24 CPUs, a and b constrained
+    // 200k
+    // - 63' for 122 calls and NO  convergence even if plot looks reasonable without Hesse and 200k events, 2/4 K*(892) parameters free, 24 CPUs
+    // - 38' for 69  calls (39+7[1]+12[2]+11[3]) without Hesse and 200k events, 2/4 K*(892) parameters free, 24 CPUs, a constrained
+    // - 48' for 89  calls and NO  convergence even if plot looks reasonable without Hesse and 200k events, 2/4 K*(892) parameters free, 24 CPUs, a and b constrained
+    //
+    //
+    // with a*[cos(b) + i*sen(b)]:
+    // - 64' for 118 calls (?+?) with Hesse and 2k events, 2/4 K*(892) parameters free, 24 CPUs, a and b constrained
+    //
+    // [1] MIGRAD FAILS TO FIND IMPROVEMENT. MACHINE ACCURACY LIMITS FURTHER IMPROVEMENT. MIGRAD MINIMIZATION HAS CONVERGED.
+    // [2] MIGRAD WILL VERIFY CONVERGENCE AND ERROR MATRIX.
+    // [3] MIGRAD FAILS TO FIND IMPROVEMENT. MIGRAD TERMINATED WITHOUT CONVERGENCE.
+    // [4] COVARIANCE MATRIX CALCULATION and ERR MATRIX NOT POS-DEF
     /*
     m.migrad() ; 
     m.hesse() ;
@@ -578,9 +634,9 @@ void Analysis()
     timersub(&stop, &start, &fitModelTime);
     Double_t fitModelCPU = (stopCPU - startCPU)*10000;
     Double_t fitModelProc = (stopProc.tms_utime - startProc.tms_utime)*10000 ;
-    cout <<"\nWallclock time: " << fitModelTime.tv_sec + fitModelTime.tv_usec/1000000.0 << " seconds\n" ;
-    cout <<"Total CPU time: " << (fitModelCPU / CLOCKS_PER_SEC) <<" seconds\n" ;
-    cout <<"My processes time: " << (fitModelProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
+    cout <<"\nWallclock time (" <<nCPU <<" CPUs) : " << fitModelTime.tv_sec + fitModelTime.tv_usec/1000000.0 << " seconds\n" ;
+    cout <<"Total CPU time (" <<nCPU <<" CPUs) : " << (fitModelCPU / CLOCKS_PER_SEC) <<" seconds\n" ;
+    cout <<"My processes time (" <<nCPU <<" CPUs) : " << (fitModelProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
 
     fitres->Print("v");
     model->paramOn(massKP_frame, Parameters(amplitudeVars), Layout(xMin,0.99,yLegLow));
@@ -595,7 +651,6 @@ void Analysis()
 
   //Here you can also project other variables.
   
-  Bool_t plotSingleKstars = kTRUE; plotSingleKstars = kFALSE; 
   if (sigPDF && plotSingleKstars) {
     cout <<"\nIntegrating " <<sigPDF->GetName() <<" over " <<massKPi.GetName() <<"..." <<endl;
 
@@ -605,7 +660,7 @@ void Analysis()
       gettimeofday(&start, NULL);
       startCPU = times(&startProc);
       //
-      RooAbsReal* sigPDF_integral = sigPDF->createIntegral( massKPi ) ;
+      RooAbsReal* sigPDF_integral = sigPDF->createIntegral( kinematicVars ) ;
       Double_t full_signal_integral = sigPDF_integral->getVal(); cout <<"\nFull signal integral = " <<full_signal_integral <<endl;
       //
       stopCPU = times(&stopProc);
@@ -617,7 +672,7 @@ void Analysis()
       cout <<"Total CPU time: " << (sigIntegralCPU / CLOCKS_PER_SEC) <<" seconds\n" ;
       cout <<"My processes time: " << (sigIntegralProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
     */
-    RooAbsReal* sigPDF_integral = sigPDF->createIntegral( massKPi ) ;
+    RooAbsReal* sigPDF_integral = sigPDF->createIntegral( kinematicVars ) ;
     Double_t full_signal_integral = sigPDF_integral->getVal(); cout <<"\nFull signal integral = " <<full_signal_integral <<endl;
 
     if (nKstar > 1) {
@@ -654,7 +709,7 @@ void Analysis()
 	  gettimeofday(&start, NULL);
 	  startCPU = times(&startProc);
 	  //
-	  Kstar_integral[iKstar_S] = (sigPDF->createIntegral(massKPi))->getVal() ;
+	  Kstar_integral[iKstar_S] = (sigPDF->createIntegral(kinematicVars))->getVal() ;
 	  //
 	  stopCPU = times(&stopProc);
 	  gettimeofday(&stop, NULL);
@@ -666,7 +721,7 @@ void Analysis()
 	  cout <<"My processes time: " << (KstarIntegralProc[iKstar_S] / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
 	  //
 	  */
-	Kstar_integral[iKstar_S] = (sigPDF->createIntegral(massKPi))->getVal() ;
+	Kstar_integral[iKstar_S] = (sigPDF->createIntegral(kinematicVars))->getVal() ;
 
 	cout <<"Integral with " <<legName <<" only is: " <<Kstar_integral[iKstar_S] <<endl;
 	Double_t fraction = (Kstar_integral[iKstar_S] / full_signal_integral)*(sigFrac.getVal());
@@ -697,8 +752,10 @@ void Analysis()
   massKP_frame->Draw() ;
   leg->Draw();
   
-  massKP_C->SaveAs(TString::Format("%s/%s.png",dir.Data(),plotName.Data()));
+  massKP_C->SaveAs(TString::Format("%s/%s%s",dir.Data(),plotName.Data(),extension.Data()));
   gPad->SetLogy();
-  massKP_C->SaveAs(TString::Format("%s/%s_logy.png",dir.Data(),plotName.Data()));
+  massKP_C->SaveAs(TString::Format("%s/%s_logy%s",dir.Data(),plotName.Data(),extension.Data()));
+
+  cout <<"\nEnd of macro!" <<endl;
 }
 
