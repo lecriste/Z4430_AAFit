@@ -24,6 +24,6 @@ NOTES FOR FURTHER UPDATES
 =========================
 - dataset generation within GooFit
 - plotting stuff ported to GPU
-- 
+- adding Hesse
 
 
