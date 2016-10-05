@@ -200,14 +200,16 @@ void Analysis()
 
   // B^0 -> psi(nS) K* -> mu+ mu- K- pi+
   TString massKPi_name = "massKPi"; TString mass2KPi_name = massKPi_name; mass2KPi_name.ReplaceAll("mass","mass2"); 
-  RooRealVar massKPi(massKPi_name,"m(K^{-}#pi^{+}) [GeV]",TMath::Sqrt(0.7),0.6,2.2);
+  TString massKPi_title = "m(K^{-}#pi^{+})";
+  RooRealVar massKPi(massKPi_name, massKPi_title+" [GeV]", TMath::Sqrt(0.7),0.6,2.2);
   //RooRealVar massKPi(massKPi_name,"m(K^{-}#pi^{+}) [GeV]",TMath::Sqrt(0.7),0.,9.2);
   RooFormulaVar mass2KPiFor(mass2KPi_name+"For","m^{2}(K^{-}#pi^{+}) [GeV^{2}]","pow(massKPi,2)",massKPi);
   RooRealVar mass2KPi(mass2KPi_name,mass2KPiFor.getTitle(),TMath::Power(massKPi.getVal(),2),TMath::Power(massKPi.getMin(),2),TMath::Power(massKPi.getMax(),2));
 
   TString massPsiPi_name = "massMuMuPi"; TString mass2PsiPi_name = massPsiPi_name; mass2PsiPi_name.ReplaceAll("mass","mass2"); 
-  RooRealVar massPsiPi(massPsiPi_name,"m(#psi#pi^{+}) [GeV]",TMath::Sqrt(23),3.2,4.9);
-  //RooRealVar massPsiPi(massPsiPi_name,"m(#psi#pi^{+}) [GeV]",TMath::Sqrt(23),0.,99.9);
+  TString massPsiPi_title = "m(#psi#pi^{+})";
+  RooRealVar massPsiPi(massPsiPi_name,massPsiPi_title+" [GeV]",TMath::Sqrt(23),3.2,4.9);
+  //RooRealVar massPsiPi(massPsiPi_name,massPsiPi_title+" [GeV]",TMath::Sqrt(23),0.,99.9);
   RooFormulaVar mass2PsiPiFor(mass2PsiPi_name+"For","m^{2}(#psi#pi^{+}) [GeV^{2}]","pow(massMuMuPi,2)",massPsiPi);
   RooRealVar mass2PsiPi(mass2PsiPi_name,mass2PsiPiFor.getTitle(),TMath::Power(massPsiPi.getVal(),2),TMath::Power(massPsiPi.getMin(),2),TMath::Power(massPsiPi.getMax(),2));
 
@@ -300,10 +302,12 @@ void Analysis()
   if (psi_nS.EqualTo("1")) {
     massMuMu = MJpsi ;
     //massPsiPi.setMax(4.8);
+    massPsiPi_title.ReplaceAll("#psi","J/#psi");
     massPsiPi.SetTitle( massPsiPi.getTitle().ReplaceAll("#psi","J/#psi") );
   } else if (psi_nS.EqualTo("2")) {
     massMuMu = MPsi2S ;
     //massPsiPi.setMin(3.7);
+    massPsiPi_title.ReplaceAll("#psi","#psi'");
     massPsiPi.SetTitle( massPsiPi.getTitle().ReplaceAll("#psi","#psi'") );
   } else {
     cout <<"psi_nS is neither 1 nor 2, please check it." <<endl;
@@ -371,9 +375,9 @@ void Analysis()
   RooFormulaVar bkgFrac("bkgFraction",TString::Format("%s fraction",nBkg.GetTitle()),"nBkg/nEvents",RooArgSet(nBkg,nEvents));
 
 
-  RooPlot* massPsiP_frame = massPsiPi.frame() ; massPsiP_frame->SetTitle( "Projection of "+massPsiPi.getTitle() );
+  RooPlot* massPsiP_frame = massPsiPi.frame() ; massPsiP_frame->SetTitle( "Projection of "+massPsiPi_title );
 
-  RooPlot* massKP_frame = massKPi.frame() ; massKP_frame->SetTitle( "Projection of "+massKPi.getTitle() );
+  RooPlot* massKP_frame = massKPi.frame() ; massKP_frame->SetTitle( "Projection of "+massKPi_title );
   Int_t nLegendEntries = 0;
 
   // Generate toy data from pdf and plot data and p.d.f on frame
@@ -731,7 +735,7 @@ void Analysis()
 	gettimeofday(&start, NULL);
 	startCPU = times(&startProc);
 	//
-	model->plotOn(massKP_frame,LineColor(iKstar_S + fullModelColor+1), Name(Kstar_name), Normalization(fraction,RooAbsReal::Relative)) ;
+	model->plotOn(massKP_frame,LineColor(iKstar_S + fullModelColor+1), LineStyle(kDashed), Name(Kstar_name), Normalization(fraction,RooAbsReal::Relative)) ;
 	//
 	stopCPU = times(&stopProc);
 	gettimeofday(&stop, NULL);
