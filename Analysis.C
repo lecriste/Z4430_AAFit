@@ -9,6 +9,9 @@
 // .x myPDF.cxx+
 // .x Analysis.C+
 //
+// or
+// time root -l -b -q run_Analysys.sh > log.txt
+//
 
 #include "RooGlobalFunc.h"
 #include "RooRealVar.h"
@@ -112,7 +115,7 @@ void Analysis()
   const Double_t M892 = 0.89581 ; const Double_t G892 = 0.0474; // From PDG neutral only K*(892)
   Kstar_spin.push_back( make_pair("892_1", make_pair(M892,G892) ) ) ;
   helJ_map["892_1_0"] = make_pair(1.,0.); helJ_map["892_1_p1"] = make_pair(0.844,3.14); helJ_map["892_1_m1"] = make_pair(0.196,-1.7);
-  
+  /*
   cout <<"Adding K*(800)..." <<endl;  
   //const Double_t M800 = 0.682; const Double_t G800 = 0.547; // From PDG
   const Double_t M800 = 0.931; const Double_t G800 = 0.578; // From Belle
@@ -139,7 +142,7 @@ void Analysis()
   const Double_t M1780_3 = 1.776; const Double_t G1780_3 = 0.159; // From PDG neutral only
   Kstar_spin.push_back( make_pair("1780_3", make_pair(M1780_3,G1780_3) ) ) ;
   helJ_map["1780_3_0"] = make_pair(16.8,-1.43); helJ_map["1780_3_p1"] = make_pair(19.1,2.03); helJ_map["1780_3_m1"] = make_pair(10.2,1.55);
-  /*
+  *//*
   cout <<"Adding K*(2380)_5..." <<endl;
   const Double_t M2380_5 = 2.382; const Double_t G2380_5 = 0.178; // From PDG
   Kstar_spin.push_back( make_pair("2380_5", make_pair(M2380_5,G2380_5) ) ) ;
@@ -235,25 +238,25 @@ void Analysis()
   TFile *inputFile = TFile::Open( inputFileName );
   if (!inputFile) {
     cout <<"Warning: unable to open file \"" <<fullInputFileName <<"\"" <<endl;
-    return;
+  } else {
+    //TTree *BkgTree = (TTree*)f->Get("BkgTree"); 
+    TNtupleD* dataNTuple = (TNtupleD*)inputFile->Get("AAVars");
+    //dataNTuple->Print() ;
+    RooDataSet *dataGen = new RooDataSet("dataGen","Generated data", dataNTuple, kinematicVars);
+    cout <<"\nImported TTree with " <<dataGen->numEntries() <<" entries and the following variables:" <<endl ;
+    dataGen->printArgs(cout) ; cout <<"\n" ;
+    //cout <<"\n"; kinematicVars.Print("extras") ;
+    cout <<"\nImporting dataNTuple..." <<endl;
+    RooRealVar B0beauty("B0beauty","B^{0} beauty",0,-2,2);
+    RooArgSet kinematicVars_withBeauty(kinematicVars, B0beauty, TString::Format("%s_with%s",kinematicVars.GetName(),B0beauty.GetName())) ;
+    RooDataSet *dataGen_B0 = new RooDataSet("dataGen_B0","Generated B0 data", dataNTuple, kinematicVars_withBeauty, "B0beauty > 0");
+    cout <<"\nImported TTree with " <<dataGen_B0->numEntries() <<" B0" <<endl ;
+    RooDataSet *dataGen_B0bar = new RooDataSet("dataGen_B0bar","Generated B0bar data", dataNTuple, kinematicVars_withBeauty, "B0beauty < 0");
+    cout <<"\nImported TTree with " <<dataGen_B0bar->numEntries() <<" B0bar" <<endl ;
+    //return ;
+    //RooPlot* phi_frame = phi.frame(Name(massKPi.getTitle()+"_frame"),Title("Projection of "+massKPi.getTitle())) ; 
+    //dataGen_B0->plotOn(phi_frame); dataGen_B0bar->plotOn(phi_frame, LineColor(kRed)); phi_frame->Draw() ; return;
   }
-  //TTree *BkgTree = (TTree*)f->Get("BkgTree"); 
-  TNtupleD* dataNTuple = (TNtupleD*)inputFile->Get("AAVars");
-  //dataNTuple->Print() ;
-  RooDataSet *dataGen = new RooDataSet("dataGen","Generated data", dataNTuple, kinematicVars);
-  cout <<"\nImported TTree with " <<dataGen->numEntries() <<" entries and the following variables:" <<endl ;
-  dataGen->printArgs(cout) ; cout <<"\n" ;
-  //cout <<"\n"; kinematicVars.Print("extras") ;
-  cout <<"\nImporting dataNTuple..." <<endl;
-  RooRealVar B0beauty("B0beauty","B^{0} beauty",0,-2,2);
-  RooArgSet kinematicVars_withBeauty(kinematicVars, B0beauty, TString::Format("%s_with%s",kinematicVars.GetName(),B0beauty.GetName())) ;
-  RooDataSet *dataGen_B0 = new RooDataSet("dataGen_B0","Generated B0 data", dataNTuple, kinematicVars_withBeauty, "B0beauty > 0");
-  cout <<"\nImported TTree with " <<dataGen_B0->numEntries() <<" B0" <<endl ;
-  RooDataSet *dataGen_B0bar = new RooDataSet("dataGen_B0bar","Generated B0bar data", dataNTuple, kinematicVars_withBeauty, "B0beauty < 0");
-  cout <<"\nImported TTree with " <<dataGen_B0bar->numEntries() <<" B0bar" <<endl ;
-  //return ;
-  //RooPlot* phi_frame = phi.frame(Name(massKPi.getTitle()+"_frame"),Title("Projection of "+massKPi.getTitle())) ; 
-  //dataGen_B0->plotOn(phi_frame); dataGen_B0bar->plotOn(phi_frame, LineColor(kRed)); phi_frame->Draw() ; return;
   
   const Double_t dRadB0 = 5.0; const Double_t dRadKs = 1.5;
 
@@ -503,7 +506,7 @@ void Analysis()
   cout <<"\nPlotting m(KPi)..." <<endl;
   dataGenPDF->plotOn(massKP_frame) ; nLegendEntries++;
   //
-  Bool_t fitting = kFALSE; //fitting = kTRUE;
+  Bool_t fitting = kFALSE; fitting = kTRUE;
   if (!fitting) {
     cout <<"\nPlotting \"" <<model->GetName() <<"\" pdf..." <<endl;
     timeval plotModelTime;
@@ -537,7 +540,7 @@ void Analysis()
   nLegendEntries++; // either for generation or fit
 
   Float_t topRightCorner = 0.9;
-  Bool_t plotSingleKstars = kTRUE; //plotSingleKstars = kFALSE; 
+  Bool_t plotSingleKstars = kTRUE; plotSingleKstars = kFALSE; 
   Float_t yLegLow = topRightCorner -(nLegendEntries+(plotSingleKstars ? nKstar : 1))*0.05 ;
   Float_t xMin = 0.6;
   TLegend* leg = new TLegend(xMin, yLegLow, topRightCorner, topRightCorner); leg->SetFillColor(kWhite);
@@ -607,6 +610,7 @@ void Analysis()
     // 20k
     // - 24' for 40  calls (30+10) with Hesse and 20k events, 2/4 K*(892) parameters free, 24 CPUs, a and b constrained but b goes at limit (+TMath::Pi)
     // - 34' for 59  calls (49+10) with Hesse and 20k events, 2/4 K*(892) parameters free, 24 CPUs, a constrained
+    // - 27' for 49  calls (49+0)  without Hesse and 20k events, 2/4 K*(892) parameters free, 40 CPUs on HPC, a constrained
     // - 28' for 49  calls (49+0)  without Hesse and 20k events, 2/4 K*(892) parameters free, 24 CPUs, a constrained
     // - 19' for 30  calls (30+0)  without Hesse and 20k events, 2/4 K*(892) parameters free, 24 CPUs, a and b constrained but b goes at limit (+TMath::Pi)
     // 60k

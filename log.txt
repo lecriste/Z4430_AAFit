@@ -1,128 +1,386 @@
 
 Processing run_Analysys.sh...
-(class myPDF)41428640
+(class myPDF)21280832
+(class Dalitz_contour)21422816
 Adding K*(892)...
-Adding K*(800)...
-Adding K*(1410)...
-Adding K*(1430)_0...
-Adding K*(1430)_2...
+Warning: unable to open file "/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/MC_K892_JPsi_Bd2MuMuKpi_2p0Sig_4p0to6p0SB.root"
+Building K* signal
 
-Generating 10000 events according to Kstars_signal pdf...
-[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,massKPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(massKPi,cosMuMu,cosKstar,phi)
-[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,massKPi,phi]) evaluation requires 4-D numeric integration step. Evaluation may be slow, sufficient numeric precision for fitting & minimization is not guaranteed
-[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstars_signal) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 1
+Generating 20000 events according to K* signal pdf for Kstar_892_1
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstar_892_1_Int[cosMuMu,massKPi,massMuMuPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(massKPi,cosMuMu,massMuMuPi,phi)
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstar_892_1_Int[cosMuMu,massKPi,massMuMuPi,phi]) evaluation requires 4-D numeric integration step. Evaluation may be slow, sufficient numeric precision for fitting & minimization is not guaranteed
+ --- RooGenContext --- 
+Using PDF myPDF::Kstar_892_1[ mKP=massKPi cJ=cosMuMu mPsiP=massMuMuPi phi=phi ]
+Use PDF generator for ()
+Use MC sampling generator RooFoamGenerator for (massKPi,massMuMuPi,cosMuMu,phi)
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 1
 
-10000 events have been genrated in
-Wallclock time: 379.26 seconds
-Total CPU time: 379.2 seconds
-My processes time: 378.87 seconds (differences due to other users' processes on the same CPU)
+20000 events have been genrated in
+Wallclock time: 81.1182 seconds
+Total CPU time: 81.1 seconds
+My processes time: 80.93 seconds (differences due to other users' processes on the same CPU)
 
 Plotting data...
 
-Plotting Kstars_signal pdf...
-[#1] INFO:Plotting -- RooAbsReal::plotOn(Kstars_signal) plot on massKPi integrates over variables (cosMuMu,cosKstar,phi)
-[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,phi]_Norm[cosKstar,cosMuMu,massKPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(cosMuMu,cosKstar,phi)
-Wallclock time: 721.394 seconds
-Total CPU time: 721.29 seconds
-My processes time: 720.65 seconds (differences due to other users' processes on the same CPU)
+Plotting angles scatter plot...
 
-Integrating Kstars_signal over massKPi...
-[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[massKPi]) using numeric integrator RooIntegrator1D to calculate Int(massKPi)
+Plotting Dalitz...
 
-Full signal integral = 0.686627
-Wallclock time: 0.03993 seconds
-Total CPU time: 0.04 seconds
-My processes time: 0.04 seconds (differences due to other users' processes on the same CPU)
+Plotting rectangular Dalitz...
 
+Plotting m(psiPi)...
 
-Integrating with K*_{1}(892) only...
-[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[massKPi]) using numeric integrator RooIntegrator1D to calculate Int(massKPi)
-Wallclock time: 0.019566 seconds
-Total CPU time: 0.02 seconds
-My processes time: 0.02 seconds (differences due to other users' processes on the same CPU)
-Integral with K*_{1}(892) only is: 0.260613
-K*_{1}(892) fraction is: 37.9555%
+Plotting m(KPi)...
 
-Plotting K*_{1}(892) only...
-[#1] INFO:Plotting -- RooAbsReal::plotOn(Kstars_signal) plot on massKPi integrates over variables (cosMuMu,cosKstar,phi)
-[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,massKPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(cosMuMu,cosKstar,phi,massKPi)
-[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,massKPi,phi]) evaluation requires 4-D numeric integration step. Evaluation may be slow, sufficient numeric precision for fitting & minimization is not guaranteed
-[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,phi]_Norm[cosKstar,cosMuMu,massKPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(cosMuMu,cosKstar,phi)
-[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstars_signal) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 1
-Wallclock time: 975.024 seconds
-Total CPU time: 974.87 seconds
-My processes time: 974.12 seconds (differences due to other users' processes on the same CPU)
+Fitting ...
+[#0] ERROR:InputArguments -- RooAbsPdf::createNLL(Kstar_892_1) ERROR: unrecognized command: PrintLevel
+[#1] INFO:Fitting -- RooAddition::defaultErrorLevel(nllp) Summation contains a RooNLLVar, using its error level
+ **********
+ **    9 **SET PRINT           3
+ **********
+[#1] INFO:Minization -- RooMinuit::optimizeConst: activating const optimization
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #0
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE0) successfully forked server process 23967
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #1
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE1) successfully forked server process 23968
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #2
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE2) successfully forked server process 23969
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #3
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE3) successfully forked server process 23970
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #4
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE4) successfully forked server process 23971
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #5
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE5) successfully forked server process 23972
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #6
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE6) successfully forked server process 23973
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #7
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE7) successfully forked server process 23974
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #8
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE8) successfully forked server process 23975
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #9
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE9) successfully forked server process 23976
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #10
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE10) successfully forked server process 23977
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #11
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE11) successfully forked server process 23978
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #12
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE12) successfully forked server process 23979
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #13
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE13) successfully forked server process 23980
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #14
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE14) successfully forked server process 23981
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #15
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE15) successfully forked server process 23982
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #16
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE16) successfully forked server process 23983
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #17
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE17) successfully forked server process 23984
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #18
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE18) successfully forked server process 23985
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #19
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE19) successfully forked server process 23986
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #20
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE20) successfully forked server process 23987
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #21
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE21) successfully forked server process 23988
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #22
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE22) successfully forked server process 23989
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #23
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE23) successfully forked server process 23990
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #24
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE24) successfully forked server process 23991
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #25
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE25) successfully forked server process 23992
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #26
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE26) successfully forked server process 23993
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #27
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE27) successfully forked server process 23994
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #28
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE28) successfully forked server process 23995
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #29
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE29) successfully forked server process 23996
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #30
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE30) successfully forked server process 23997
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #31
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE31) successfully forked server process 23998
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #32
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE32) successfully forked server process 23999
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #33
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE33) successfully forked server process 24000
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #34
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE34) successfully forked server process 24001
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #35
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE35) successfully forked server process 24002
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #36
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE36) successfully forked server process 24003
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #37
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE37) successfully forked server process 24004
+[#1] INFO:Eval -- RooAbsTestStatistic::initMPMode: starting remote server process #38
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE38) successfully forked server process 24005
+[#0] PROGRESS:Tracing -- RooTrace::callgrind_zero()
+[#0] WARNING:Minization -- RooMinuit::synchronize: WARNING: no initial error estimate available for a892_1_p1: using 0.422
+[#0] WARNING:Minization -- RooMinuit::synchronize: WARNING: no initial error estimate available for b892_1_p1: using 1999.8
+ **********
+ **   14 **MIGRAD        1000           1
+ **********
+ FIRST CALL TO USER FUNCTION AT NEW START POINT, WITH IFLAG=4.
 
+prevFCN = 24375.39966   START MIGRAD MINIMIZATION.  STRATEGY  1.  CONVERGENCE WHEN EDM .LT. 1.00e-03
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstar_892_1_Int[cosMuMu,massKPi,massMuMuPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(massKPi,cosMuMu,massMuMuPi,phi)
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstar_892_1_Int[cosMuMu,massKPi,massMuMuPi,phi]) evaluation requires 4-D numeric integration step. Evaluation may be slow, sufficient numeric preci[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstar_892_1_Int[cosMuMu,massKPi,massMuMuPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(massKPi,cosMuMu,massMuMuPi,phi)
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstar_892_1_Int[cosMuMu,massKPi,massMuMuPi,phi]) evaluation requires 4-D numeric integration step. Evaluation may be slow, sufficient numeric precision for fitting & minimization is not guaranteed
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstar_892_1_Int[cosMuMu,massKPi,massMuMuPi,phi]) evaluation requires 4-D numeric integration step. Evaluation may be slow, sufficient numeric precision for fitting & minimization is not guaranteed
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstar_892_1_Int[cosMuMu,massKPi,massMuMuPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(massKPi,cosMuMu,massMuMuPi,phi)
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstar_892_1_Int[cosMuMu,massKPi,massMuMuPi,phi]) evaluation requires 4-D numeric integration step. Evaluation may be slow, sufficient numeric precision for fitting & minimization is not guaranteed
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstar_892_1_Int[cosMuMu,massKPi,massMuMuPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(massKPi,cosMuMu,massMuMuPi,phi)
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstar_892_1_Int[cosMuMu,massKPi,massMuMuPi,phi]) evaluation requires 4-D numeric integration step. Evaluation may be slow, sufficient numeric precision for fitting & minimization is not guaranteed
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstar_892_1_Int[cosMuMu,massKPi,massMuMuPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(massKPi,cosMuMu,massMuMuPi,phi)
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstar_892_1_Int[cosMuMu,massKPi,massMuMuPi,phi]) evaluation requires 4-D numeric integration step. Evaluation may be slow, sufficient numeric preci[#1] INFO:NumericIntegration -- RooRealIntegral::ia892_1_p1=0.8918, b892_1_p1=3.14, [#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstar_892_1_Int[cosMuMu,massKPi,massMuMuPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(massKPi,cosMuMu,massMuMuPi,phi)
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstar_892_1_Int[cosMuMu,massKPi,massMuMuPi,phi]) evaluation requires 4-D numeric integration step. Evaluation may be slow, sufficient numeric precision for fitting & minimization is not guaranteed
 
-Integrating with K*_{0}(800) only...
-[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[massKPi]) using numeric integrator RooIntegrator1D to calculate Int(massKPi)
-Wallclock time: 0.032084 seconds
-Total CPU time: 0.04 seconds
-My processes time: 0.03 seconds (differences due to other users' processes on the same CPU)
-Integral with K*_{0}(800) only is: 0.109839
-K*_{0}(800) fraction is: 15.9969%
+prevFCN = 24383.33294  a892_1_p1=0.7976, 
+prevFCN = 24395.47262  a892_1_p1=0.8487, 
+prevFCN = 24374.95632  a892_1_p1=0.8393, 
+prevFCN = 24376.12341  a892_1_p1=0.844, b892_1_p1=220.2, 
+prevFCN = 26597.59046  b892_1_p1=-213.9, 
+prevFCN = 26477.44951  b892_1_p1=24.85, 
+prevFCN = 26474.78309  b892_1_p1=-18.57, 
+prevFCN = 26597.03029  b892_1_p1=5.311, 
+prevFCN = 25960.64767  b892_1_p1=0.9693, 
+prevFCN = 26275.55324   FCN=24375.4 FROM MIGRAD    STATUS=INITIATE       10 CALLS          11 TOTAL
+                     EDM= unknown      STRATEGY= 1      NO ERROR MATRIX       
+  EXT PARAMETER               CURRENT GUESS       STEP         FIRST   
+  NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE 
+   1  a892_1_p1    8.44000e-01   4.22000e-01   4.75594e-03  -1.13807e+04
+   2  b892_1_p1    3.14000e+00   1.99980e+03   2.01358e-01  -7.25298e+05
+                               ERR DEF= 0.5
+NO ERROR MATRIX       
+a892_1_p1=0.8538, b892_1_p1=3.238, 
+prevFCN = 24372.35697  a892_1_p1=0.8517, b892_1_p1=3.217, 
+prevFCN = 24371.99363  a892_1_p1=0.8527, 
+prevFCN = 24371.99182  a892_1_p1=0.8508, 
+prevFCN = 24372.00693  a892_1_p1=0.8517, b892_1_p1=3.434, 
+prevFCN = 24399.29044  b892_1_p1=3, 
+prevFCN = 24397.2826  b892_1_p1=3.239, 
+prevFCN = 24372.36001  b892_1_p1=3.196, 
+prevFCN = 24469.1242  b892_1_p1=3.219, 
+prevFCN = 24371.97935  b892_1_p1=3.215, 
+prevFCN = 24371.95012   FCN=24372 FROM MIGRAD    STATUS=PROGRESS       20 CALLS          21 TOTAL
+                     EDM=0.132364    STRATEGY= 1      NO ERROR MATRIX       
+  EXT PARAMETER               CURRENT GUESS       STEP         FIRST   
+  NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE 
+   1  a892_1_p1    8.51741e-01   4.22000e-01   8.40736e-05  -7.23808e+02
+   2  b892_1_p1    3.21726e+00   1.99980e+03   7.72667e-06   6.73156e+04
+                               ERR DEF= 0.5
+ RELATIVE CHANGE IN COV. MATRIX= 50.2 per cent
+a892_1_p1=0.8525, b892_1_p1=3.21, 
+prevFCN = 24371.93887  a892_1_p1=0.8555, b892_1_p1=3.183, 
+prevFCN = 24372.42553  a892_1_p1=0.8527, b892_1_p1=3.208, 
+prevFCN = 24371.94254  a892_1_p1=0.8535, b892_1_p1=3.21, 
+prevFCN = 24371.94444  a892_1_p1=0.8515, 
+prevFCN = 24371.9449  a892_1_p1=0.8525, b892_1_p1=3.211, 
+prevFCN = 24371.93856  b892_1_p1=3.209, 
+prevFCN = 24371.94024  b892_1_p1=3.214, 
+prevFCN = 24371.94192  b892_1_p1=3.207, 
+prevFCN = 24371.94732   FCN=24371.9 FROM MIGRAD    STATUS=PROGRESS       29 CALLS          30 TOTAL
+                     EDM=0.000884283    STRATEGY= 1      NO ERROR MATRIX       
+  EXT PARAMETER               CURRENT GUESS       STEP         FIRST   
+  NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE 
+   1  a892_1_p1    8.52486e-01   4.22000e-01   8.07132e-06  -2.18587e+01
+   2  b892_1_p1    3.21038e+00   1.99980e+03  -6.87962e-07  -8.41444e+03
+                               ERR DEF= 0.5
+ RELATIVE CHANGE IN COV. MATRIX= 25.4 per cent
+a892_1_p1=0.8525, b892_1_p1=3.211, 
+prevFCN = 24371.93854  a892_1_p1=0.8535, 
+prevFCN = 24371.94435  a892_1_p1=0.8515, 
+prevFCN = 24371.94435  a892_1_p1=0.8525, b892_1_p1=3.214, 
+prevFCN = 24371.94436  b892_1_p1=3.208, 
+prevFCN = 24371.94434   FCN=24371.9 FROM MIGRAD    STATUS=PROGRESS       34 CALLS          35 TOTAL
+                     EDM=4.22619e-09    STRATEGY= 1  ERROR MATRIX UNCERTAINTY  25.4 per cent
+  EXT PARAMETER                APPROXIMATE        STEP         FIRST   
+  NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE 
+   1  a892_1_p1    8.52490e-01   8.97941e-03   4.77883e-08  -4.15347e-01
+   2  b892_1_p1    3.21113e+00   2.98454e-02   7.45534e-08   1.79868e+01
+                               ERR DEF= 0.5
+ RELATIVE CHANGE IN COV. MATRIX= 12.7 per cent
+ MIGRAD MINIMIZATION HAS CONVERGED.
+ MIGRAD WILL VERIFY CONVERGENCE AND ERROR MATRIX.
+   START COVARIANCE MATRIX CALCULATION.
+b892_1_p1=3.211, 
+prevFCN = 24371.93854  a892_1_p1=0.8535, 
+prevFCN = 24371.94435  a892_1_p1=0.8515, 
+prevFCN = 24371.94435  a892_1_p1=0.8525, b892_1_p1=3.214, 
+prevFCN = 24371.94436  b892_1_p1=3.208, 
+prevFCN = 24371.94434  a892_1_p1=0.8527, b892_1_p1=3.211, 
+prevFCN = 24371.93877  a892_1_p1=0.8523, 
+prevFCN = 24371.93877  a892_1_p1=0.8525, 
+prevFCN = 24371.93855  a892_1_p1=0.8525, 
+prevFCN = 24371.93855  a892_1_p1=0.8525, b892_1_p1=3.212, 
+prevFCN = 24371.93876  b892_1_p1=3.21, 
+prevFCN = 24371.93878  b892_1_p1=3.211, 
+prevFCN = 24371.93855  b892_1_p1=3.211, 
+prevFCN = 24371.93855  a892_1_p1=0.8535, b892_1_p1=3.214, 
+prevFCN = 24371.9509   EIGENVALUES OF SECOND-DERIVATIVE MATRIX:
+         9.3604e-01  1.0640e+00
+ COVARIANCE MATRIX CALCULATED SUCCESSFULLY
+ FCN=24371.9 FROM MIGRAD    STATUS=CONVERGED      48 CALLS          49 TOTAL
+                     EDM=2.08105e-07    STRATEGY= 1      ERROR MATRIX ACCURATE 
+  EXT PARAMETER                                   STEP         FIRST   
+  NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE 
+   1  a892_1_p1    8.52490e-01   9.00917e-03   1.04983e-05  -2.15520e-01
+   2  b892_1_p1    3.21113e+00   2.99551e-02   3.22286e-07  -1.52562e+02
+                               ERR DEF= 0.5
+ EXTERNAL ERROR MATRIX.    NDIM=  25    NPAR=  2    ERR DEF=0.5
+  8.117e-05 -1.726e-05 
+ -1.726e-05  8.973e-04 
+ PARAMETER  CORRELATION COEFFICIENTS  
+       NO.  GLOBAL      1      2
+        1  0.06396   1.000 -0.064
+        2  0.06396  -0.064  1.000
+[#1] INFO:Minization -- RooMinuit::optimizeConst: deactivating const optimization
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE0) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE1) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE2) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE3) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE4) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE5) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE6) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE7) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE8) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE9) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE10) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE11) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE12) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE13) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE14) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE15) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE16) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE17) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE18) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE19) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE20) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE21) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE22) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE23) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE24) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE25) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE26) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE27) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE28) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE29) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE30) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE31) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE32) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE33) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE34) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE35) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE36) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE37) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#1] INFO:Minization -- RooRealMPFE::initialize(nll_Kstar_892_1_Generated_data_from_PDF_1c7b170_MPFE38) server process terminating
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 48
+[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstar_892_1) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 49
 
-Plotting K*_{0}(800) only...
-[#1] INFO:Plotting -- RooAbsReal::plotOn(Kstars_signal) plot on massKPi integrates over variables (cosMuMu,cosKstar,phi)
-[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,massKPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(cosMuMu,cosKstar,phi,massKPi)
-[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,massKPi,phi]) evaluation requires 4-D numeric integration step. Evaluation may be slow, sufficient numeric precision for fitting & minimization is not guaranteed
-[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,phi]_Norm[cosKstar,cosMuMu,massKPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(cosMuMu,cosKstar,phi)
-Wallclock time: 0.510588 seconds
-Total CPU time: 0.51 seconds
-My processes time: 0.51 seconds (differences due to other users' processes on the same CPU)
+Wallclock time (40 CPUs) : 3101 seconds
+Total CPU time (40 CPUs) : 3100 seconds
+My processes time (40 CPUs) : 1630 seconds (differences due to other users' processes on the same CPU)
 
+  RooFitResult: minimized FCN value: 2.437e+04, estimated distance to minimum: 2.081e-07
+                covariance matrix quality: Full, accurate covariance matrix
+                Status : MIGRAD=0 
 
-Integrating with K*_{1}(1410) only...
-[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[massKPi]) using numeric integrator RooIntegrator1D to calculate Int(massKPi)
-Wallclock time: 0.001136 seconds
-Total CPU time: 0 seconds
-My processes time: 0.01 seconds (differences due to other users' processes on the same CPU)
-Integral with K*_{1}(1410) only is: 0.0014402
-K*_{1}(1410) fraction is: 0.209751%
+    Constant Parameter    Value     
+  --------------------  ------------
+              a892_1_0    1.0000e+00
+             a892_1_m1    1.9600e-01
+              b892_1_0    0.0000e+00
+             b892_1_m1   -1.7000e+00
 
-Plotting K*_{1}(1410) only...
-[#1] INFO:Plotting -- RooAbsReal::plotOn(Kstars_signal) plot on massKPi integrates over variables (cosMuMu,cosKstar,phi)
-[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,massKPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(cosMuMu,cosKstar,phi,massKPi)
-[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,massKPi,phi]) evaluation requires 4-D numeric integration step. Evaluation may be slow, sufficient numeric precision for fitting & minimization is not guaranteed
-[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,phi]_Norm[cosKstar,cosMuMu,massKPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(cosMuMu,cosKstar,phi)
-[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstars_signal) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 1
-Wallclock time: 1040.35 seconds
-Total CPU time: 1040.19 seconds
-My processes time: 1039.35 seconds (differences due to other users' processes on the same CPU)
+    Floating Parameter  InitialValue    FinalValue +/-  Error     GblCorr.
+  --------------------  ------------  --------------------------  --------
+             a892_1_p1    8.4400e-01    8.5249e-01 +/-  9.01e-03  <none>
+             b892_1_p1    3.1400e+00    3.2111e+00 +/-  3.00e-02  <none>
 
+[#1] INFO:Plotting -- RooAbsReal::plotOn(Kstar_892_1) plot on massKPi integrates over variables (massMuMuPi,cosMuMu,phi)
+[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstar_892_1_Int[cosMuMu,massMuMuPi,phi]_Norm[cosMuMu,massKPi,massMuMuPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(cosMuMu,massMuMuPi,phi)
 
-Integrating with K*_{0}(1430) only...
-[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[massKPi]) using numeric integrator RooIntegrator1D to calculate Int(massKPi)
-Wallclock time: 0.00418 seconds
-Total CPU time: 0 seconds
-My processes time: 0 seconds (differences due to other users' processes on the same CPU)
-Integral with K*_{0}(1430) only is: 0.091576
-K*_{0}(1430) fraction is: 13.3371%
+Integrating Kstar_892_1 over massKPi...
 
-Plotting K*_{0}(1430) only...
-[#1] INFO:Plotting -- RooAbsReal::plotOn(Kstars_signal) plot on massKPi integrates over variables (cosMuMu,cosKstar,phi)
-[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,massKPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(cosMuMu,cosKstar,phi,massKPi)
-[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,massKPi,phi]) evaluation requires 4-D numeric integration step. Evaluation may be slow, sufficient numeric precision for fitting & minimization is not guaranteed
-[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,phi]_Norm[cosKstar,cosMuMu,massKPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(cosMuMu,cosKstar,phi)
-Wallclock time: 0.597589 seconds
-Total CPU time: 0.6 seconds
-My processes time: 0.6 seconds (differences due to other users' processes on the same CPU)
+Full signal integral = 12.78
 
-
-Integrating with K*_{2}(1430) only...
-[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[massKPi]) using numeric integrator RooIntegrator1D to calculate Int(massKPi)
-Wallclock time: 0.008168 seconds
-Total CPU time: 0.01 seconds
-My processes time: 0.01 seconds (differences due to other users' processes on the same CPU)
-Integral with K*_{2}(1430) only is: 0.0586366
-K*_{2}(1430) fraction is: 8.53981%
-
-Plotting K*_{2}(1430) only...
-[#1] INFO:Plotting -- RooAbsReal::plotOn(Kstars_signal) plot on massKPi integrates over variables (cosMuMu,cosKstar,phi)
-[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,massKPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(cosMuMu,cosKstar,phi,massKPi)
-[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,massKPi,phi]) evaluation requires 4-D numeric integration step. Evaluation may be slow, sufficient numeric precision for fitting & minimization is not guaranteed
-[#1] INFO:NumericIntegration -- RooRealIntegral::init(Kstars_signal_Int[cosKstar,cosMuMu,phi]_Norm[cosKstar,cosMuMu,massKPi,phi]) using numeric integrator RooAdaptiveIntegratorND to calculate Int(cosMuMu,cosKstar,phi)
-[#0] WARNING:NumericIntegration -- RooAdaptiveIntegratorND::dtor(Kstars_signal) WARNING: Number of suppressed warningings about integral evaluations where target precision was not reached is 1
-Wallclock time: 2110.81 seconds
-Total CPU time: 2110.49 seconds
-My processes time: 2108.65 seconds (differences due to other users' processes on the same CPU)
+End of macro!
