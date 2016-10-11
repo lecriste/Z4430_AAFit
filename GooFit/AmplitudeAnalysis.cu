@@ -59,7 +59,7 @@ fptype phaseSpaceFunction(fptype x,fptype mP,fptype m1,fptype m2,fptype m3)
 
 }
 
-void debug(int line){
+void debug(int line) {
 
   #ifdef CUDADEBUGGING
   std::cout<<"Debugging on line "<<line<<std::endl;
@@ -80,34 +80,33 @@ std::string doubleToStr (fptype dbl){
   return strs.str();
 }
 
-void printinstruction(){
+void printinstruction() {
 
   std::cerr << "======= Instructions \n"
-  			<< "\t-h,--help \t\t\t\t Show this help message\n"
-  			<< "\t-n  <events> \t\t\t\t Specify the number of events\n"
-  			<< "\t-r  <path> \t\t\t\t Read Generated Events from txt in <path>\n"
-        << "\t-H \t\t\t\t Run HESSE (+ MIGRAD, defautl: MIGRAD only)\n"
-  			<< "\t-b1 <b1> \t\t\t\t Select binning for MassKPi (for normalisation & integration, default : 40)\n"
-        << "\t-b2 <b2> \t\t\t\t Select binning for CosMuMu (for normalisation & integration, default : 40)\n"
-        << "\t-b3 <b3> \t\t\t\t Select binning for CosKStar (for normalisation & integration, default : 40)\n"
-        << "\t-b4 <b4> \t\t\t\t Select binning for Phi (for normalisation & integration, default : 40)\n"
-        << "\t-p1  <p> \t\t\t\t Select plotting binning finenness (default : 50) for MassKPi \n"
-        << "\t-p2  <p> \t\t\t\t Select plotting binning finenness (default : 50) for CosMuMu \n"
-        << "\t-p3  <p> \t\t\t\t Select plotting binning finenness (default : 50) for CosKStar \n"
-        << "\t-p4  <p> \t\t\t\t Select plotting binning finenness (default : 50) for Phi \n"
-        << "\t-d1  <p> \t\t\t\t Select dataset binning (default : 100) for MassKPi \n"
-        << "\t-d2  <p> \t\t\t\t Select dataset binning (default : 100) for CosMuMu \n"
-        << "\t-d3  <p> \t\t\t\t Select dataset binning (default : 100) for CosKStar \n"
-        << "\t-d4  <p> \t\t\t\t Select dataset binning (default : 100) for Phi \n"
-        << "\t-Bb <Bb> \t\t\t\t Select bound limits for b parameter (default : 9999)\n"
-        << "\t-k800 \t\t\t\t Add K*(800) to p.d.f.\n"
-        << "\t-k892 \t\t\t\t Add K*(892) to p.d.f.\n"
-        << "\t-k1410 \t\t\t\t Add K*(1410) to p.d.f.\n"
-        << "\t-k1430_0 \t\t\t\t Add K*(1430_0) to p.d.f.\n"
-        << "\t-k1430_2 \t\t\t\t Add K*(1430_2) to p.d.f.\n"
-        << "\t-k1780 \t\t\t\t Add K*(1780) to p.d.f.\n"
-        <<std::endl;
-
+  	    << "\t-h,--help \t\t Show this help message\n"
+	    << "\t-n <events> \t\t Specify the number of events\n"
+  	    << "\t-r <path> \t\t Read Generated Events from txt in <path>\n"
+            << "\t-H \t\t\t Run HESSE (after MIGRAD, defautl: MIGRAD only)\n"
+  	    << "\t-b1 <b1> \t\t Select binning for MassKPi (for normalisation & integration, default: 40)\n"
+            << "\t-b2 <b2> \t\t Select binning for CosMuMu (for normalisation & integration, default: 40)\n"
+            << "\t-b3 <b3> \t\t Select binning for CosKStar (for normalisation & integration, default: 40)\n"
+            << "\t-b4 <b4> \t\t Select binning for Phi (for normalisation & integration, default: 40)\n"
+            << "\t-p1 <p> \t\t Select plotting binning finenness (default: 50) for MassKPi \n"
+            << "\t-p2 <p> \t\t Select plotting binning finenness (default: 50) for CosMuMu \n"
+            << "\t-p3 <p> \t\t Select plotting binning finenness (default: 50) for CosKStar \n"
+            << "\t-p4 <p> \t\t Select plotting binning finenness (default: 50) for Phi \n"
+            << "\t-d1 <p> \t\t Select dataset binning (default: 100) for MassKPi \n"
+            << "\t-d2 <p> \t\t Select dataset binning (default: 100) for CosMuMu \n"
+            << "\t-d3 <p> \t\t Select dataset binning (default: 100) for CosKStar \n"
+            << "\t-d4 <p> \t\t Select dataset binning (default: 100) for Phi \n"
+            << "\t-Bb <Bb> \t\t Select bound limits for b parameter (default: 9999)\n"
+            << "\t-k800 \t\t\t Add K*_0(800) to p.d.f.\n"
+            << "\t-k892 \t\t\t Add K*_1(892) to p.d.f.\n"
+            << "\t-k1410 \t\t\t Add K*_1(1410) to p.d.f.\n"
+            << "\t-k1430_0 \t\t Add K*_0(1430) to p.d.f.\n"
+            << "\t-k1430_2 \t\t Add K*_2(1430) to p.d.f.\n"
+            << "\t-k1780 \t\t\t Add K*_3(1780) to p.d.f.\n"
+            << std::endl;
 }
 
 
@@ -148,10 +147,10 @@ int main(int argc, char** argv)
   bool hesse = false;
 
   std::string datasetname = "dataset";
-  std::string plotsname = "./plots/plot";
+  TString plotsDir = "./plots/";
   std::vector< std::string> kStarNames;
 
-  if(argc<=1)
+  if (argc<=1)
   {
     printinstruction();
     return 0;
@@ -392,50 +391,53 @@ int main(int argc, char** argv)
 
   }
 
-  if(!(k1430Star0 || k1430Star2 || k1410Star || k800Star ||k892Star || k1780Star)){
+  TString plotsname = "";
+  TString extension = "eps"; extension = "png";
 
-    cout<<"No K* selected (K892,K800,K1410,K1430) please see instructions below"<<endl;
+  if (!(k1430Star0 || k1430Star2 || k1410Star || k800Star ||k892Star || k1780Star)) {
+
+    cout <<"No K* selected (K892,K800,K1410,K1430) please see instructions below" <<endl;
     printinstruction();
     return 1;
 
-  }else{
+  } else {
 
-    cout<<" Starting Amplitude Analysis Fit With : "<<nOfKstar<<" K* "<<endl;
-    if(k892Star) {
-      cout<<" - K*(892)"<<endl;
-      datasetname +="k892";
-      plotsname +="k892";
-      kStarNames.push_back("K*(892)");
+    cout <<"Starting Amplitude Analysis fit with " <<nOfKstar<<" K*s:" <<endl;
+    if (k892Star) {
+      cout <<"- K*(892)"<<endl;
+      datasetname += "__k892_1";
+      plotsname.Append("__k892_1");
+      kStarNames.push_back("K*_{1}(892)");
     }
-    if(k800Star) {
-      cout<<" - K*(800)"<<endl;
-      datasetname +="k800";
-      plotsname +="k800";
-      kStarNames.push_back("K*(800)");
+    if (k800Star) {
+      cout<<"- K*(800)"<<endl;
+      datasetname += "__k800_0";
+      plotsname.Append("__k800_0");
+      kStarNames.push_back("K*_{0}(800)");
     }
-    if(k1410Star) {
-      cout<<" - K*(1410)"<<endl;
-      datasetname +="k1410";
-      plotsname +="k1410";
-      kStarNames.push_back("K*(k1410)");
+    if (k1410Star) {
+      cout<<"- K*(1410)"<<endl;
+      datasetname += "__k1410_1";
+      plotsname.Append("__k1410_1");
+      kStarNames.push_back("K*_{1}(1410)");
     }
-    if(k1430Star0) {
-      cout<<" - K*(1430_0)"<<endl;
-      datasetname +="k14300";
-      plotsname +="k14300";
-      kStarNames.push_back("K*(1430_0)");
+    if (k1430Star0) {
+      cout<<"- K*(1430_0)"<<endl;
+      datasetname += "__k1430_0";
+      plotsname.Append("__k1430_0");
+      kStarNames.push_back("K*_{0}(1430)");
     }
-    if(k1430Star2) {
-      cout<<" - K*(1430_2)"<<endl;
-      datasetname +="k14302";
-      plotsname +="k14302";
-      kStarNames.push_back("K*(1430_2)");}
-    if(k1780Star) {
-      cout<<" - K*(1780_3)"<<endl;
-      datasetname +="k17803";
-      plotsname +="k17803";
-      kStarNames.push_back("K*(k1780_3)");}
-}
+    if (k1430Star2) {
+      cout<<"- K*(1430_2)"<<endl;
+      datasetname += "__k1430_2";
+      plotsname.Append("__k1430_2");
+      kStarNames.push_back("K*_{2}(1430)");}
+    if (k1780Star) {
+      cout<<"- K*(1780_3)"<<endl;
+      datasetname += "__k1780_3";
+      plotsname.Append("__k1780_3");
+      kStarNames.push_back("K*_{3}(1780)");}
+  }
 
   datasetname += ".txt";
 
@@ -557,15 +559,15 @@ int main(int argc, char** argv)
  canvas.SaveAs("./plots/test.png");
 */
 
- Variable* massKPi = new Variable("massKPi",1.,0.6,2.2);
- Variable* cosMuMu = new Variable("cosMuMu",0.,-1,1); // cosine of the psi(nS) helicity angle
- Variable* cosKstar = new Variable("cosKstar",0.,-1,1); // cosine of the K* helicity angle
- Variable* phi = new Variable("phi",0.25,-TMath::Pi(),TMath::Pi());
- massKPi->numbins = bin1;
- cosMuMu->numbins = bin2;
- cosKstar->numbins = bin3;
- phi->numbins = bin4;
-
+  TString massKPi_name = "massKPi", cosMuMu_name = "cosMuMu", cosKstar_name = "cosKstar", phi_name = "phi";
+  Variable* massKPi = new Variable(massKPi_name.Data(),1.,0.6,2.2); massKPi->numbins = bin1;
+  // cosine of the psi(nS) helicity angle
+  Variable* cosMuMu = new Variable(cosMuMu_name.Data(),0.,-1,1); cosMuMu->numbins = bin2;
+  // cosine of the K* helicity angle
+  Variable* cosKstar = new Variable(cosKstar_name.Data(),0.,-1,1); cosKstar->numbins = bin3;
+  // angle between decay planes
+  Variable* phi = new Variable(phi_name.Data(),0.25,-TMath::Pi(),TMath::Pi()); phi->numbins = bin4;
+  
  GooPdf* phaseSpace = new ThreeBodiesPsiPiK("phasespace",massKPi,&mBd,&mPion,&mKaon,&mMuMu);
 
  //fptype ratio = ((fptype)(plottingfine))/((fptype)massKPi->numbins);
@@ -589,7 +591,7 @@ int main(int argc, char** argv)
 
  if(k892Star){
 
-   cout <<"Adding K*(892)..." <<endl;
+   cout <<"\nAdding K*(892) ..." <<endl;
 
    Masses.push_back(new Variable("K_892_Mass_0",M892));
    Gammas.push_back(new Variable("K_892_Gamma_0",G892));
@@ -616,7 +618,7 @@ int main(int argc, char** argv)
 
  if(k800Star){
 
-   cout <<"Adding K*(800)..." <<endl;
+   cout <<"Adding K*(800) ..." <<endl;
 
    Masses.push_back(new Variable("K_800_Mass_0",M800));
    Gammas.push_back(new Variable("K_800_Gamma_0",G800));
@@ -628,7 +630,7 @@ int main(int argc, char** argv)
 
  if(k1410Star){
 
-   cout <<"Adding K*(1410)..." <<endl;
+   cout <<"Adding K*(1410) ..." <<endl;
 
    Masses.push_back(new Variable("K_1410_Mass_0",M1410));
    Gammas.push_back(new Variable("K_1410_Gamma_0",G1410));
@@ -655,7 +657,7 @@ int main(int argc, char** argv)
 
  if(k1430Star0){
 
-   cout <<"Adding K*(1430_0)..." <<endl;
+   cout <<"Adding K*(1430_0) ..." <<endl;
 
    Masses.push_back(new Variable("K_1430_0_Mass_0",M1430_0));
    Gammas.push_back(new Variable("K_1430_0_Gamma_0",G1430_0));
@@ -667,7 +669,7 @@ int main(int argc, char** argv)
 
  if(k1430Star2){
 
-   cout <<"Adding K*(1430_2)..." <<endl;
+   cout <<"Adding K*(1430_2) ..." <<endl;
 
    Masses.push_back(new Variable("K_1430_2_Mass_0",M1430_2));
    Gammas.push_back(new Variable("K_1430_2_Gamma_0",G1430_2));
@@ -693,7 +695,7 @@ int main(int argc, char** argv)
  }
  if(k1780Star){
 
-   cout <<"Adding K*(1780)_3..." <<endl;
+   cout <<"Adding K*(1780)_3 ..." <<endl;
 
    Masses.push_back(new Variable("K_1780_3_Mass_0",M1780_3));
    Gammas.push_back(new Variable("K_1780_3_Gamma_0",G1780_3));
@@ -723,21 +725,22 @@ int main(int argc, char** argv)
 
  UnbinnedDataSet dataset(obserVariables);
 
- TH1F mKPHisto("mKPHisto", "mKPHisto",datapoints1, massKPi->lowerlimit, massKPi->upperlimit);
- TH1F cosMuMuHisto("cosMuMuHisto", "cosMuMuHisto",datapoints2, cosMuMu->lowerlimit, cosMuMu->upperlimit);
- TH1F cosKstarHisto("cosKstarHisto", "cosKstarHisto",datapoints3, cosKstar->lowerlimit, cosKstar->upperlimit);
- TH1F phiHisto("phiHisto", "phiHisto",datapoints4, phi->lowerlimit, phi->upperlimit);
+ TH1F mKPHisto("mKPHisto", "mKPHisto",datapoints1, massKPi->lowerlimit, massKPi->upperlimit); mKPHisto.SetLineColor(kBlack); mKPHisto.SetMarkerColor(kBlack);
+ TH1F cosMuMuHisto("cosMuMuHisto", "cosMuMuHisto",datapoints2, cosMuMu->lowerlimit, cosMuMu->upperlimit); cosMuMuHisto.SetLineColor(kBlack); cosMuMuHisto.SetMarkerColor(kBlack);
+ TH1F cosKstarHisto("cosKstarHisto", "cosKstarHisto",datapoints3, cosKstar->lowerlimit, cosKstar->upperlimit); cosKstarHisto.SetLineColor(kBlack); cosKstarHisto.SetMarkerColor(kBlack);
+ TH1F phiHisto("phiHisto", "phiHisto",datapoints4, phi->lowerlimit, phi->upperlimit); phiHisto.SetLineColor(kBlack); phiHisto.SetMarkerColor(kBlack);
 
  //ifstream dataTxt("dataset.txt");
  ifstream dataTxt(datasetname.c_str());
- if(!(dataTxt.good())){
-   std::cout<<" No valid input at : "<<datasetname<<" provided. Returning."<<std::endl;
+ if ( !(dataTxt.good()) ) {
+   std::cout <<"No valid input at : "<<datasetname<<" provided. Returning."<<std::endl;
    return 1;
  }
 
  fptype var1, var2, var3, var4;
 
- if(dataTxt.good()){
+ if (dataTxt.good()) {
+    cout <<"\nReading " <<datasetname <<" and filling histograms" <<endl;
     while(dataTxt>>var1>>var2>>var3>>var4){
 
       massKPi->value = var1;
@@ -762,10 +765,11 @@ int main(int argc, char** argv)
   matrix->setData(&dataset);
   //total->setData(&dataset);
 
-	FitManager fitter(matrix,hesse);
+  FitManager fitter(matrix, hesse);
   //FitManager fitter(total);
+  cout <<"\nFitting ..." <<endl;
   fitter.fit();
-	fitter.getMinuitValues();
+  fitter.getMinuitValues();
 
   stopC = times(&stopProc);
   gettimeofday(&stopTime, NULL);
@@ -774,7 +778,7 @@ int main(int argc, char** argv)
 
   gettimeofday(&startTime, NULL);
   startC = times(&startProc);
-
+  //
   UnbinnedDataSet currData(obserVariables);
   std::vector<UnbinnedDataSet> compData;
   std::vector<std::vector<fptype> > pdfTotalValues;
@@ -782,7 +786,7 @@ int main(int argc, char** argv)
   std::vector<std::vector<fptype> > pdfCompValues;
 
   for (int id = 0; id < nOfKstar; ++id) {
-    compData.push_back( UnbinnedDataSet(obserVariables));
+    compData.push_back( UnbinnedDataSet(obserVariables) );
   }
 
   std::vector<fptype> fractions;
@@ -801,16 +805,16 @@ int main(int argc, char** argv)
   phi->numbins = plottingfine4;
 
   fptype pointsMKPiXTot[massKPi->numbins];
-	fptype pointsMKPiYTot[massKPi->numbins];
+  fptype pointsMKPiYTot[massKPi->numbins];
 
   fptype pointsCosMuMuXTot[cosMuMu->numbins];
-	fptype pointsCosMuMuYTot[cosMuMu->numbins];
+  fptype pointsCosMuMuYTot[cosMuMu->numbins];
 
   fptype pointsCosKStarXTot[cosKstar->numbins];
-	fptype pointsCosKStarYTot[cosKstar->numbins];
+  fptype pointsCosKStarYTot[cosKstar->numbins];
 
   fptype pointsPhiXTot[phi->numbins];
-	fptype pointsPhiYTot[phi->numbins];
+  fptype pointsPhiYTot[phi->numbins];
 
   TH1F projMKPiHisto("projMKPiHisto", "projMKPiHisto",massKPi->numbins, massKPi->lowerlimit, massKPi->upperlimit);
   TH1F projCosMuMuHisto ("projCosMuMuHisto", "projCosMuMuHisto",cosMuMu->numbins, cosMuMu->lowerlimit, cosMuMu->upperlimit);
@@ -836,7 +840,7 @@ int main(int argc, char** argv)
 
   fptype sum = 0.0;
 
-  std::cout<<"- Starting plotting cycle "<<std::endl;
+  std::cout<<"\n- Starting plotting cycle "<<std::endl;
   std::cout<<"- Plotting dataset generation "<<std::endl;
   for (int k = 0; k < phi->numbins; ++k) {
       phi->value = phi->lowerlimit + (phi->upperlimit - phi->lowerlimit)*(k + 0.5) / phi->numbins;
@@ -869,58 +873,56 @@ int main(int argc, char** argv)
                   currData.addEvent();
                   /*for (size_t ii = 0; ii < compData.size(); ++ii) {
                     compData[ii].addEvent();
-                  }*/
-                }
-              }
-            }
-          }
+		    }*/
+	      }
+	  }
+      }
+  }
+  //
+  stopC = times(&stopProc);
+  gettimeofday(&stopTime, NULL);
+  fptype dataSetClocks = (stopC - startC)*10000.;
 
- stopC = times(&stopProc);
- gettimeofday(&stopTime, NULL);
-
- fptype dataSetClocks = (stopC - startC)*10000.;
-
- gettimeofday(&startTime, NULL);
- startC = times(&startProc);
  ////////////////////////////////////////////////////////////////////////////////
  ///// TOTAL PDF PLOT
  ////////////////////////////////////////////////////////////////////////////////
 
- TLegend *legPlot = new TLegend(0.7,0.75,0.95,0.95,"Legend");
- TPaveText *pt = new TPaveText(0.7, .40, .95, .75, "NDC");
+ Float_t xMax = 0.95, yMax = 0.9;
+ Float_t legLeft = 0.6, legWidth = 0.15;
+ TLegend *legPlot = new TLegend(legLeft, 0.6, legLeft+legWidth, yMax);
+ TPaveText *fitStat = new TPaveText(legPlot->GetX2(), 0.4, xMax, yMax, "NDC");
 
- std::cout<<"- Evaluating the total P.d.f."<<std::endl;
+ std::cout<<"\n- Evaluating the total p.d.f."<<std::endl;
  matrix->setData(&currData);
- matrix->getCompProbsAtDataPoints(pdfTotalValues);
 
+ gettimeofday(&startTime, NULL);
+ startC = times(&startProc);
+ //
+ matrix->getCompProbsAtDataPoints(pdfTotalValues);
  //std::cout<<" Vector size : "<<pdfTotalValues[0].size()<<std::endl;
  //std::cout<<" Vector proj : "<<pdfTotalValues[0].size()/massKPi->numbins<<std::endl;
-
- for (int k = 0; k<pdfTotalValues[0].size();k++){
+ for (int k = 0; k<pdfTotalValues[0].size(); k++){
    //std::cout<<mkpTotalProjection[k]*events/sum<<std::endl;
    sum += pdfTotalValues[0][k];
  }
-
+ //
  stopC = times(&stopProc);
  gettimeofday(&stopTime, NULL);
-
  fptype sumClocks = (stopC - startC)*10000.;
 
  gettimeofday(&startTime, NULL);
  startC = times(&startProc);
-
- std::cout<<"[ Total Pdf sum : "<<sum<<" ] "<<std::endl;
-
- for (int k = 0; k<pdfTotalValues[0].size();++k){
+ //
+ std::cout<<"\n[ Total Pdf sum : "<<sum<<" ] "<<std::endl;
+ for (int k = 0; k<pdfTotalValues[0].size(); ++k){
    //std::cout<<mkpTotalProjection[k]*events/sum<<std::endl;
-   pdfTotalValues[0][k] /=sum;
+   pdfTotalValues[0][k] /= sum;
    pdfTotalValues[0][k] *= 10000;
  }
-
+ //
  stopC = times(&stopProc);
  gettimeofday(&stopTime, NULL);
  startC = times(&startProc);
-
  fptype normClocks = (stopC - startC)*10000.;
 
  //////////////////////////////////////////////////////////////////////
@@ -1106,23 +1108,23 @@ int main(int argc, char** argv)
 
   fptype totalIntegral = matrix->normalise();
   fptype compsIntegral = 0.0;
-  std::cout<<"Total Normalisation Factor = "<<totalIntegral<<std::endl;
+  std::cout <<"\nTotal Normalisation Factor = " <<totalIntegral <<std::endl;
 
   int kCounter = 0;
 
-  for (size_t u = 0; u < as.size(); ++u) {
+  for (size_t u=0; u<as.size(); ++u) {
 
-      if(Spins[u]->value==0.0){
+      if (Spins[u]->value==0.0) {
 
-        pt->AddText(TString::Format(" ---- %s", kStarNames[kCounter].c_str()));
-        pt->AddText(TString::Format(" a_{0} = %.3f #pm %.3f b_{0} = %.3f #pm %.3f",as[u]->value,as[u]->error,bs[u]->value,bs[u]->error));
+        fitStat->AddText(TString::Format("\n---------- %s ----------", kStarNames[kCounter].c_str()));
+        fitStat->AddText(TString::Format("a_{0} = %.2f #pm %.2f, b_{0} = %.2f #pm %.2f",as[u]->value,as[u]->error,bs[u]->value,bs[u]->error));
 
-      }else{
+      } else {
 
-        pt->AddText(TString::Format(" ---- %s", kStarNames[kCounter].c_str()));
-        pt->AddText(TString::Format(" a_{0} = %.3f #pm %.3f b_{0} = %.3f #pm %.3f",as[u]->value,as[u]->error,bs[u]->value,bs[u]->error));
-        pt->AddText(TString::Format(" a_{p1} = %.3f #pm %.3f b_{p1} = %.3f #pm %.3f",as[u+1]->value,as[u+1]->error,bs[u+1]->value,bs[u+1]->error));
-        pt->AddText(TString::Format(" a_{m1} = %.3f #pm %.3f b_{m1} = %.3f #pm %.3f",as[u+2]->value,as[u+2]->error,bs[u+2]->value,bs[u+2]->error));
+        fitStat->AddText(TString::Format("\n---------- %s ----------", kStarNames[kCounter].c_str()));
+        fitStat->AddText(TString::Format("a_{0} = %.2f #pm %.2f, b_{0} = %.2f #pm %.2f",as[u]->value,as[u]->error,bs[u]->value,bs[u]->error));
+        fitStat->AddText(TString::Format("a_{p1} = %.2f #pm %.2f, b_{p1} = %.2f #pm %.2f",as[u+1]->value,as[u+1]->error,bs[u+1]->value,bs[u+1]->error));
+        fitStat->AddText(TString::Format("a_{m1} = %.2f #pm %.2f, b_{m1} = %.2f #pm %.2f",as[u+2]->value,as[u+2]->error,bs[u+2]->value,bs[u+2]->error));
 
         u+=2;
       }
@@ -1130,14 +1132,14 @@ int main(int argc, char** argv)
       ++kCounter;
   }
 
-  pt->SetTextAlign(12);
-  pt->SetShadowColor(0);
-  pt->SetFillColor(0);
+  fitStat->SetTextAlign(12);
+  fitStat->SetShadowColor(0);
+  fitStat->SetFillColor(0);
 
   matrix->clearCurrentFit();
 
-  legPlot->AddEntry(&mKPHisto,"Generated Data","f");
-  legPlot->AddEntry(&signalTotalPlotMKPi,"Total Fit","l");
+  legPlot->AddEntry(&mKPHisto, "Generated data", "lpe");
+  legPlot->AddEntry(&signalTotalPlotMKPi, "Total fit", "l");
 
   //multiGraphMKPi->Add(&signalTotalPlot,"L");
   ////////////////////////////////////////////////////////////////////////////////
@@ -1218,7 +1220,7 @@ int main(int argc, char** argv)
     sprintf(bufferstring,"comp_%d_plotHisto_PHI",kCounter);
     compHistosPhi.push_back(new TH1F(bufferstring,bufferstring,phi->numbins, phi->lowerlimit, phi->upperlimit));
 
-    cout<<"- Plotting component "<<kStarNames[kCounter]<<" all other components to zero"<<endl;
+    cout <<"\n- Plotting component " <<kStarNames[kCounter] <<" all other components to zero" <<endl;
     sum = 0.0;
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -1497,69 +1499,56 @@ int main(int argc, char** argv)
   multiGraphMKPi->Draw("AL");
   mKPHisto.Draw("same");
   legPlot->Draw();
-  pt->Draw();
-
+  fitStat->Draw();
   canvas->SetLogy(1);
 
-  plotsname += "_MKP";
-  plotsname += ".eps";
-  canvas->SaveAs(plotsname.c_str());
+  canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),massKPi_name.Data(),plotsname.Data(),extension.Data()));
   canvas->Clear();
-  plotsname.erase(plotsname.end()-8,plotsname.end());
   ////////////////////////////////////////////////////////////////////////////////
 
   //CosMuMu
   multiGraphCosMuMu->Draw("AL");
   cosMuMuHisto.Draw("same");
-  legPlot->Draw();
-  pt->Draw();
-
+  // it's enough on the m(KPi) plot
+  //legPlot->Draw();
+  //fitStat->Draw();
   canvas->SetLogy(1);
 
-  plotsname += "_CMM";
-  plotsname += ".eps";
-  canvas->SaveAs(plotsname.c_str());
+  canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),cosMuMu_name.Data(),plotsname.Data(),extension.Data()));
   canvas->Clear();
-  plotsname.erase(plotsname.end()-8,plotsname.end());
   ////////////////////////////////////////////////////////////////////////////////
 
   //CosKStar
   multiGraphCosKStar->Draw("AL");
   cosKstarHisto.Draw("same");
-  legPlot->Draw();
-  pt->Draw();
-
+  // it's enough on the m(KPi) plot
+  //legPlot->Draw();
+  //fitStat->Draw();
   canvas->SetLogy(1);
 
-  plotsname += "_CKS";
-  plotsname += ".eps";
-  canvas->SaveAs(plotsname.c_str());
+  canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),cosKstar_name.Data(),plotsname.Data(),extension.Data()));
   canvas->Clear();
-  plotsname.erase(plotsname.end()-8,plotsname.end());
   ////////////////////////////////////////////////////////////////////////////////
 
   //Phi
   multiGraphPhi->Draw("AL");
   phiHisto.Draw("same");
-  legPlot->Draw();
-  pt->Draw();
-
+  // it's enough on the m(KPi) plot
+  //legPlot->Draw();
+  //fitStat->Draw();
   canvas->SetLogy(1);
 
-  plotsname += "_PHI";
-  plotsname += ".eps";
-  canvas->SaveAs(plotsname.c_str());
+  canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),phi_name.Data(),plotsname.Data(),extension.Data()));
   canvas->Clear();
-  plotsname.erase(plotsname.end()-8,plotsname.end());
   ////////////////////////////////////////////////////////////////////////////////
-
+  
   cout<<endl;
   cout<<"~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~"<<endl;
-  cout << "Fit time:       " << (fitClocks / CLOCKS_PER_SEC) << endl ;
-  cout << "Data time:      " << (dataSetClocks / CLOCKS_PER_SEC) << endl ;
-  cout << "Sum time:       " << (sumClocks / CLOCKS_PER_SEC) << endl ;
-  cout << "Norm time:      " << (normClocks / CLOCKS_PER_SEC) << endl ;
-  cout << "Proj time:      " << (projClocks / CLOCKS_PER_SEC) << endl ;
+  cout << "PDF fitting time:       " << (fitClocks / CLOCKS_PER_SEC) << " s" << endl ;
+  cout << "Data plotting time:     " << (dataSetClocks / CLOCKS_PER_SEC) << " s" << endl ;
+  cout << "PDF sum time:           " << (sumClocks / CLOCKS_PER_SEC) << " s" << endl ;
+  cout << "PDF normalization time: " << (normClocks / CLOCKS_PER_SEC) << " s" << endl ;
+  cout << "PDF projection time:    " << (projClocks / CLOCKS_PER_SEC) << " s" << endl ;
   cout<<"~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~"<<endl;
 
 
