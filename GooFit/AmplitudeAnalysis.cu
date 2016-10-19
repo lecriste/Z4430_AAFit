@@ -1010,7 +1010,7 @@ int main(int argc, char** argv) {
     //std::cout<<" Bin "<<j<<" center = "<<projMKPiHisto.GetBinCenter(j+1)<<" : "<<mkpTotalProjection[j]<<std::endl;
   }
 
-  projmassPsiPiHisto.Scale(ratiomassPsiPi);
+  projmassPsiPiHisto.Scale(ratioMassPsiPi);
 
   for (int j = 0; j < phi->numbins; ++j) {
     projPhiHisto.SetBinContent(j+1,phiTotalProjection[j]);
@@ -1306,7 +1306,7 @@ int main(int argc, char** argv) {
       compHistosmassPsiPi[kCounter]->SetBinContent(j+1,massPsiPiCompProjection[j]);
     }
 
-    compHistosmassPsiPi[kCounter]->Scale(ratiomassPsiPi);
+    compHistosmassPsiPi[kCounter]->Scale(ratioMassPsiPi);
 
     //Phi
     for (int j = 0; j < phi->numbins; ++j) {
