@@ -542,7 +542,7 @@ int main(int argc, char** argv) {
     canvas.SaveAs("./plots/test.png");
   */
 
-  TString massKPi_name = "massKPi", cosMuMu_name = "cosMuMu", massPsiPi_name = "massPsiPi", phi_name = "phi", massPsiPi_name = "massPsiPi";
+  TString massKPi_name = "massKPi", cosMuMu_name = "cosMuMu", massPsiPi_name = "massPsiPi", phi_name = "phi";
   Variable* massKPi = new Variable(massKPi_name.Data(),1.,0.6,2.2); massKPi->numbins = bin1;
   Variable* massPsiPi = new Variable(massPsiPi_name.Data(),TMath::Sqrt(23),3.2,4.9); massPsiPi->numbins = bin3;
   // cosine of the psi(nS) helicity angle
