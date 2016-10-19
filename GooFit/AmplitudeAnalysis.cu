@@ -544,7 +544,7 @@ int main(int argc, char** argv) {
 
   TString massKPi_name = "massKPi", cosMuMu_name = "cosMuMu", massPsiPi_name = "massPsiPi", phi_name = "phi", massPsiPi_name = "massPsiPi";
   Variable* massKPi = new Variable(massKPi_name.Data(),1.,0.6,2.2); massKPi->numbins = bin1;
-  Variable* massPsiPi(massPsiPi_name.Data(),TMath::Sqrt(23),3.2,4.9); massPsiPi->numbins = bin3;
+  Variable* massPsiPi = new Variable(massPsiPi_name.Data(),TMath::Sqrt(23),3.2,4.9); massPsiPi->numbins = bin3;
   // cosine of the psi(nS) helicity angle
   Variable* cosMuMu = new Variable(cosMuMu_name.Data(),0.,-1,1); cosMuMu->numbins = bin2;
   // cosine of the K* helicity angle
