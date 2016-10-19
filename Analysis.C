@@ -272,7 +272,7 @@ void Analysis()
     sigName.ReplaceAll("signal",Kstar_spin.front().first);
     sigTitle.ReplaceAll("K*s","K*");
   } else {
-    sigName.ReplaceAll("Kstar","Kstars").ReplaceAll("signal","");
+    sigName.ReplaceAll("Kstar","Kstars_").ReplaceAll("signal","");
     for (Int_t iKstar_S=0; iKstar_S<nKstar; ++iKstar_S) {
       if (iKstar_S>0)
 	sigName.Append("__");
@@ -400,6 +400,7 @@ void Analysis()
   cout <<"Wallclock time: " << genTime.tv_sec + genTime.tv_usec/1000000.0 << " seconds\n" ;
   cout <<"Total CPU time: " << (genTimeCPU / CLOCKS_PER_SEC) <<" seconds\n" ;
   cout <<"My processes time: " << (genTimeProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
+  dataGenPDF->write(TString::Format("datasets/%s.txt",model->GetName()));
   //return;
 
   // Create corresponding m2 dataset + K* helicity angle if absent
