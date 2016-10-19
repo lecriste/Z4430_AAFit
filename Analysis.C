@@ -267,12 +267,12 @@ void Analysis()
   */
   TString psi_nS = "1"; //psi_nS = "2";
   
-  TString sigName = "Kstar_signal", sigTitle = "K*s signal";
+  TString sigName = "Kstar__", sigTitle = "K*s signal";
   if (nKstar == 1) {
-    sigName.ReplaceAll("signal",Kstar_spin.front().first);
+    sigName.Append(Kstar_spin.front().first);
     sigTitle.ReplaceAll("K*s","K*");
   } else {
-    sigName.ReplaceAll("Kstar","Kstars_").ReplaceAll("signal","");
+    sigName.ReplaceAll("Kstar","Kstars");
     for (Int_t iKstar_S=0; iKstar_S<nKstar; ++iKstar_S) {
       if (iKstar_S>0)
 	sigName.Append("__");
