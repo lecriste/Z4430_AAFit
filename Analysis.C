@@ -53,6 +53,10 @@ void Analysis()
   SysInfo_t* s = new SysInfo_t();
   gSystem->GetSysInfo(s);
   Int_t nCPU = s->fCpus;
+
+    cout<<TComplex::Exp(TComplex::I()*(TMath::Pi()+0.2))<<endl;
+    cout<<TComplex::Exp(TComplex::I()*(-TMath::Pi()+0.2))<<endl;
+
   /*
   // Lambda*(1600)
   RooRealVar a1600L0S1("a1600L0S1","a1600L0S1",0.64, 0.,1.);
@@ -110,37 +114,44 @@ void Analysis()
   // Belle B0->J/psi K+ pi- values
   // 5h20' with K*(892) + PHSP (1K+1K events)
   // 20' with K*(800) + K*(1430)0 + K*(1430)2 (2K events)
+  TString dataName = "dataset";
 
   cout <<"Adding K*(892)..." <<endl;
   const Double_t M892 = 0.89581 ; const Double_t G892 = 0.0474; // From PDG neutral only K*(892)
   Kstar_spin.push_back( make_pair("892_1", make_pair(M892,G892) ) ) ;
   helJ_map["892_1_0"] = make_pair(1.,0.); helJ_map["892_1_p1"] = make_pair(0.844,3.14); helJ_map["892_1_m1"] = make_pair(0.196,-1.7);
+  dataName += "__k892_1"
 
   cout <<"Adding K*(800)..." <<endl;
   //const Double_t M800 = 0.682; const Double_t G800 = 0.547; // From PDG
   const Double_t M800 = 0.931; const Double_t G800 = 0.578; // From Belle
   Kstar_spin.push_back( make_pair("800_0", make_pair(M800,G800) ) ) ;
   helJ_map["800_0_0"] = make_pair(1.12,2.3);
+  dataName += "__k800_0"
 
-  cout <<"Adding K*(1410)..." <<endl;
+  /*cout <<"Adding K*(1410)..." <<endl;
   const Double_t M1410 = 1.414; const Double_t G1410 = 0.232;
   Kstar_spin.push_back( make_pair("1410_1", make_pair(M1410,G1410) ) ) ;
   helJ_map["1410_1_0"] = make_pair(0.119,0.81); helJ_map["1410_1_p1"] = make_pair(0.123,-1.04); helJ_map["1410_1_m1"] = make_pair(0.036,0.67);
+  dataName += "__k1410_1"
 
   cout <<"Adding K*(1430)_0..." <<endl;
   const Double_t M1430_0 = 1.425; const Double_t G1430_0 = 0.270;
   Kstar_spin.push_back( make_pair("1430_0", make_pair(M1430_0,G1430_0) ) ) ;
   helJ_map["1430_0_0"] = make_pair(0.89,-2.17);
+  dataName += "__k1430_0"
 
   cout <<"Adding K*(1430)_2..." <<endl;
   const Double_t M1430_2 = 1.4324; const Double_t G1430_2 = 0.109; // From PDG neutral only
   Kstar_spin.push_back( make_pair("1430_2", make_pair(M1430_2,G1430_2) ) ) ;
   helJ_map["1430_2_0"] = make_pair(4.66,-0.32); helJ_map["1430_2_p1"] = make_pair(4.65,-3.05); helJ_map["1430_2_m1"] = make_pair(1.26,-1.92);
-
+  dataName += "__k1430_2"*/
   //const Double_t M1780_3 = 1.776; const Double_t G1780_3 = 0.159; // From PDG neutral only
   //Kstar_spin.push_back( make_pair("1780_3", make_pair(M1780_3,G1780_3) ) ) ;
   //helJ_map["1780_3_0"] = make_pair(16.8,-1.43); helJ_map["1780_3_p1"] = make_pair(19.1,2.03); helJ_map["1780_3_m1"] = make_pair(10.2,1.55);
+  //dataName += "__k1780_3"
 
+  dataName += ".txt";
   vector< RooRealVar* > amplitudeRooRealVar;
   vector< TString > varNames;
   RooArgSet amplitudeVars("amplitudeVars_set");
@@ -201,7 +212,7 @@ void Analysis()
   RooConstVar smear("smear", "smear", smearing) ;
 
   // B^{0} -> psi(nS) #pi^{+} K^{-}
-  GooPdf* phaseSpace = new     ThreeBodiesPsiPiK ("BdToMuMuPiK_PHSP", Variable* _x,Variable* _mp,Variable* _m1,Variable* _m2,Variable* _m3);//,Variable* nBk);
+  //GooPdf* phaseSpace = new     ThreeBodiesPsiPiK ("BdToMuMuPiK_PHSP", Variable* _x,Variable* _mp,Variable* _m1,Variable* _m2,Variable* _m3);//,Variable* nBk);
   RooAbsPdf* BdToMuMuPiK_PHSP = new RooGenericPdf("BdToMuMuPiK_PHSP","3-body PHSP","sqrt( pow(massKPi,4) + pow(mPion,4) + pow(mKaon,4) - 2*pow(massKPi,2)*pow(mPion,2) - 2*pow(massKPi,2)*pow(mKaon,2) - 2*pow(mPion,2)*pow(mKaon,2) ) * sqrt( pow(mBd,4) + pow(massKPi,4) + pow(mMuMu,4) - 2*pow(mBd,2)*pow(massKPi,2) - 2*pow(mBd,2)*pow(mMuMu,2) - 2*pow(massKPi,2)*pow(mMuMu,2) ) / (massKPi)", RooArgSet(massKPi,mPion,mKaon,mBd,mMuMu)); // variables name used in the formula must be = name of the RooVariables in the list
   //cout <<"\nBdToMuMuPiK_PHSP.getVal() =\n" <<BdToMuMuPiK_PHSP->getVal() <<endl; return;
 
@@ -250,7 +261,7 @@ void Analysis()
   timersub(&stopGenTime, &startGenTime, &genTime);
   Double_t genTimeCPU = (stopGenCPU - startGenCPU)*10000;
   Double_t procTime = (stopGenProc.tms_utime - startGenProc.tms_utime)*10000 ;
-
+  data->write(dataName.Data());
   cout <<"\n" <<nEvents.getVal() <<" events have been genrated in\n" ;
   cout <<"Wallclock time: " << genTime.tv_sec + genTime.tv_usec/1000000.0 << " seconds\n" ;
   cout <<"Total CPU time: " << (genTimeCPU / CLOCKS_PER_SEC) <<" seconds\n" ;
@@ -345,8 +356,22 @@ void Analysis()
 
       TString legName = TString::Format("K*_{%s}(%s)", &Kstar_name(Kstar_name.Length() -1), (TString(Kstar_name(0, Kstar_name.Length() -2))).Data());
       cout <<"\n\nIntegrating with " <<legName <<" only..." <<endl;
+      cosMuMu.setVal(-0.4);
       Kstar_integral[iKstar_S] = (sigPDF.createIntegral(*starResonancesMass))->getVal() ;
-      cout <<"Integral with " <<legName <<" only is: " <<Kstar_integral[iKstar_S] <<endl;
+      cout <<"CosMuMu : "<<cosMuMu.getVal()<<"Integral with " <<legName <<" only is: " <<Kstar_integral[iKstar_S] <<endl;
+
+      cosMuMu.setVal(0.1);
+      Kstar_integral[iKstar_S] = (sigPDF.createIntegral(*starResonancesMass))->getVal() ;
+      cout <<"CosMuMu : "<<cosMuMu.getVal()<<"Integral with " <<legName <<" only is: " <<Kstar_integral[iKstar_S] <<endl;
+
+      cosMuMu.setVal(0.3);
+      Kstar_integral[iKstar_S] = (sigPDF.createIntegral(*starResonancesMass))->getVal() ;
+      cout <<"CosMuMu : "<<cosMuMu.getVal()<<"Integral with " <<legName <<" only is: " <<Kstar_integral[iKstar_S] <<endl;
+
+      RooArgSet observariables(massKPi,cosMuMu,cosKstar,phi);
+
+      cout <<"Total Integral with " <<legName <<" only is: " <<(sigPDF.createIntegral(observariables))->getVal() <<endl;
+
       Double_t fraction = (Kstar_integral[iKstar_S] / full_signal_integral)*(sigFrac.getVal());
       cout <<legName <<" fraction is: " <<fraction*100 <<"%" <<endl;
       cout <<"\nPlotting " <<legName <<" only..." <<endl;
