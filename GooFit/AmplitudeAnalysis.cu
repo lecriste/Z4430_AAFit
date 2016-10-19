@@ -138,7 +138,7 @@ int main(int argc, char** argv) {
 
   bool hesse = false;
 
-  std::string datasetname = "dataset";
+  std::string datasetName = "Kstars";
   TString plotsDir = "./plots/";
   std::vector< std::string> kStarNames;
 
@@ -377,52 +377,49 @@ int main(int argc, char** argv) {
 
     }
 
-  TString plotsname = "";
+  TString plotsName = "";
   TString extension = "eps"; extension = "png";
 
-  if (!(k1430Star0 || k1430Star2 || k1410Star || k800Star ||k892Star || k1780Star)) {
+  if (!nOfKstar) {
     cout <<"No K* selected (K892,K800,K1410,K1430) please see instructions below" <<endl;
     printinstruction();
     return 1;
   } else {
-    cout <<"Starting Amplitude Analysis fit with " <<nOfKstar<<" K*s:" <<endl;
+    cout <<"Starting Amplitude Analysis fit with " <<nOfKstar <<" K*s:" <<endl;
+    if (nOfKstar < 2)
+      datasetName = "Kstar";
+
     if (k892Star) {
       cout <<"- K*(892)"<<endl;
-      datasetname += "__k892_1";
-      plotsname.Append("__k892_1");
+      datasetName += "__892_1"; plotsName.Append("__892_1");
       kStarNames.push_back("K*_{1}(892)");
     }
     if (k800Star) {
       cout<<"- K*(800)"<<endl;
-      datasetname += "__k800_0";
-      plotsname.Append("__k800_0");
+      datasetName += "__800_0"; plotsName.Append("__800_0");
       kStarNames.push_back("K*_{0}(800)");
     }
     if (k1410Star) {
       cout<<"- K*(1410)"<<endl;
-      datasetname += "__k1410_1";
-      plotsname.Append("__k1410_1");
+      datasetName += "__1410_1"; plotsName.Append("__1410_1");
       kStarNames.push_back("K*_{1}(1410)");
     }
     if (k1430Star0) {
       cout<<"- K*(1430_0)"<<endl;
-      datasetname += "__k1430_0";
-      plotsname.Append("__k1430_0");
+      datasetName += "__1430_0"; plotsName.Append("__1430_0");
       kStarNames.push_back("K*_{0}(1430)");
     }
     if (k1430Star2) {
       cout<<"- K*(1430_2)"<<endl;
-      datasetname += "__k1430_2";
-      plotsname.Append("__k1430_2");
+      datasetName += "__1430_2"; plotsName.Append("__1430_2");
       kStarNames.push_back("K*_{2}(1430)");}
     if (k1780Star) {
       cout<<"- K*(1780_3)"<<endl;
-      datasetname += "__k1780_3";
-      plotsname.Append("__k1780_3");
+      datasetName += "__1780_3"; plotsName.Append("__1780_3");
       kStarNames.push_back("K*_{3}(1780)");}
   }
 
-  datasetname += ".txt";
+  datasetName += ".txt";
 
   fptype aMin = -aMax;
   fptype bMin = -bMax;
@@ -701,10 +698,10 @@ int main(int argc, char** argv) {
   TH1F phiHisto(phi_name+"_Histo", phi_name+";"+phi_title, datapoints4, phi->lowerlimit, phi->upperlimit); phiHisto.SetLineColor(kBlack); phiHisto.SetMarkerColor(kBlack);
 
   //ifstream dataTxt("dataset.txt");
-  ifstream dataTxt(datasetname.c_str());
+  ifstream dataTxt(("datasets/"+datasetName).c_str());
   Int_t totEvents = 0;
   if ( !(dataTxt.good()) ) {
-    std::cout <<"No valid input at : "<<datasetname<<" provided. Returning."<<std::endl;
+    std::cout <<"No valid input at : "<<datasetName <<" provided. Returning." <<std::endl;
     return 1;
   } else
     totEvents = std::count(std::istreambuf_iterator<char>(dataTxt), std::istreambuf_iterator<char>(), '\n');
@@ -713,12 +710,12 @@ int main(int argc, char** argv) {
 
   if (dataTxt.good()) {
     Int_t evt=0;
-    cout <<"\nReading " <<events <<" out of " <<totEvents <<" events from " <<datasetname <<" and filling variables histograms" <<endl;
+    cout <<"\nReading " <<events <<" out of " <<totEvents <<" events from " <<datasetName <<" and filling variables histograms" <<endl;
     while( (dataTxt >> var1 >> var2 >> var3 >> var4)  &&  (evt < events)) {
       evt++;
       massKPi->value = var1;
-      cosMuMu->value = var2;
-      massPsiPi->value = var3;
+      massPsiPi->value = var2;
+      cosMuMu->value = var3;
       phi->value = var4;
 
       //std::cout<< massKPi->value << " - " <<cosMuMu->value << " - " << massPsiPi->value << " - " << phi->value << " - " << std::endl;
@@ -732,7 +729,7 @@ int main(int argc, char** argv) {
     }
   }
   dataTxt.close();
-
+  return 0;
   matrix->setData(&dataset);
   //total->setData(&dataset);
 
@@ -1444,7 +1441,7 @@ int main(int argc, char** argv) {
   legPlot->Draw(); fitStat->Draw();
   canvas->SetLogy(1);
 
-  canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),massKPi_name.Data(),plotsname.Data(),extension.Data()));
+  canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),massKPi_name.Data(),plotsName.Data(),extension.Data()));
   canvas->Clear();
   ////////////////////////////////////////////////////////////////////////////////
 
@@ -1455,7 +1452,7 @@ int main(int argc, char** argv) {
   //legPlot->Draw(); //fitStat->Draw();
   canvas->SetLogy(1);
 
-  canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),cosMuMu_name.Data(),plotsname.Data(),extension.Data()));
+  canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),cosMuMu_name.Data(),plotsName.Data(),extension.Data()));
   canvas->Clear();
   ////////////////////////////////////////////////////////////////////////////////
 
@@ -1466,7 +1463,7 @@ int main(int argc, char** argv) {
   //legPlot->Draw(); //fitStat->Draw();
   canvas->SetLogy(1);
 
-  canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),massPsiPi_name.Data(),plotsname.Data(),extension.Data()));
+  canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),massPsiPi_name.Data(),plotsName.Data(),extension.Data()));
   canvas->Clear();
   ////////////////////////////////////////////////////////////////////////////////
 
@@ -1477,7 +1474,7 @@ int main(int argc, char** argv) {
   //legPlot->Draw(); //fitStat->Draw();
   canvas->SetLogy(1);
 
-  canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),phi_name.Data(),plotsname.Data(),extension.Data()));
+  canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),phi_name.Data(),plotsName.Data(),extension.Data()));
   canvas->Clear();
   ////////////////////////////////////////////////////////////////////////////////
 
