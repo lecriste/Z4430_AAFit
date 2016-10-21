@@ -701,17 +701,18 @@ int main(int argc, char** argv) {
   ifstream dataTxt(("datasets/"+datasetName).c_str());
   Int_t totEvents = 0;
   if ( !(dataTxt.good()) ) {
-    std::cout <<"No valid input at : "<<datasetName <<" provided. Returning." <<std::endl;
+    std::cout <<"No valid input at : " <<datasetName <<" provided. Returning." <<std::endl;
     return 1;
   } else
-    totEvents = std::count(std::istreambuf_iterator<char>(dataTxt), std::istreambuf_iterator<char>(), '\n');
+    //totEvents = std::count(std::istreambuf_iterator<char>(dataTxt), std::istreambuf_iterator<char>(), '\n');
+    totEvents = 20000;
 
   fptype var1, var2, var3, var4;
 
   if (dataTxt.good()) {
     Int_t evt=0;
     cout <<"\nReading " <<events <<" out of " <<totEvents <<" events from " <<datasetName <<" and filling variables histograms" <<endl;
-    while( (dataTxt >> var1 >> var2 >> var3 >> var4)  &&  (evt < events)) {
+    while( (evt < events)  &&  (dataTxt >> var1 >> var2 >> var3 >> var4) ) {
       evt++;
       massKPi->value = var1;
       massPsiPi->value = var2;
@@ -729,7 +730,7 @@ int main(int argc, char** argv) {
     }
   }
   dataTxt.close();
-  return 0;
+  //return 0;
   matrix->setData(&dataset);
   //total->setData(&dataset);
 
