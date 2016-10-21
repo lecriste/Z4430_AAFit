@@ -47,7 +47,7 @@ ROOT_INCLUDES = -I$(ROOTSYS)/include/ -I$(ROOTSYS)/include/Math
 ROOT_LIBS     = -L$(ROOTSYS)/lib/ -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lMatrix -lPhysics -lMathCore -pthread -lThread -lMinuit -lFoam # -lRooFit -lRooFitCore  -lRooStats -lRootAuth  
 WRKDIR = $(GOOFITDIR)/wrkdir/
 
-THRUSTO         = ./Pdfs/MatrixPdf.o $(WRKDIR)/Variable.o $(WRKDIR)/FitManager.o $(WRKDIR)/GooPdfCUDA.o $(WRKDIR)/Faddeeva.o $(WRKDIR)/FitControl.o $(WRKDIR)/PdfBase.o $(WRKDIR)/DataSet.o $(WRKDIR)/BinnedDataSet.o $(WRKDIR)/UnbinnedDataSet.o $(WRKDIR)/FunctorWriter.o
+THRUSTO         = $(WRKDIR)/Variable.o $(WRKDIR)/FitManager.o $(WRKDIR)/GooPdfCUDA.o $(WRKDIR)/Faddeeva.o $(WRKDIR)/FitControl.o $(WRKDIR)/PdfBase.o $(WRKDIR)/DataSet.o $(WRKDIR)/BinnedDataSet.o $(WRKDIR)/UnbinnedDataSet.o $(WRKDIR)/FunctorWriter.o
 ROOTRIPDIR      = $(GOOFITDIR)/rootstuff/
 ROOTUTILLIB     = $(ROOTRIPDIR)/libRootUtils.so
 PROGRAMS        = MatrixPdf AmplitudeAnalysis  
@@ -60,8 +60,11 @@ MatrixPdf:		./Pdfs/MatrixPdf.cu
 			$(CXX) $(INCLUDES) $(ROOT_INCLUDES) $(DEFINEFLAGS) $(CXXFLAGS) -c -o ./Pdfs/$@.o $<		
 			@echo "$@ done"
 
+THRUSTO += ./Pdfs/MatrixPdf.o
+
 AmplitudeAnalysis.o:	AmplitudeAnalysis.cu
 			$(CXX) $(INCLUDES) $(ROOT_INCLUDES) $(DEFINEFLAGS) $(CXXFLAGS) -c -o $@ $<
+			@echo "$@ done"
 
 AmplitudeAnalysis:	AmplitudeAnalysis.o
 			$(LD) $(LDFLAGS) $^ $(THRUSTO) $(LIBS) $(ROOT_LIBS) $(OutPutOpt) $@
