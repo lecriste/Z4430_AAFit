@@ -38,7 +38,7 @@ endif
 CUDAHEADERS = $(CUDALOCATION)/include/
 GOOFITDIR = $(GOOFITDIRECTORY)
 
-INCLUDES += -I./Pdfs/ -I$(CUDALOCATION)/samples/common/inc/ -I$(CUDAHEADERS) -I$(GOOFITDIR) -I$(GOOFITDIR)/rootstuff/ -I$(GOOFITDIR)/rootstuff/Math -I$(GOOFITDIR)/PDFs/
+INCLUDES += -I$(CUDALOCATION)/samples/common/inc/ -I$(CUDAHEADERS) -I$(GOOFITDIR) -I$(GOOFITDIR)/rootstuff/ -I$(GOOFITDIR)/rootstuff/Math -I$(GOOFITDIR)/PDFs/
 LIBS += -L$(CUDALOCATION)/$(CUDALIBDIR) -lcuda -lcudart -L$(GOOFITDIR)/rootstuff/ -lRootUtils
 
 # These are for user-level programs that want access to the ROOT plotting stuff, 
@@ -50,21 +50,14 @@ WRKDIR = $(GOOFITDIR)/wrkdir/
 THRUSTO         = $(WRKDIR)/Variable.o $(WRKDIR)/FitManager.o $(WRKDIR)/GooPdfCUDA.o $(WRKDIR)/Faddeeva.o $(WRKDIR)/FitControl.o $(WRKDIR)/PdfBase.o $(WRKDIR)/DataSet.o $(WRKDIR)/BinnedDataSet.o $(WRKDIR)/UnbinnedDataSet.o $(WRKDIR)/FunctorWriter.o
 ROOTRIPDIR      = $(GOOFITDIR)/rootstuff/
 ROOTUTILLIB     = $(ROOTRIPDIR)/libRootUtils.so
-PROGRAMS        = MatrixPdf AmplitudeAnalysis  
+PROGRAMS        = AmplitudeAnalysis 
 
 .SUFFIXES: 
 
 all:    $(PROGRAMS)
 
-MatrixPdf:		./Pdfs/MatrixPdf.cu
-			$(CXX) $(INCLUDES) $(ROOT_INCLUDES) $(DEFINEFLAGS) $(CXXFLAGS) -c -o ./Pdfs/$@.o $<		
-			@echo "$@ done"
-
-THRUSTO += ./Pdfs/MatrixPdf.o
-
-AmplitudeAnalysis.o:	AmplitudeAnalysis.cu
-			$(CXX) $(INCLUDES) $(ROOT_INCLUDES) $(DEFINEFLAGS) $(CXXFLAGS) -c -o $@ $<
-			@echo "$@ done"
+%.o:	%.cu
+	$(CXX) $(INCLUDES) $(ROOT_INCLUDES) $(DEFINEFLAGS) $(CXXFLAGS) -c -o $@ $<
 
 AmplitudeAnalysis:	AmplitudeAnalysis.o
 			$(LD) $(LDFLAGS) $^ $(THRUSTO) $(LIBS) $(ROOT_LIBS) $(OutPutOpt) $@
@@ -72,4 +65,4 @@ AmplitudeAnalysis:	AmplitudeAnalysis.o
 
 
 clean:
-			@rm -f *.o */*.o core $(PROGRAMS) 
+			@rm -f *.o core $(PROGRAMS) 
