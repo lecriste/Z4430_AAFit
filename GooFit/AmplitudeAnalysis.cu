@@ -433,6 +433,7 @@ int main(int argc, char** argv) {
   gettimeofday(&startTime, NULL);
   startC = times(&startProc);
 
+
   Variable* dRadB0  = new Variable("dRadB0",5.0);
   Variable* dRadKs  = new Variable("dRadKs",1.5);
   Variable* psi_nS  = new Variable("psi_nS",1.0);
@@ -560,8 +561,8 @@ int main(int argc, char** argv) {
   std::vector<Variable*> obserVariables;
 
   obserVariables.push_back(massKPi);
-  obserVariables.push_back(cosMuMu);
   obserVariables.push_back(massPsiPi);
+  obserVariables.push_back(cosMuMu);
   obserVariables.push_back(phi);
 
   std::vector<Variable*> Masses, Gammas, Spins, as, bs;
@@ -720,7 +721,6 @@ int main(int argc, char** argv) {
       phi->value = var4;
 
       //std::cout<< massKPi->value << " - " <<cosMuMu->value << " - " << massPsiPi->value << " - " << phi->value << " - " << std::endl;
-      //std::cout<< massKPi->value << " " <<cosMuMu->value << " " << massPsiPi->value << " " << phi->value << " " << std::endl;
 
       dataset.addEvent();
       massKPiHisto.Fill(massKPi->value);
@@ -731,10 +731,11 @@ int main(int argc, char** argv) {
   }
   dataTxt.close();
   //return 0;
+  std::cout<<"Added " << dataset.getNumEvents()<<" events"<<std::endl;
   matrix->setData(&dataset);
   //total->setData(&dataset);
 
-  FitManager fitter(matrix, hesse);
+  FitManager fitter(matrix);
   //FitManager fitter(total);
   cout <<"\nFitting ..." <<endl;
   fitter.fit();
