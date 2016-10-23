@@ -735,7 +735,7 @@ int main(int argc, char** argv) {
   matrix->setData(&dataset);
   //total->setData(&dataset);
 
-  FitManager fitter(matrix);
+  FitManager fitter(matrix,hesse);
   //FitManager fitter(total);
   cout <<"\nFitting ..." <<endl;
   fitter.fit();
