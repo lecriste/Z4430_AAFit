@@ -692,7 +692,8 @@ int main(int argc, char** argv) {
 
   UnbinnedDataSet dataset(obserVariables);
 
-  TString massKPi_title = "m(K^{-}#pi^{+})",  cosMuMu_title = "cos(#theta_{J/#psi})",  massPsiPi_title = "cos(#theta_{K*})",  phi_title = "#phi";
+  //TString massKPi_title = "m(K^{-}#pi^{+})",  cosMuMu_title = "cos(#theta_{J/#psi})",  massPsiPi_title = "cos(#theta_{K*})",  phi_title = "#phi";
+  TString massKPi_title = "m(K^{-}#pi^{+})",  cosMuMu_title = "cos(#theta_{J/#psi})",  massPsiPi_title = "m(#psi#pi^{+})",  phi_title = "#phi";
   TH1F massKPiHisto(massKPi_name+"_Histo", TString::Format("%s;%s [GeV]",massKPi_name.Data(),massKPi_title.Data()), datapoints1, massKPi->lowerlimit, massKPi->upperlimit); massKPiHisto.SetLineColor(kBlack); massKPiHisto.SetMarkerColor(kBlack);
   TH1F cosMuMuHisto(cosMuMu_name+"_Histo", TString::Format("%s;%s",cosMuMu_name.Data(),cosMuMu_title.Data()), datapoints2, cosMuMu->lowerlimit, cosMuMu->upperlimit); cosMuMuHisto.SetLineColor(kBlack); cosMuMuHisto.SetMarkerColor(kBlack);
   TH1F massPsiPiHisto(massPsiPi_name+"_Histo", massPsiPi_name+";"+massPsiPi_title, datapoints3, massPsiPi->lowerlimit, massPsiPi->upperlimit); massPsiPiHisto.SetLineColor(kBlack); massPsiPiHisto.SetMarkerColor(kBlack);
