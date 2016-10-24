@@ -16,6 +16,7 @@
 #include "RooAbsCategory.h"
 #include "TComplex.h"
 
+#include "utilities.h"
 
 const Double_t MLb = 5.61951;
 const Double_t MBd = 5.27961;
@@ -105,7 +106,7 @@ public:
 	// B^0 -> psi(nS) K* -> mu+ mu- K- pi+
 	RooAbsReal& _mKP,
 	RooAbsReal& _cJ,
-	RooAbsReal& _cKs,
+	RooAbsReal& _mPsiP,
 	RooAbsReal& _phi,
 	/*
 	   // K*(892)    
@@ -139,7 +140,7 @@ public:
     TComplex cWignerD_J(TComplex WignerD_J) const ;
     //
     //Double_t Wignerd_R(string spinR, string helJ) const ;
-    Double_t Wignerd_R(TString spinR, string helJ) const ;
+    Double_t Wignerd_R(Double_t cKs, TString spinR, string helJ) const ;
     /*
     TComplex HLb1600(string helLs, string helJ) const ;
     TComplex HLb1670(string helLs, string helJ) const ;
@@ -154,6 +155,7 @@ public:
     Double_t Qmom(Double_t mkp) const ;
     Double_t PhiPHSP(Double_t mkp) const ;
 
+    Double_t BlattWeisskopf_half(Int_t Lmin, Double_t qOrq0, Double_t D) const ;
     Double_t BlattWeisskopf(Int_t Lmin, Double_t q, Double_t q0, Double_t D) const ;
     Double_t BWGamma(Double_t RMass, Double_t RGamma, Int_t Lmin, Double_t D) const ;
     TComplex BW(Double_t RMass, Double_t RGamma, Int_t Lmin, Double_t D) const ;
@@ -165,13 +167,13 @@ public:
     */
     //
     //TComplex AngularTerm(string R, string spinR, string helJ, string helDmu) const ;
-    TComplex AngularTerm(TString R, TString spinR, string helJ, string helDmu) const ;
-    TComplex ME(string helDmu) const ;
+    TComplex AngularTerm(Double_t cKs, TString R, TString spinR, string helJ, string helDmu) const ;
+    TComplex ME(Double_t cKs, string helDmu) const ;
     //
     //TComplex ME2() const ;
     //TComplex PDF() const ;
-    Double_t ME2() const ;
-    Double_t PDF() const ;
+    Double_t ME2(Double_t cKs) const ;
+    Double_t PDF(Double_t cKs) const ;
     
 
 protected:
@@ -206,7 +208,7 @@ protected:
   // B^0 -> psi(nS) K* -> mu+ mu- K- pi+
   RooRealProxy mKP ;
   RooRealProxy cJ ;
-  RooRealProxy cKs ;
+  RooRealProxy mPsiP ;
   RooRealProxy phi ;
   /*
     // K*(892)    
@@ -222,10 +224,11 @@ protected:
   //vector< TString > varNames;
   //RooArgSet amplitudeVars;
 
-  //Double_t evaluate() const ;
+  Double_t evaluate() const ;
     
 
 private:
+  Double_t MPsi_nS;
   //vector< pair<TString, pair< pair<Double_t, Double_t>, pair<Double_t, Double_t> > > > Kstar_spin;
   vector< pair<TString, pair<const Double_t, const Double_t> > > Kstar_spin;
   vector< TString > varNames;
@@ -233,8 +236,6 @@ private:
   map< TString,RooRealProxy* > amplitudeVarProxy_map;
   TString psi_nS;
   Double_t dRadB0, dRadKs;
-
-  Double_t evaluate() const ;
     
   ClassDef(myPDF,1) // Your description goes here...
 };

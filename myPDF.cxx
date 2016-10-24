@@ -46,7 +46,7 @@ ClassImp(myPDF)
 	      // B^0 -> psi(nS) K* -> mu+ mu- K- pi+
 	      RooAbsReal& _mKP,
 	      RooAbsReal& _cJ,
-	      RooAbsReal& _cKs,
+	      RooAbsReal& _mPsiP,
 	      RooAbsReal& _phi,
 	      /*
 	      // K*(892)    
@@ -93,7 +93,7 @@ ClassImp(myPDF)
    // B^0 -> psi(nS) K* -> mu+ mu- K- pi+
    mKP("mKP","mKP",this,_mKP),
    cJ("cJ","cJ",this,_cJ),
-   cKs("cKs","cKs",this,_cKs),
+   mPsiP("mPsiP","mPsiP",this,_mPsiP),
    phi("phi","phi",this,_phi),
    /*
    // K*(892)    
@@ -110,6 +110,7 @@ ClassImp(myPDF)
    psi_nS(_psi_nS),
    dRadB0(_dRadB0), dRadKs(_dRadKs)
 { 
+  // Remember to add any global variable you use in this constructor in the "other" constructor as variable(other.variable)
 
   for (Int_t iAmplitudevar=0; iAmplitudevar<amplitudeVars.getSize(); ++iAmplitudevar) {
     TString varName = varNames[iAmplitudevar];
@@ -117,9 +118,18 @@ ClassImp(myPDF)
     //amplitudeVarProxy_map[varName] = new RooRealProxy(varName,varName,amplitudeVars.find(varName),(RooAbsReal&)(*(amplitudeVars.find(varName)))) ;
   } 
 
+  if (psi_nS.EqualTo("1")) 
+    MPsi_nS = MJpsi;
+  else if (psi_nS.EqualTo("2"))
+    MPsi_nS = MPsi2S;
+  else {
+    cout <<"psi_nS = " <<psi_nS <<" not allowed at the moment." <<endl;
+    return;
+  }
+
 } 
 
- myPDF::myPDF(const myPDF& other, const char* name) :  
+myPDF::myPDF(const myPDF& other, const char* name) :  
    RooAbsPdf(other,name), 
    /*
    mKP("mKP",this,other.mKP),
@@ -148,7 +158,7 @@ b1670L2S3("b1670L2S3",this,other.b1670L2S3)
    // B^0 -> psi(nS) K* -> mu+ mu- K- pi+
    mKP("mKP",this,other.mKP),
    cJ("cJ",this,other.cJ),
-   cKs("cKs",this,other.cKs),
+   mPsiP("mPsiP",this,other.mPsiP),
    phi("phi",this,other.phi),
    /*
 // K*(892)    
@@ -159,6 +169,8 @@ b892z("b892z",this,other.b892z),
 a892p1("a892p1",this,other.a892p1),
 b892p1("b892p1",this,other.b892p1)
    */
+MPsi_nS(other.MPsi_nS),
+   //cKs(other.cKs),
 Kstar_spin(other.Kstar_spin),
 varNames(other.varNames),
 amplitudeVars(other.amplitudeVars),
@@ -168,23 +180,26 @@ dRadB0(other.dRadB0), dRadKs(other.dRadKs)
  {
  }
 
+
  Double_t myPDF::evaluate() const 
  {
-
    // ENTER EXPRESSION IN TERMS OF VARIABLE ARGUMENTS HERE
-   Double_t MPsi_nS = 0.;
-    if (psi_nS.EqualTo("1")) 
-      MPsi_nS = MJpsi;
-    else if (psi_nS.EqualTo("2"))
-      MPsi_nS = MPsi2S;
-    else
-      cout <<"psi_nS = " <<psi_nS <<" not allowed in the \"evaluate\" function at the moment. Keeping MPsi_nS to 0" <<endl;
-
-   if ((mKP < MKaon + MPion) || (mKP > MBd - MPsi_nS))
+   if ((mKP < MKaon + MPion) || (mKP > MBd - MPsi_nS) || (mPsiP < MPsi_nS + MPion) || (mPsiP > MBd - MKaon))
      return 0.;
-   else
-     return PDF();
 
+   // cos(theta(K*)) from masses
+   Double_t mKP2 = mKP*mKP;
+   Double_t mPsiP2 = mPsiP*mPsiP;
+   Double_t MPsi_nS2 = MPsi_nS*MPsi_nS;
+   Double_t cKs = cosTheta_FromMasses(mKP2, mPsiP2, MPsi_nS2, MBd2, MKaon2, MPion2);
+   //cout <<"cKs = " <<cKs <<" for mKP2 = " <<mKP2 <<" and mPsiP2 = " <<mPsiP2 <<endl;
+   
+   if (fabs(cKs) > 1) {
+     //cout <<"cKs = " <<cKs <<" for mKP2 = " <<mKP2 <<" and mPsiP2 = " <<mPsiP2 <<endl;
+     return 0.;
+   }
+   
+   return PDF(cKs);
  }
 
  Int_t myPDF::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* ) const //rangeName
@@ -200,7 +215,6 @@ dRadB0(other.dRadB0), dRadKs(other.dRadKs)
 
      return 0 ;
  } 
-
 
 
  Double_t myPDF::analyticalIntegral(Int_t code, const char* rangeName) const  
@@ -368,30 +382,32 @@ Double_t myPDF::PhiPHSP(Double_t mkp) const
 }
 
 
-Double_t myPDF::BlattWeisskopf(Int_t Lmin, Double_t q, Double_t q0, Double_t D) const
+Double_t myPDF::BlattWeisskopf_half(Int_t Lmin, Double_t qOrq0, Double_t D) const
 {
-    Double_t Dq = D*q;
-    Double_t Dq0 = D*q0;
-    Double_t Dq2 = Dq*Dq;
-    Double_t Dq02 = Dq0*Dq0;
-    Double_t Dq4 = Dq2*Dq2;
-    Double_t Dq04 = Dq02*Dq02;
-    Double_t Dq6 = Dq4*Dq2;
-    Double_t Dq06 = Dq04*Dq02;
-    Double_t rootterm = -1;
+    Double_t x2 = (D*qOrq0)*(D*qOrq0);
     
     if (Lmin==0)
-      return 1.;
+      return 1. ;
     else if (Lmin==1)
-      rootterm =                     (1. + Dq02) / (1. + Dq2) ;
+      return (1. + x2) ;
     else if (Lmin==2)
-      rootterm =             (9. + 3*Dq02 +Dq04) / (9. + 3*Dq2 +Dq4) ;
+      return (9. + x2*(3 + x2)) ;
     else if (Lmin==3)
-      rootterm = (225. + 45*Dq02 + 6*Dq04 + Dq06) / (225. + 45*Dq2 + 6*Dq4 + Dq6) ;
-    else { cout <<"WARNING! Lmin = " <<Lmin <<" is not implemented for BlattWeisskopf functions at the moment. Returning 1 -> \"AngularTerm\" = 0" <<endl;
+      return (225. + x2*(45 + x2*(6 + x2))) ;
+    else if (Lmin==4)
+      return (11025. + x2*(1575 + x2*(135 + x2*(10 + x2)))) ;
+    else if (Lmin==5)
+      return (893025. + x2*(99225 + x2*(6300 + x2*(315 + x2*(15 + x2))))) ;
+    else { cout <<"WARNING! Lmin = " <<Lmin <<" is not implemented for BlattWeisskopf_half function at the moment. Returning 1" <<endl;
       return 1.;
     }    
     
+}
+
+Double_t myPDF::BlattWeisskopf(Int_t Lmin, Double_t q, Double_t q0, Double_t D) const
+{
+    Double_t rootterm = BlattWeisskopf_half(Lmin, q0, D) / BlattWeisskopf_half(Lmin, q, D) ;
+        
     if (rootterm > 0)
         return TMath::Sqrt( rootterm );
     else { cout <<"WARNING! In \"BlattWeisskopf\" function: rootterm <= 0 -> returning 1" <<endl;
@@ -469,52 +485,49 @@ TComplex myPDF::Cfterm(string helLs, string helJ, string help, string helDmu) co
 }
 */
 //Double_t myPDF::Wignerd_R(string spinR, string helJ) const 
-Double_t myPDF::Wignerd_R(TString spinR, string helJ) const 
+Double_t myPDF::Wignerd_R(Double_t cKs, TString spinR, string helJ) const 
 {
-  if (spinR=="0")
-    return 1. ;
-  else if (spinR=="1")
-    if (helJ=="m1")
-      return +(TMath::Sin(TMath::ACos(cKs)) / TMath::Sqrt2()) ;
-    else if (helJ=="0")
-      return cKs ;
-    else if (helJ=="p1")
-      return -(TMath::Sin(TMath::ACos(cKs)) / TMath::Sqrt2()) ;
-    else { cout <<"helJ = " <<helJ <<" is not allowed for spinR-" <<spinR <<" Wigner d^{spinR}_{helJ,0} functions. Returning 0" <<endl;
-      return 0 ;
-    }
-  else if (spinR=="2")
-    if (helJ=="m1")
-      return +(TMath::Sin(2*TMath::ACos(cKs)) * TMath::Sqrt(3./8.)) ;
-    else if (helJ=="0")
-      return +(3*TMath::Power(cKs,2) -1)/2. ;
-    else if (helJ=="p1")
-      return -(TMath::Sin(2*TMath::ACos(cKs)) * TMath::Sqrt(3./8.)) ;
-    else { cout <<"helJ = " <<helJ <<" is not allowed for spinR-" <<spinR <<" Wigner d^{spinR}_{helJ,0} functions. Returning 0" <<endl;
-      return 0 ;
-    }
-  else if (spinR=="3")
-    if (helJ=="m1")
-      return +(TMath::Sin(TMath::ACos(cKs))*(5*TMath::Cos(2*TMath::ACos(cKs)) + 3.) * TMath::Sqrt(3.)/8.) ;
-    else if (helJ=="0")
-      return +(5*TMath::Power(cKs,3) - 3*cKs)/2. ;
-    else if (helJ=="p1")
-      return -(TMath::Sin(TMath::ACos(cKs))*(5*TMath::Cos(2*TMath::ACos(cKs)) + 3.) * TMath::Sqrt(3.)/8.) ;
-    else { cout <<"helJ = " <<helJ <<" is not allowed for spinR-" <<spinR <<" Wigner d^{spinR}_{helJ,0} functions. Returning 0" <<endl;
-      return 0 ;
-    }
-  else {
+  Double_t helJ_m1 = 0, helJ_0 = 0;
+
+  if (spinR=="0") {
+    helJ_0 = 1. ;
+    if (helJ!="0") 
+      cout <<"helJ = " <<helJ <<" is not allowed for spinR-" <<spinR <<" Wigner d^{spinR}_{helJ,0} functions. Returning 0" <<endl;
+  } else if (spinR=="1") {
+    helJ_0 = cKs ;
+    helJ_m1 = +(TMath::Sin(TMath::ACos(cKs)) / TMath::Sqrt2()) ;
+  } else if (spinR=="2") {
+    helJ_0 = +(3*TMath::Power(cKs,2) -1)/2. ;
+    helJ_m1 = +(TMath::Sin(2*TMath::ACos(cKs)) * TMath::Sqrt(3./8.)) ;
+  } else if (spinR=="3") {
+    helJ_0 = +(5*TMath::Power(cKs,3) - 3*cKs)/2. ;
+    helJ_m1 = +(TMath::Sin(TMath::ACos(cKs)) * (5*TMath::Cos(2*TMath::ACos(cKs)) + 3.) * TMath::Sqrt(3.)/8.) ;
+  } else if (spinR=="5") {
+    helJ_0 = +(63*TMath::Power(cKs,5) - 70*TMath::Power(cKs,3) + 15*cKs)/8. ;
+    helJ_m1 = +(TMath::Sin(2*TMath::ACos(cKs)) * (21*TMath::Power(cKs,4) - 14*TMath::Power(cKs,2) + 1) * TMath::Sqrt(15./2.)) / 8. ;
+  } else {
     cout <<"spinR = " <<spinR <<" is not implemented for Wigner d^{spinR}_{helJ,0} functions at the moment. Returning 0 -> \"AngularTerm\" = 0" <<endl;
     return 0 ;
   }
+
+  if (helJ=="0")
+    return helJ_0 ;
+  else if (helJ=="m1")
+    return helJ_m1 ;
+  else if (helJ=="p1")
+    return -helJ_m1 ;
+  else { cout <<"helJ = " <<helJ <<" is not allowed for spinR-" <<spinR <<" Wigner d^{spinR}_{helJ,0} functions. Returning 0" <<endl;
+    return 0 ;
+  }
+
 }
 
 //TComplex myPDF::AngularTerm(string R, string spinR, string helJ, string helDmu) const
-TComplex myPDF::AngularTerm(TString R, TString spinR, string helJ, string helDmu) const
+TComplex myPDF::AngularTerm(Double_t cKs, TString R, TString spinR, string helJ, string helDmu) const
 {
   //cout <<"\nAngularTerm for K* " <<R <<" and helDmu = " <<helDmu <<" and helJ = " <<helJ <<" is made of Wignerd_R(spinR, helJ) * cWignerD_J(helJ, helDmu, phi) = " <<Wignerd_R(spinR, helJ) <<" * " <<cWignerD_J( WignerD_J(helJ, helDmu, phi) ) <<endl;
   //cout <<"It is multiplied by H(R,helJ) = H(" <<R <<"," <<helJ <<") = " <<H(R,helJ) <<endl;
-  return H(R,helJ) * Wignerd_R(spinR, helJ) * cWignerD_J( WignerD_J(helJ, helDmu, phi) ) ;
+  return H(R,helJ) * Wignerd_R(cKs, spinR, helJ) * cWignerD_J( WignerD_J(helJ, helDmu, phi) ) ;
 
 }
 /*
@@ -533,7 +546,7 @@ TComplex myPDF::ME(string helLb, string help, string helDmu) const
     
 }
 */
-TComplex myPDF::ME( string helDmu ) const
+TComplex myPDF::ME( Double_t cKs, string helDmu ) const
 {
   /*
   // K+ and pi- have 0 spin -> second last argument of K* RFunction is = spin(K*)
@@ -546,18 +559,18 @@ TComplex myPDF::ME( string helDmu ) const
   // any other K* should be added above   
   */
   TComplex matrixElement = 0.;
-  // K+ and pi- have 0 spin -> second last argument of K* RFunction is = spin(K*)
+  // K+ and pi- have 0 spin -> third last argument of K* RFunction is = spin(K*)
   for (Int_t iKstar_S=0; iKstar_S<(Int_t)Kstar_spin.size(); ++iKstar_S) {
     TString R = Kstar_spin[iKstar_S].first ;
     TString spin = R(Kstar_spin[iKstar_S].first.Length() -1) ;
     TString mass = R(0, Kstar_spin[iKstar_S].first.Length() -2) ;
     TComplex matrixElement_R = 0.;
-    if (spin.EqualTo("0")) { // for spin0 K*, third last argument = spin(psi_nS) = spin.Atoi() + 1 = 1
+    if (spin.EqualTo("0")) { // for spin0 K*, fourth last argument = spin(psi_nS) = spin.Atoi() + 1 = 1
       matrixElement_R = RFunction(Kstar_spin[iKstar_S].second.first, Kstar_spin[iKstar_S].second.second, MBd, spin.Atoi()+1, spin.Atoi(), dRadB0, dRadKs) *
-	               AngularTerm(R, spin, "0", helDmu) ;
-    } else { // for non-0 spin K*, third last argument = spin(K*) - spin(psi_nS) = spin.Atoi() - 1
+	                AngularTerm(cKs, R, spin, "0", helDmu) ;
+    } else { // for non-0 spin K*, fourth last argument = spin(K*) - spin(psi_nS) = spin.Atoi() - 1
       matrixElement_R = RFunction(Kstar_spin[iKstar_S].second.first, Kstar_spin[iKstar_S].second.second, MBd, spin.Atoi()-1, spin.Atoi(), dRadB0, dRadKs) *
-	               ( AngularTerm(R, spin, "m1", helDmu) + AngularTerm(R, spin, "0", helDmu) + AngularTerm(R, spin, "p1", helDmu) ) ;
+	                ( AngularTerm(cKs, R, spin, "m1", helDmu) + AngularTerm(cKs, R, spin, "0", helDmu) + AngularTerm(cKs, R, spin, "p1", helDmu) ) ;
     }
     //cout <<"\nAngularTerm.Rho() for " <<R <<" = " <<(AngularTerm(R, spin, "0", helDmu)).Rho() <<endl;
     //cout <<"matrixElement for (R,helDmu) = (" <<R <<"," <<helDmu <<") = H(R,helJ) * RFunction * AngularTerm = " <<matrixElement_R <<endl;
@@ -610,19 +623,19 @@ TComplex myPDF::ME2() const
     ;
 }
 */
-Double_t myPDF::ME2() const
+Double_t myPDF::ME2(Double_t cKs) const
 {
   //cout <<"\nME(\"m1\") + ME(\"p1\") = " <<ME("m1") <<" + " <<ME("p1") <<endl;
   //cout <<"ME(\"m1\").Rho2() + ME(\"p1\").Rho2() = " <<ME("m1").Rho2() <<" + " <<ME("p1").Rho2() <<endl;
-  return ME("m1").Rho2() + ME("p1").Rho2() ;
+  return ME(cKs,"m1").Rho2() + ME(cKs,"p1").Rho2() ;
 }
 
 //TComplex myPDF::PDF() const
-Double_t myPDF::PDF() const
+Double_t myPDF::PDF(Double_t cKs) const
 {
   //cout <<"\nME2() = " <<ME2() <<endl;
-  return ME2() * PhiPHSP(mKP); // missing * efficiency(from reconstructed PHSP MC)
-
+  return ME2(cKs) * PhiPHSP(mKP); // missing * efficiency(from reconstructed PHSP MC)
+  //return ME2() ; // missing PHSP * efficiency(from reconstructed PHSP MC)
 }
 
 /*
@@ -696,7 +709,9 @@ Double_t myPDF::HLs1670(string help) const
     
 }
 
+// a + i*b
 //TComplex myPDF::H(string R, string helJ) const
+// a*exp(i*b)
 TComplex myPDF::H(TString R, string helJ) const
 {
   /*    
@@ -717,16 +732,18 @@ TComplex myPDF::H(TString R, string helJ) const
   }
   */
   TString name_helJ = R+"_"+helJ;
-  RooRealProxy* a = amplitudeVarProxy_map.find("a"+name_helJ)->second ;
-  RooRealProxy* b = amplitudeVarProxy_map.find("b"+name_helJ)->second ;
+  TString a_helJ = "a"+name_helJ; TString b_helJ = "b"+name_helJ;
+  RooRealProxy* a = amplitudeVarProxy_map.find(a_helJ)->second ;
+  RooRealProxy* b = amplitudeVarProxy_map.find(b_helJ)->second ;
   if ( a ) {
-    if ( b )
+    if ( b ) {
       return (RooRealProxy)(*a) * TComplex::Exp(TComplex::I()*(RooRealProxy)(*b)) ;
-    else {
-      cout <<"RooRealProxy = \"b"+name_helJ+"\" not found in amplitudeVarProxy_map. Returning 0" <<endl;
+      //return (RooRealProxy)(*a) * (TMath::Cos((RooRealProxy)(*b)) + TComplex::I()*TMath::Sin((RooRealProxy)(*b))) ; // no improvement
+    } else {
+      cout <<"RooRealProxy = \""+b_helJ+"\" not found in amplitudeVarProxy_map. Returning 0" <<endl;
       return 0.; }  
   } else {
-    cout <<"RooRealProxy = \"a"+name_helJ+"\" not found in amplitudeVarProxy_map. Returning 0" <<endl;
+    cout <<"RooRealProxy = \""+a_helJ+"\" not found in amplitudeVarProxy_map. Returning 0" <<endl;
     return 0.;
   }  
 
