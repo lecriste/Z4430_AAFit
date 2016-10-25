@@ -115,7 +115,7 @@ void Analysis()
   const Double_t M892 = 0.89581 ; const Double_t G892 = 0.0474; // From PDG neutral only K*(892)
   Kstar_spin.push_back( make_pair("892_1", make_pair(M892,G892) ) ) ;
   helJ_map["892_1_0"] = make_pair(1.,0.); helJ_map["892_1_p1"] = make_pair(0.844,3.14); helJ_map["892_1_m1"] = make_pair(0.196,-1.7);
-  
+    
   cout <<"Adding K*(800)..." <<endl;  
   //const Double_t M800 = 0.682; const Double_t G800 = 0.547; // From PDG
   const Double_t M800 = 0.931; const Double_t G800 = 0.578; // From Belle
@@ -137,12 +137,12 @@ void Analysis()
   const Double_t M1430_2 = 1.4324; const Double_t G1430_2 = 0.109; // From PDG neutral only
   Kstar_spin.push_back( make_pair("1430_2", make_pair(M1430_2,G1430_2) ) ) ;
   helJ_map["1430_2_0"] = make_pair(4.66,-0.32); helJ_map["1430_2_p1"] = make_pair(4.65,-3.05); helJ_map["1430_2_m1"] = make_pair(1.26,-1.92);
-  /*
+  
   cout <<"Adding K*(1780)_3..." <<endl;
   const Double_t M1780_3 = 1.776; const Double_t G1780_3 = 0.159; // From PDG neutral only
   Kstar_spin.push_back( make_pair("1780_3", make_pair(M1780_3,G1780_3) ) ) ;
   helJ_map["1780_3_0"] = make_pair(16.8,-1.43); helJ_map["1780_3_p1"] = make_pair(19.1,2.03); helJ_map["1780_3_m1"] = make_pair(10.2,1.55);
-  *//*
+  /*
   cout <<"Adding K*(2380)_5..." <<endl;
   const Double_t M2380_5 = 2.382; const Double_t G2380_5 = 0.178; // From PDG
   Kstar_spin.push_back( make_pair("2380_5", make_pair(M2380_5,G2380_5) ) ) ;
@@ -166,8 +166,8 @@ void Analysis()
   Double_t bMax = -bMin;
   TString helJ[] = {"m1","0","p1"} ;
 
-  Int_t nKstar = Kstar_spin.size();
-  for (Int_t iKstar_S=0; iKstar_S<nKstar; ++iKstar_S)
+  Int_t nKstars = Kstar_spin.size();
+  for (Int_t iKstar_S=0; iKstar_S<nKstars; ++iKstar_S)
     for (Int_t iHelJ=0; iHelJ<3; ++iHelJ) {
       if (Kstar_spin[iKstar_S].first.Contains("_0") && !helJ[iHelJ].EqualTo("0")) continue ;
       TString name = Kstar_spin[iKstar_S].first + "_" + helJ[iHelJ] ;
@@ -268,12 +268,12 @@ void Analysis()
   TString psi_nS = "1"; //psi_nS = "2";
   
   TString sigName = "Kstar__", sigTitle = "K*s signal";
-  if (nKstar == 1) {
+  if (nKstars == 1) {
     sigName.Append(Kstar_spin.front().first);
     sigTitle.ReplaceAll("K*s","K*");
   } else {
     sigName.ReplaceAll("Kstar","Kstars");
-    for (Int_t iKstar_S=0; iKstar_S<nKstar; ++iKstar_S) {
+    for (Int_t iKstar_S=0; iKstar_S<nKstars; ++iKstar_S) {
       if (iKstar_S>0)
 	sigName.Append("__");
       sigName.Append(Kstar_spin[iKstar_S].first);
@@ -287,7 +287,7 @@ void Analysis()
 		     (RooRealVar&)(kinematicVars[sigPDF_var[0]]), (RooRealVar&)(kinematicVars[sigPDF_var[1]]), (RooRealVar&)(kinematicVars[sigPDF_var[2]]), (RooRealVar&)(kinematicVars[sigPDF_var[3]]),
 		     Kstar_spin, varNames, amplitudeVars, psi_nS, dRadB0, dRadKs) ;
 
-  if (sigPDF && !nKstar) {
+  if (sigPDF && !nKstars) {
     cout <<"sigPDF set up with no K*! Please check" <<endl;
     return ;
   }
@@ -327,13 +327,13 @@ void Analysis()
   RooAbsPdf* BdToPsiPiK_PHSP = new RooGenericPdf("BdToPsiPiK_PHSP","3-body PHSP","sqrt( pow(mass2KPiFor,2) + pow(m2Pion,2) + pow(m2Kaon,2) - 2*mass2KPiFor*m2Pion - 2*mass2KPiFor*m2Kaon - 2*m2Pion*m2Kaon ) * sqrt( pow(m2Bd,2) + pow(mass2KPiFor,2) + pow(m2Psi,2) - 2*m2Bd*mass2KPiFor - 2*m2Bd*m2Psi - 2*mass2KPiFor*m2Psi ) / sqrt(mass2KPiFor)", RooArgSet(mass2KPiFor,m2Pion,m2Kaon,m2Bd,m2Psi)); // variables name used in the formula must be = name of the RooVariables in the list
   //cout <<"\nBdToPsiPiK_PHSP.getVal() =\n" <<BdToPsiPiK_PHSP->getVal() <<endl; return;
 
-  RooAbsPdf* bkgPDF = BdToPsiPiK_PHSP; bkgPDF = 0;
+  RooAbsPdf* bkgPDF = BdToPsiPiK_PHSP; //bkgPDF = 0;
 
   Double_t totEvents = 2000;
   //totEvents *= 2.5;
   //totEvents *= 5;
-  totEvents *= 10;
-  //totEvents *= 10; totEvents *= 5;
+  //totEvents *= 10;
+  totEvents *= 10; totEvents *= 5;
   //totEvents *= 10; totEvents *= 3;
   //totEvents /= 2;
   RooRealVar nSig("nSig", "n_{SIG}", 0, 0, 1E6);
@@ -353,7 +353,7 @@ void Analysis()
       cout <<"Adding " <<bkgPDF->GetTitle() <<endl;
       nSig.setVal( totEvents/2 ); nBkg.setVal( totEvents/2 );
       model = (RooAbsPdf*) new RooAddPdf("","",RooArgList(*sigPDF,*bkgPDF),RooArgList(nSig,nBkg)) ;
-      model->SetName( TString::Format("%s_plus_%s",sigPDF->GetName(),bkgPDF->GetName()) );
+      model->SetName( TString::Format("%s__plus__%s",sigPDF->GetName(),bkgPDF->GetName()) );
       model->SetTitle( TString::Format("%s + %s",model->GetTitle(),bkgPDF->GetTitle()) );
     } 
   } else if (bkgPDF) {
@@ -541,8 +541,8 @@ void Analysis()
   nLegendEntries++; // either for generation or fit
 
   Float_t topRightCorner = 0.9;
-  Bool_t plotSingleKstars = kTRUE; plotSingleKstars = kFALSE; 
-  Float_t yLegLow = topRightCorner -(nLegendEntries+(plotSingleKstars ? nKstar : 1))*0.05 ;
+  Bool_t plotSingleKstars = kTRUE; plotSingleKstars = kFALSE;
+  Float_t yLegLow = topRightCorner -(nLegendEntries+(plotSingleKstars ? nKstars : 1))*0.05 ;
   Float_t xMin = 0.6;
   TLegend* leg = new TLegend(xMin, yLegLow, topRightCorner, topRightCorner); leg->SetFillColor(kWhite);
   leg->AddEntry(dataGenPDF,"","ep");
@@ -684,14 +684,14 @@ void Analysis()
     RooAbsReal* sigPDF_integral = sigPDF->createIntegral( kinematicVars ) ;
     Double_t full_signal_integral = sigPDF_integral->getVal(); cout <<"\nFull signal integral = " <<full_signal_integral <<endl;
 
-    if (nKstar > 1) {
+    if (nKstars > 1) {
       // 50' with 5 K*
-      vector< Double_t > Kstar_integral(nKstar,-1);
-      vector<timeval> KstarIntegralTime(nKstar), KstarPlotTime(nKstar);
-      vector<Double_t> KstarIntegralCPU(nKstar,0), KstarPlotCPU(nKstar,0);
-      vector<Double_t> KstarIntegralProc(nKstar,0), KstarPlotProc(nKstar,0);
+      vector< Double_t > Kstar_integral(nKstars,-1);
+      vector<timeval> KstarIntegralTime(nKstars), KstarPlotTime(nKstars);
+      vector<Double_t> KstarIntegralCPU(nKstars,0), KstarPlotCPU(nKstars,0);
+      vector<Double_t> KstarIntegralProc(nKstars,0), KstarPlotProc(nKstars,0);
 
-      for (Int_t iKstar_S=0; iKstar_S<nKstar; ++iKstar_S) {
+      for (Int_t iKstar_S=0; iKstar_S<nKstars; ++iKstar_S) {
 	TString Kstar_name = Kstar_spin[iKstar_S].first;
       
 	for (Int_t iVar=0; iVar<(Int_t)varNames.size(); ++iVar) {
@@ -753,7 +753,7 @@ void Analysis()
 
 	leg->AddEntry(massKP_frame->findObject(Kstar_name),TString::Format("%s (%.1f%%)",legName.Data(),fraction*100),"l");
       }
-    } // if (nKstar > 1)
+    } // if (nKstars > 1)
   } // if (sigPDF)
   
   TCanvas* massKP_C = new TCanvas( TString::Format("%s_C",massKPi.GetName()), massKPi.GetName(), 800,600) ;

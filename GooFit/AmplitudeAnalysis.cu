@@ -73,25 +73,26 @@ std::string doubleToStr (fptype dbl) {
   return strs.str();
 }
 
+Int_t numBins = 40, pdfBins = 100, dataBins = 100;
+
 void printinstruction() {
   std::cerr << "======= Instructions \n"
   	    << "\t-h,--help \t\t Show this help message\n"
 	    << "\t-n <events> \t\t Specify the number of events to use\n"
   	    << "\t-r <path> \t\t Read Generated Events from txt in <path>\n"
             << "\t-H \t\t\t Run HESSE (after MIGRAD, defautl: MIGRAD only)\n"
-  	    << "\t-b1 <b1> \t\t Select binning for MassKPi (for normalisation & integration, default: 40)\n"
-            << "\t-b2 <b2> \t\t Select binning for CosMuMu (for normalisation & integration, default: 40)\n"
-            << "\t-b3 <b3> \t\t Select binning for massPsiPi (for normalisation & integration, default: 40)\n"
-            << "\t-b4 <b4> \t\t Select binning for Phi (for normalisation & integration, default: 40)\n"
-            << "\t-p1 <p> \t\t Select plotting binning finenness (default: 50) for MassKPi \n"
-            << "\t-p2 <p> \t\t Select plotting binning finenness (default: 50) for CosMuMu \n"
-            //<< "\t-p3 <p> \t\t Select plotting binning finenness (default: 50) for massPsiPi \n"
-            << "\t-p3 <p> \t\t Select plotting binning finenness (default: 50) for MassPsiPi \n"
-            << "\t-p4 <p> \t\t Select plotting binning finenness (default: 50) for Phi \n"
-            << "\t-d1 <p> \t\t Select dataset binning (default: 100) for MassKPi \n"
-            << "\t-d2 <p> \t\t Select dataset binning (default: 100) for CosMuMu \n"
-            << "\t-d3 <p> \t\t Select dataset binning (default: 100) for MassPsiPi \n"
-            << "\t-d4 <p> \t\t Select dataset binning (default: 100) for Phi \n"
+  	    << "\t-b1 <b1> \t\t Select binning for MassKPi (for normalisation & integration, default: " <<numBins <<")\n"
+            << "\t-b2 <b2> \t\t Select binning for CosMuMu (for normalisation & integration, default: " <<numBins <<")\n"
+            << "\t-b3 <b3> \t\t Select binning for massPsiPi (for normalisation & integration, default: " <<numBins <<")\n"
+            << "\t-b4 <b4> \t\t Select binning for Phi (for normalisation & integration, default: " <<numBins <<")\n"
+            << "\t-p1 <p> \t\t Select p.d.f. plotting binning finenness (default: " <<pdfBins <<") for MassKPi \n"
+            << "\t-p2 <p> \t\t Select p.d.f. plotting binning finenness (default: " <<pdfBins <<") for CosMuMu \n"
+            << "\t-p3 <p> \t\t Select p.d.f. plotting binning finenness (default: " <<pdfBins <<") for MassPsiPi \n"
+            << "\t-p4 <p> \t\t Select p.d.f. plotting binning finenness (default: " <<pdfBins <<") for Phi \n"
+            << "\t-d1 <p> \t\t Select dataset binning (default: " <<dataBins <<") for MassKPi \n"
+            << "\t-d2 <p> \t\t Select dataset binning (default: " <<dataBins <<") for CosMuMu \n"
+            << "\t-d3 <p> \t\t Select dataset binning (default: " <<dataBins <<") for MassPsiPi \n"
+            << "\t-d4 <p> \t\t Select dataset binning (default: " <<dataBins <<") for Phi \n"
             << "\t-Bb <Bb> \t\t Select bound limits for b parameter (default: 9999)\n"
             << "\t-k800 \t\t\t Add K*_0(800) to p.d.f.\n"
             << "\t-k892 \t\t\t Add K*_1(892) to p.d.f.\n"
@@ -109,22 +110,11 @@ int main(int argc, char** argv) {
   char bufferstring[1024];
 
   unsigned int events = 10000;
-  unsigned int nOfKstar = 0;
+  unsigned int nKstars = 0;
 
-  unsigned int bin1 = 40;
-  unsigned int bin2 = 40;
-  unsigned int bin3 = 40;
-  unsigned int bin4 = 40;
-
-  unsigned int datapoints1 = 100;
-  unsigned int datapoints2 = 100;
-  unsigned int datapoints3 = 100;
-  unsigned int datapoints4 = 100;
-
-  unsigned int plottingfine1 = 50;
-  unsigned int plottingfine2 = 50;
-  unsigned int plottingfine3 = 50;
-  unsigned int plottingfine4 = 50;
+  unsigned int bin1 = numBins, bin2 = numBins, bin3 = numBins, bin4 = numBins;
+  unsigned int datapoints1 = dataBins, datapoints2 = dataBins, datapoints3 = dataBins, datapoints4 = dataBins;
+  unsigned int plottingfine1 = pdfBins, plottingfine2 = pdfBins, plottingfine3 = pdfBins, plottingfine4 = pdfBins;
 
   fptype aMax = +9999.;
   fptype bMax = +9999.;
@@ -139,14 +129,14 @@ int main(int argc, char** argv) {
   bool hesse = false;
 
   std::string datasetName = "Kstars";
-  TString plotsDir = "./plots/";
+  std::string underscores = "__";
+  TString plotsDir = "./plots";
   std::vector< std::string> kStarNames;
 
-  if (argc<=1)
-    {
-      printinstruction();
-      return 0;
-    }
+  if (argc<=1) {
+    printinstruction();
+    return 0;
+  }
 
   for (int i = 1; i < argc; ++i)
     {
@@ -291,32 +281,32 @@ int main(int argc, char** argv) {
       else if (arg == "-k892")
 	{
 	  k892Star = true;
-	  ++nOfKstar;
+	  ++nKstars;
 	}
       else if (arg == "-k800")
 	{
 	  k800Star = true;
-	  ++nOfKstar;
+	  ++nKstars;
 	}
       else if (arg == "-k1410")
 	{
 	  k1410Star = true;
-	  ++nOfKstar;
+	  ++nKstars;
 	}
       else if (arg == "-k1430_0")
 	{
 	  k1430Star0 = true;
-	  ++nOfKstar;
+	  ++nKstars;
 	}
       else if (arg == "-k1430_2")
 	{
 	  k1430Star2 = true;
-	  ++nOfKstar;
+	  ++nKstars;
 	}
       else if (arg == "-k1780")
 	{
 	  k1780Star = true;
-	  ++nOfKstar;
+	  ++nKstars;
 	}
       else if (arg == "-d1")
 	{
@@ -380,42 +370,43 @@ int main(int argc, char** argv) {
   TString plotsName = "";
   TString extension = "eps"; extension = "png";
 
-  if (!nOfKstar) {
+  if (!nKstars) {
     cout <<"No K* selected (K892,K800,K1410,K1430) please see instructions below" <<endl;
     printinstruction();
     return 1;
   } else {
-    cout <<"Starting Amplitude Analysis fit with " <<nOfKstar <<" K*s:" <<endl;
-    if (nOfKstar < 2)
+    cout <<"Starting Amplitude Analysis fit with " <<nKstars <<" K*s:" <<endl;
+    if (nKstars < 2) {
       datasetName = "Kstar";
+      underscores = "_"; }
 
     if (k892Star) {
       cout <<"- K*(892)"<<endl;
-      datasetName += "__892_1"; plotsName.Append("__892_1");
+      datasetName += underscores+"892_1"; plotsName.Append("__892_1");
       kStarNames.push_back("K*_{1}(892)");
     }
     if (k800Star) {
       cout<<"- K*(800)"<<endl;
-      datasetName += "__800_0"; plotsName.Append("__800_0");
+      datasetName += underscores+"800_0"; plotsName.Append("__800_0");
       kStarNames.push_back("K*_{0}(800)");
     }
     if (k1410Star) {
       cout<<"- K*(1410)"<<endl;
-      datasetName += "__1410_1"; plotsName.Append("__1410_1");
+      datasetName += underscores+"1410_1"; plotsName.Append("__1410_1");
       kStarNames.push_back("K*_{1}(1410)");
     }
     if (k1430Star0) {
       cout<<"- K*(1430_0)"<<endl;
-      datasetName += "__1430_0"; plotsName.Append("__1430_0");
+      datasetName += underscores+"1430_0"; plotsName.Append("__1430_0");
       kStarNames.push_back("K*_{0}(1430)");
     }
     if (k1430Star2) {
       cout<<"- K*(1430_2)"<<endl;
-      datasetName += "__1430_2"; plotsName.Append("__1430_2");
+      datasetName += underscores+"1430_2"; plotsName.Append("__1430_2");
       kStarNames.push_back("K*_{2}(1430)");}
     if (k1780Star) {
       cout<<"- K*(1780_3)"<<endl;
-      datasetName += "__1780_3"; plotsName.Append("__1780_3");
+      datasetName += underscores+"1780_3"; plotsName.Append("__1780_3");
       kStarNames.push_back("K*_{3}(1780)");}
   }
 
@@ -477,7 +468,7 @@ int main(int argc, char** argv) {
 
 
 
-    massKPi.value = ranGen.Uniform(massKPi.upperlimit-massKPi.lowerlimit)+massKPi.lowerlimit;
+    massKPi.value = ranGen.Uniform(massKPi.upperlimit - massKPi.lowerlimit) + massKPi.lowerlimit;
     func = phaseSpaceFunction(massKPi.value,MBd,MPion,MKaon,massMuMu);
     roll = ranGen.Uniform(100);
     if (roll > func) {
@@ -693,14 +684,14 @@ int main(int argc, char** argv) {
   UnbinnedDataSet dataset(obserVariables);
 
   //TString massKPi_title = "m(K^{-}#pi^{+})",  cosMuMu_title = "cos(#theta_{J/#psi})",  massPsiPi_title = "cos(#theta_{K*})",  phi_title = "#phi";
-  TString massKPi_title = "m(K^{-}#pi^{+})",  cosMuMu_title = "cos(#theta_{J/#psi})",  massPsiPi_title = "m(#psi#pi^{+})",  phi_title = "#phi";
+  TString massKPi_title = "m(K^{-}#pi^{+})",  cosMuMu_title = "cos(#theta_{J/#psi})",  massPsiPi_title = "m(J/#psi#pi^{+})",  phi_title = "#phi";
   TH1F massKPiHisto(massKPi_name+"_Histo", TString::Format("%s;%s [GeV]",massKPi_name.Data(),massKPi_title.Data()), datapoints1, massKPi->lowerlimit, massKPi->upperlimit); massKPiHisto.SetLineColor(kBlack); massKPiHisto.SetMarkerColor(kBlack);
   TH1F cosMuMuHisto(cosMuMu_name+"_Histo", TString::Format("%s;%s",cosMuMu_name.Data(),cosMuMu_title.Data()), datapoints2, cosMuMu->lowerlimit, cosMuMu->upperlimit); cosMuMuHisto.SetLineColor(kBlack); cosMuMuHisto.SetMarkerColor(kBlack);
-  TH1F massPsiPiHisto(massPsiPi_name+"_Histo", massPsiPi_name+";"+massPsiPi_title, datapoints3, massPsiPi->lowerlimit, massPsiPi->upperlimit); massPsiPiHisto.SetLineColor(kBlack); massPsiPiHisto.SetMarkerColor(kBlack);
+  TH1F massPsiPiHisto(massPsiPi_name+"_Histo", massPsiPi_name+";"+massPsiPi_title+" [GeV]", datapoints3, massPsiPi->lowerlimit, massPsiPi->upperlimit); massPsiPiHisto.SetLineColor(kBlack); massPsiPiHisto.SetMarkerColor(kBlack);
   TH1F phiHisto(phi_name+"_Histo", phi_name+";"+phi_title, datapoints4, phi->lowerlimit, phi->upperlimit); phiHisto.SetLineColor(kBlack); phiHisto.SetMarkerColor(kBlack);
 
   //ifstream dataTxt("dataset.txt");
-  ifstream dataTxt(("datasets/"+datasetName).c_str());
+  ifstream dataTxt(("../datasets/"+datasetName).c_str());
   Int_t totEvents = 0;
   if ( !(dataTxt.good()) ) {
     std::cout <<"No valid input at : " <<datasetName <<" provided. Returning." <<std::endl;
@@ -732,7 +723,7 @@ int main(int argc, char** argv) {
   }
   dataTxt.close();
   //return 0;
-  std::cout<<"Added " << dataset.getNumEvents()<<" events"<<std::endl;
+  std::cout<<"Added " <<dataset.getNumEvents() <<" events" <<std::endl;
   matrix->setData(&dataset);
   //total->setData(&dataset);
 
@@ -756,7 +747,7 @@ int main(int argc, char** argv) {
   /*std::vector<std::vector<std::vector<fptype> >  pdfCompValues;*/
   std::vector<std::vector<fptype> > pdfCompValues;
 
-  for (int id = 0; id < nOfKstar; ++id) {
+  for (int id = 0; id < nKstars; ++id) {
     compData.push_back( UnbinnedDataSet(obserVariables) );
   }
 
@@ -793,21 +784,17 @@ int main(int argc, char** argv) {
   TH1F projPhiHisto("projPhiHisto", "projPhiHisto",phi->numbins, phi->lowerlimit, phi->upperlimit);
 
 
-  for (int i = 0; i < massKPi->numbins; ++i) {
+  for (int i = 0; i < massKPi->numbins; ++i)
     mkpTotalProjection.push_back(0.0);
-  }
 
-  for (int i = 0; i < cosMuMu->numbins; ++i) {
+  for (int i = 0; i < cosMuMu->numbins; ++i)
     cosMuMuTotalProjection.push_back(0.0);
-  }
 
-  for (int i = 0; i < massPsiPi->numbins; ++i) {
+  for (int i = 0; i < massPsiPi->numbins; ++i)
     massPsiPiTotalProjection.push_back(0.0);
-  }
 
-  for (int i = 0; i < phi->numbins; ++i) {
+  for (int i = 0; i < phi->numbins; ++i)
     phiTotalProjection.push_back(0.0);
-  }
 
   fptype sum = 0.0;
 
@@ -860,7 +847,7 @@ int main(int argc, char** argv) {
 
   Float_t xMax = 0.95, yMax = 0.9;
   Float_t legLeft = 0.6, legWidth = 0.15;
-  TLegend *legPlot = new TLegend(legLeft, 0.6, legLeft+legWidth, yMax);
+  TLegend *legPlot = new TLegend(legLeft, 0.6, legLeft+legWidth, yMax); // 0.6 will be replaced later
   TPaveText *fitStat = new TPaveText(legPlot->GetX2(), 0.4, xMax, yMax, "NDC");
 
   std::cout<<"\n- Evaluating the total p.d.f."<<std::endl;
@@ -1072,13 +1059,16 @@ int main(int argc, char** argv) {
 
   int kCounter = 0;
 
+  Int_t nStatEntries = 0;
   for (size_t u=0; u<as.size(); ++u) {
 
     if (Spins[u]->value==0.0) {
-      fitStat->AddText(TString::Format("\n--------------- %s ---------------", kStarNames[kCounter].c_str()));
+      nStatEntries +=2 ;
+      fitStat->AddText(TString::Format("\n------------------- %s -------------------", kStarNames[kCounter].c_str()));
       fitStat->AddText(TString::Format("a_{0} = %.2f #pm %.2f, b_{0} = %.2f #pm %.2f",as[u]->value,as[u]->error,bs[u]->value,bs[u]->error));
     } else {
-      fitStat->AddText(TString::Format("\n--------------- %s ---------------", kStarNames[kCounter].c_str()));
+      nStatEntries +=4 ;
+      fitStat->AddText(TString::Format("\n------------------- %s -------------------", kStarNames[kCounter].c_str()));
       fitStat->AddText(TString::Format("a_{0} = %.2f #pm %.2f, b_{0} = %.2f #pm %.2f",as[u]->value,as[u]->error,bs[u]->value,bs[u]->error));
       fitStat->AddText(TString::Format("a_{p1} = %.2f #pm %.2f, b_{p1} = %.2f #pm %.2f",as[u+1]->value,as[u+1]->error,bs[u+1]->value,bs[u+1]->error));
       fitStat->AddText(TString::Format("a_{m1} = %.2f #pm %.2f, b_{m1} = %.2f #pm %.2f",as[u+2]->value,as[u+2]->error,bs[u+2]->value,bs[u+2]->error));
@@ -1123,6 +1113,8 @@ int main(int argc, char** argv) {
   std::vector<TH1F*> compHistosmassPsiPi;
   std::vector<TH1F*> compHistosPhi;
 
+  Bool_t plotSingleKstars = kTRUE; //plotSingleKstars = kFALSE;
+
   for (int k = 0; k < (int)as.size(); ++k) {
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -1150,23 +1142,7 @@ int main(int argc, char** argv) {
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    //Components points array for each projection
-
-    fptype pointsXCompMKPi[massKPi->numbins];
-    fptype pointsYCompMKPi[massKPi->numbins];
-
-    fptype pointsXCompCosMuMu[cosMuMu->numbins];
-    fptype pointsYCompCosMuMu[cosMuMu->numbins];
-
-    fptype pointsXCompmassPsiPi[massPsiPi->numbins];
-    fptype pointsYCompmassPsiPi[massPsiPi->numbins];
-
-    fptype pointsXCompPhi[phi->numbins];
-    fptype pointsYCompPhi[phi->numbins];
-
-    ////////////////////////////////////////////////////////////////////////////////
-    //Pushing histograms for each component for each component
-
+    // Pushing histogram for each projection
     sprintf(bufferstring,"comp_%d_plotHisto_MKPi",kCounter);
     compHistosMKPi.push_back(new TH1F(bufferstring,bufferstring,massKPi->numbins, massKPi->lowerlimit, massKPi->upperlimit));
     sprintf(bufferstring,"comp_%d_plotHisto_CMM",kCounter);
@@ -1176,11 +1152,12 @@ int main(int argc, char** argv) {
     sprintf(bufferstring,"comp_%d_plotHisto_PHI",kCounter);
     compHistosPhi.push_back(new TH1F(bufferstring,bufferstring,phi->numbins, phi->lowerlimit, phi->upperlimit));
 
+
     cout <<"\n- Plotting component " <<kStarNames[kCounter] <<" all other components to zero" <<endl;
     sum = 0.0;
 
     ////////////////////////////////////////////////////////////////////////////////
-    //Setting other components to zero and fixing al usefull parameters
+    // Setting other components to zero and fixing al useful parameters
 
     for (int l = 0; l < as.size(); ++l) {
       as[l]->fixed = true;
@@ -1201,48 +1178,48 @@ int main(int argc, char** argv) {
 
 
       for (int j = 0; j < (int)as.size(); ++j) {
-        if (j!=k) {
+	if (j!=k) {
 
-          MassesPlot.push_back(Masses[j]);
-          GammasPlot.push_back(Gammas[j]);
-          SpinsPlot.push_back(Spins[j]);
-          asPlot.push_back(new Variable("zero_a",0.0));
-          bsPlot.push_back(new Variable("zero_b",0.0));
+	  MassesPlot.push_back(Masses[j]);
+	  GammasPlot.push_back(Gammas[j]);
+	  SpinsPlot.push_back(Spins[j]);
+	  asPlot.push_back(new Variable("zero_a",0.0));
+	  bsPlot.push_back(new Variable("zero_b",0.0));
 
 
-        }}
+	}}
 
-    }else{
-      //For Spin != 0.0 three components
+    } else {
+      // For Spin != 0 three components
       for (int i = k; i <= k+2; ++i) {
 
 
-        as[i]->fixed;
-        bs[i]->fixed;
+	as[i]->fixed;
+	bs[i]->fixed;
 
-        MassesPlot.push_back(Masses[i]);
-        GammasPlot.push_back(Gammas[i]);
-        SpinsPlot.push_back(Spins[i]);
-        asPlot.push_back(as[i]);
-        bsPlot.push_back(bs[i]);
+	MassesPlot.push_back(Masses[i]);
+	GammasPlot.push_back(Gammas[i]);
+	SpinsPlot.push_back(Spins[i]);
+	asPlot.push_back(as[i]);
+	bsPlot.push_back(bs[i]);
 
       }
       for (int d = 0; d < as.size(); ++d) {
-        if (d!=k && d!=k+1 && d!=k+2) {
+	if (d!=k && d!=k+1 && d!=k+2) {
 
-          MassesPlot.push_back(Masses[d]);
-          GammasPlot.push_back(Gammas[d]);
-          SpinsPlot.push_back(Spins[d]);
-          asPlot.push_back(new Variable("zero_a",0.0));
-          bsPlot.push_back(new Variable("zero_b",0.0));
+	  MassesPlot.push_back(Masses[d]);
+	  GammasPlot.push_back(Gammas[d]);
+	  SpinsPlot.push_back(Spins[d]);
+	  asPlot.push_back(new Variable("zero_a",0.0));
+	  bsPlot.push_back(new Variable("zero_b",0.0));
 
 
-        }}
+	}}
       k+=2;
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    //Normalising, integrating and evaluating the single component pdf
+    // Normalising, integrating and evaluating the single component pdf
 
     sprintf(bufferstring,"Kstars_signal_plot_%d",kCounter);
     GooPdf* matrixPlot = new MatrixPdf(bufferstring, massKPi, cosMuMu, massPsiPi, phi,MassesPlot,GammasPlot,SpinsPlot,asPlot,bsPlot,psi_nS,dRadB0,dRadKs);
@@ -1318,77 +1295,86 @@ int main(int argc, char** argv) {
 
     compHistosPhi[kCounter]->Scale(ratioPhi);
 
-    ////////////////////////////////////////////////////////////////////////////////
-    //Filling vectors
+    if (nKstars > 1  &&  plotSingleKstars) {
 
-    for (int k=0; k < massKPi->numbins; k++) {
-      pointsXCompMKPi[k] = compHistosMKPi[kCounter]->GetBinCenter(k+1);
-      pointsYCompMKPi[k] = compHistosMKPi[kCounter]->GetBinContent(k+1);
-    }
+      // Kstas components points array for each projection
+      fptype pointsXCompMKPi[massKPi->numbins];
+      fptype pointsYCompMKPi[massKPi->numbins];
 
-    for (int k=0;k<cosMuMu->numbins;k++) {
-      pointsXCompCosMuMu[k] = compHistosCosMuMu[kCounter]->GetBinCenter(k+1);
-      pointsYCompCosMuMu[k] = compHistosCosMuMu[kCounter]->GetBinContent(k+1);
-    }
+      fptype pointsXCompCosMuMu[cosMuMu->numbins];
+      fptype pointsYCompCosMuMu[cosMuMu->numbins];
 
-    for (int k=0;k<massPsiPi->numbins;k++) {
-      pointsXCompmassPsiPi[k] = compHistosmassPsiPi[kCounter]->GetBinCenter(k+1);
-      pointsYCompmassPsiPi[k] = compHistosmassPsiPi[kCounter]->GetBinContent(k+1);
-    }
+      fptype pointsXCompmassPsiPi[massPsiPi->numbins];
+      fptype pointsYCompmassPsiPi[massPsiPi->numbins];
 
-    for (int k=0;k<phi->numbins;k++) {
-      pointsXCompPhi[k] = compHistosPhi[kCounter]->GetBinCenter(k+1);
-      pointsYCompPhi[k] = compHistosPhi[kCounter]->GetBinContent(k+1);
-    }
+      fptype pointsXCompPhi[phi->numbins];
+      fptype pointsYCompPhi[phi->numbins];
 
-    ////////////////////////////////////////////////////////////////////////////////
-    //Filling components projections graphs
+      // Filling vectors for components projections graphs
+      for (int k=0; k < massKPi->numbins; k++) {
+	pointsXCompMKPi[k] = compHistosMKPi[kCounter]->GetBinCenter(k+1);
+	pointsYCompMKPi[k] = compHistosMKPi[kCounter]->GetBinContent(k+1);
+      }
+      for (int k=0;k<cosMuMu->numbins;k++) {
+	pointsXCompCosMuMu[k] = compHistosCosMuMu[kCounter]->GetBinCenter(k+1);
+	pointsYCompCosMuMu[k] = compHistosCosMuMu[kCounter]->GetBinContent(k+1);
+      }
+      for (int k=0;k<massPsiPi->numbins;k++) {
+	pointsXCompmassPsiPi[k] = compHistosmassPsiPi[kCounter]->GetBinCenter(k+1);
+	pointsYCompmassPsiPi[k] = compHistosmassPsiPi[kCounter]->GetBinContent(k+1);
+      }
+      for (int k=0;k<phi->numbins;k++) {
+	pointsXCompPhi[k] = compHistosPhi[kCounter]->GetBinCenter(k+1);
+	pointsYCompPhi[k] = compHistosPhi[kCounter]->GetBinContent(k+1);
+      }
 
-    TGraph* signalCompPlotMKPi = new TGraph(massKPi->numbins, pointsXCompMKPi, pointsYCompMKPi);
-    signalCompPlotMKPi->SetLineColor(kCounter+3);
-    signalCompPlotMKPi->SetLineWidth(2);
-    signalCompPlotMKPi->SetLineStyle(kDashed);
-    signalCompPlotMKPi->GetXaxis()->SetTitle("m(K#Pi)");
-    sprintf(bufferstring,"Events / (%.3f)",(massKPi->upperlimit - massKPi->lowerlimit)/massKPi->numbins);
-    signalCompPlotMKPi->GetYaxis()->SetTitle(bufferstring);
-    //signalCompPlotMKPi->Draw("");
-    multiGraphMKPi->Add(signalCompPlotMKPi,"L");
+      // Filling components projections graphs
+      TGraph* signalCompPlotMKPi = new TGraph(massKPi->numbins, pointsXCompMKPi, pointsYCompMKPi);
+      signalCompPlotMKPi->SetLineColor(kCounter+3);
+      signalCompPlotMKPi->SetLineWidth(2);
+      signalCompPlotMKPi->SetLineStyle(kDashed);
+      signalCompPlotMKPi->GetXaxis()->SetTitle("m(K#Pi)");
+      sprintf(bufferstring,"Events / (%.3f)",(massKPi->upperlimit - massKPi->lowerlimit)/massKPi->numbins);
+      signalCompPlotMKPi->GetYaxis()->SetTitle(bufferstring);
+      //signalCompPlotMKPi->Draw("");
+      multiGraphMKPi->Add(signalCompPlotMKPi,"L");
 
-    //
-    TGraph* signalCompPlotCosMuMu = new TGraph(cosMuMu->numbins,pointsXCompCosMuMu,pointsYCompCosMuMu);
-    signalCompPlotCosMuMu->SetLineColor(kCounter+3);
-    signalCompPlotCosMuMu->SetLineWidth(2);
-    signalCompPlotCosMuMu->SetLineStyle(kDashed);
-    signalCompPlotCosMuMu->GetXaxis()->SetTitle("m(K#Pi)");
-    sprintf(bufferstring,"Events / (%.3f)",(cosMuMu->upperlimit- cosMuMu->lowerlimit)/cosMuMu->numbins);
-    signalCompPlotCosMuMu->GetYaxis()->SetTitle(bufferstring);
-    //signalCompPlot->Draw("");
-    multiGraphCosMuMu->Add(signalCompPlotCosMuMu,"L");
+      //
+      TGraph* signalCompPlotCosMuMu = new TGraph(cosMuMu->numbins,pointsXCompCosMuMu,pointsYCompCosMuMu);
+      signalCompPlotCosMuMu->SetLineColor(kCounter+3);
+      signalCompPlotCosMuMu->SetLineWidth(2);
+      signalCompPlotCosMuMu->SetLineStyle(kDashed);
+      signalCompPlotCosMuMu->GetXaxis()->SetTitle("m(K#Pi)");
+      sprintf(bufferstring,"Events / (%.3f)",(cosMuMu->upperlimit- cosMuMu->lowerlimit)/cosMuMu->numbins);
+      signalCompPlotCosMuMu->GetYaxis()->SetTitle(bufferstring);
+      //signalCompPlot->Draw("");
+      multiGraphCosMuMu->Add(signalCompPlotCosMuMu,"L");
 
-    TGraph* signalCompPlotmassPsiPi = new TGraph(massPsiPi->numbins,pointsXCompmassPsiPi,pointsYCompmassPsiPi);
-    signalCompPlotmassPsiPi->SetLineColor(kCounter+3);
-    signalCompPlotmassPsiPi->SetLineWidth(2);
-    signalCompPlotmassPsiPi->SetLineStyle(kDashed);
-    signalCompPlotmassPsiPi->GetXaxis()->SetTitle("m(K#Pi)");
-    sprintf(bufferstring,"Events / (%.3f)",(massPsiPi->upperlimit- massPsiPi->lowerlimit)/massPsiPi->numbins);
-    signalCompPlotmassPsiPi->GetYaxis()->SetTitle(bufferstring);
-    //signalCompPlot->Draw("");
-    multiGraphmassPsiPi->Add(signalCompPlotmassPsiPi,"L");
+      TGraph* signalCompPlotmassPsiPi = new TGraph(massPsiPi->numbins,pointsXCompmassPsiPi,pointsYCompmassPsiPi);
+      signalCompPlotmassPsiPi->SetLineColor(kCounter+3);
+      signalCompPlotmassPsiPi->SetLineWidth(2);
+      signalCompPlotmassPsiPi->SetLineStyle(kDashed);
+      signalCompPlotmassPsiPi->GetXaxis()->SetTitle("m(K#Pi)");
+      sprintf(bufferstring,"Events / (%.3f)",(massPsiPi->upperlimit- massPsiPi->lowerlimit)/massPsiPi->numbins);
+      signalCompPlotmassPsiPi->GetYaxis()->SetTitle(bufferstring);
+      //signalCompPlot->Draw("");
+      multiGraphmassPsiPi->Add(signalCompPlotmassPsiPi,"L");
 
-    TGraph* signalCompPlotPhi = new TGraph(phi->numbins,pointsXCompPhi,pointsYCompPhi);
-    signalCompPlotPhi->SetLineColor(kCounter+3);
-    signalCompPlotPhi->SetLineWidth(2);
-    signalCompPlotPhi->SetLineStyle(kDashed);
-    signalCompPlotPhi->GetXaxis()->SetTitle("m(K#Pi)");
-    sprintf(bufferstring,"Events / (%.3f)",(phi->upperlimit- phi->lowerlimit)/phi->numbins);
-    signalCompPlotPhi->GetYaxis()->SetTitle(bufferstring);
-    //signalCompPlot->Draw("");
-    multiGraphPhi->Add(signalCompPlotPhi,"L");
+      TGraph* signalCompPlotPhi = new TGraph(phi->numbins,pointsXCompPhi,pointsYCompPhi);
+      signalCompPlotPhi->SetLineColor(kCounter+3);
+      signalCompPlotPhi->SetLineWidth(2);
+      signalCompPlotPhi->SetLineStyle(kDashed);
+      signalCompPlotPhi->GetXaxis()->SetTitle("m(K#Pi)");
+      sprintf(bufferstring,"Events / (%.3f)",(phi->upperlimit- phi->lowerlimit)/phi->numbins);
+      signalCompPlotPhi->GetYaxis()->SetTitle(bufferstring);
+      //signalCompPlot->Draw("");
+      multiGraphPhi->Add(signalCompPlotPhi,"L");
 
-    sprintf(bufferstring,"%s (%.2f %)",kStarNames[kCounter].c_str(),compsIntegral/totalIntegral*100.);
-    legPlot->AddEntry(signalCompPlotMKPi,bufferstring,"l");
+      sprintf(bufferstring,"%s (%.2f %)",kStarNames[kCounter].c_str(),compsIntegral/totalIntegral*100.);
+      legPlot->AddEntry(signalCompPlotMKPi,bufferstring,"l");
 
-
+    } // if (plotSingleKstars)
+    
     /*massKPiHisto.Draw("");
       signalCompPlot->Draw("sameL");
 
@@ -1397,15 +1383,15 @@ int main(int argc, char** argv) {
       canvas->SaveAs(bufferstring);
       canvas->Clear();*/
     ++kCounter;
-
+    
     MassesPlot.clear();
     GammasPlot.clear();
     SpinsPlot.clear();
     asPlot.clear();
     bsPlot.clear();
     pdfCompValues.clear();
-
-  }
+  
+  } // for (int k = 0; k < (int)as.size(); ++k) {
 
   //Adding single points to plot better and total plots
 
@@ -1435,49 +1421,58 @@ int main(int argc, char** argv) {
   multiGraphPhi->Add(pointsPHI,"P");
 
   ////////////////////////////////////////////////////////////////////////////////
-  //PLOTTING
+  // PLOTTING
 
-
+  legPlot->SetY1( yMax - 0.05*(legPlot->GetNRows()) ) ;
+  fitStat->SetY1( yMax - 0.03*nStatEntries ) ;
   //Mass K Pi
   multiGraphMKPi->Draw("AL");
-  massKPiHisto.Draw("same");
+  massKPiHisto.Draw("Esame");
   legPlot->Draw(); fitStat->Draw();
-  canvas->SetLogy(1);
 
+  canvas->SetLogy(0);
   canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),massKPi_name.Data(),plotsName.Data(),extension.Data()));
+  canvas->SetLogy(1);
+  canvas->SaveAs(TString::Format("%s/%s%s__logy.%s",plotsDir.Data(),massKPi_name.Data(),plotsName.Data(),extension.Data()));
   canvas->Clear();
   ////////////////////////////////////////////////////////////////////////////////
 
   //CosMuMu
   multiGraphCosMuMu->Draw("AL");
-  cosMuMuHisto.Draw("same");
+  cosMuMuHisto.Draw("Esame");
   // it's enough on the m(KPi) plot
   //legPlot->Draw(); //fitStat->Draw();
-  canvas->SetLogy(1);
 
+  canvas->SetLogy(0);
   canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),cosMuMu_name.Data(),plotsName.Data(),extension.Data()));
+  canvas->SetLogy(1);
+  canvas->SaveAs(TString::Format("%s/%s%s__logy.%s",plotsDir.Data(),cosMuMu_name.Data(),plotsName.Data(),extension.Data()));
   canvas->Clear();
   ////////////////////////////////////////////////////////////////////////////////
 
   //massPsiPi
   multiGraphmassPsiPi->Draw("AL");
-  massPsiPiHisto.Draw("same");
+  massPsiPiHisto.Draw("Esame");
   // it's enough on the m(KPi) plot
   //legPlot->Draw(); //fitStat->Draw();
-  canvas->SetLogy(1);
 
+  canvas->SetLogy(0);
   canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),massPsiPi_name.Data(),plotsName.Data(),extension.Data()));
+  canvas->SetLogy(1);
+  canvas->SaveAs(TString::Format("%s/%s%s__logy.%s",plotsDir.Data(),massPsiPi_name.Data(),plotsName.Data(),extension.Data()));
   canvas->Clear();
   ////////////////////////////////////////////////////////////////////////////////
 
   //Phi
   multiGraphPhi->Draw("AL");
-  phiHisto.Draw("same");
+  phiHisto.Draw("Esame");
   // it's enough on the m(KPi) plot
   //legPlot->Draw(); //fitStat->Draw();
-  canvas->SetLogy(1);
 
+  canvas->SetLogy(0);
   canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),phi_name.Data(),plotsName.Data(),extension.Data()));
+  canvas->SetLogy(1);
+  canvas->SaveAs(TString::Format("%s/%s%s__logy.%s",plotsDir.Data(),phi_name.Data(),plotsName.Data(),extension.Data()));
   canvas->Clear();
   ////////////////////////////////////////////////////////////////////////////////
 
