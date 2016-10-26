@@ -115,7 +115,7 @@ void Analysis()
   const Double_t M892 = 0.89581 ; const Double_t G892 = 0.0474; // From PDG neutral only K*(892)
   Kstar_spin.push_back( make_pair("892_1", make_pair(M892,G892) ) ) ;
   helJ_map["892_1_0"] = make_pair(1.,0.); helJ_map["892_1_p1"] = make_pair(0.844,3.14); helJ_map["892_1_m1"] = make_pair(0.196,-1.7);
-    
+  /*
   cout <<"Adding K*(800)..." <<endl;  
   //const Double_t M800 = 0.682; const Double_t G800 = 0.547; // From PDG
   const Double_t M800 = 0.931; const Double_t G800 = 0.578; // From Belle
@@ -142,7 +142,7 @@ void Analysis()
   const Double_t M1780_3 = 1.776; const Double_t G1780_3 = 0.159; // From PDG neutral only
   Kstar_spin.push_back( make_pair("1780_3", make_pair(M1780_3,G1780_3) ) ) ;
   helJ_map["1780_3_0"] = make_pair(16.8,-1.43); helJ_map["1780_3_p1"] = make_pair(19.1,2.03); helJ_map["1780_3_m1"] = make_pair(10.2,1.55);
-  /*
+  *//*
   cout <<"Adding K*(2380)_5..." <<endl;
   const Double_t M2380_5 = 2.382; const Double_t G2380_5 = 0.178; // From PDG
   Kstar_spin.push_back( make_pair("2380_5", make_pair(M2380_5,G2380_5) ) ) ;
@@ -234,8 +234,9 @@ void Analysis()
   TString path = "/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/";
   TString inputFileName = "MC_K892_JPsi_Bd2MuMuKpi_2p0Sig_4p0to6p0SB.root";
   TString fullInputFileName = path+inputFileName ;
-  TFile *inputFile = TFile::Open( fullInputFileName );
+  TFile *inputFile = TFile::Open( fullInputFileName ); //inputFile = 0;
   //TFile *inputFile = TFile::Open( inputFileName );
+  TString datasetsPath = "datasets";
   if (!inputFile) {
     cout <<"Warning: unable to open file \"" <<fullInputFileName <<"\"" <<endl;
   } else {
@@ -251,8 +252,10 @@ void Analysis()
     RooArgSet kinematicVars_withBeauty(kinematicVars, B0beauty, TString::Format("%s_with%s",kinematicVars.GetName(),B0beauty.GetName())) ;
     RooDataSet *dataGen_B0 = new RooDataSet("dataGen_B0","Generated B0 data", dataNTuple, kinematicVars_withBeauty, "B0beauty > 0");
     cout <<"\nImported TTree with " <<dataGen_B0->numEntries() <<" B0" <<endl ;
+    dataGen_B0->write(TString::Format("%s/%s.txt",datasetsPath.Data(),dataGen_B0->GetName()));
     RooDataSet *dataGen_B0bar = new RooDataSet("dataGen_B0bar","Generated B0bar data", dataNTuple, kinematicVars_withBeauty, "B0beauty < 0");
     cout <<"\nImported TTree with " <<dataGen_B0bar->numEntries() <<" B0bar" <<endl ;
+    dataGen_B0bar->write(TString::Format("%s/%s.txt",datasetsPath.Data(),dataGen_B0bar->GetName()));
     //return ;
     //RooPlot* phi_frame = phi.frame(Name(massKPi.getTitle()+"_frame"),Title("Projection of "+massKPi.getTitle())) ; 
     //dataGen_B0->plotOn(phi_frame); dataGen_B0bar->plotOn(phi_frame, LineColor(kRed)); phi_frame->Draw() ; return;
@@ -267,17 +270,14 @@ void Analysis()
   */
   TString psi_nS = "1"; //psi_nS = "2";
   
-  TString sigName = "Kstar__", sigTitle = "K*s signal";
+  TString sigName = "Kstar_", sigTitle = "K*s signal";
   if (nKstars == 1) {
     sigName.Append(Kstar_spin.front().first);
     sigTitle.ReplaceAll("K*s","K*");
   } else {
-    sigName.ReplaceAll("Kstar","Kstars");
-    for (Int_t iKstar_S=0; iKstar_S<nKstars; ++iKstar_S) {
-      if (iKstar_S>0)
-	sigName.Append("__");
-      sigName.Append(Kstar_spin[iKstar_S].first);
-    }
+    sigName.ReplaceAll("Kstar_","Kstars");
+    for (Int_t iKstar_S=0; iKstar_S<nKstars; ++iKstar_S)
+      sigName.Append("__"+Kstar_spin[iKstar_S].first);
   }
   sigName.Append(Hel);
 
@@ -327,7 +327,7 @@ void Analysis()
   RooAbsPdf* BdToPsiPiK_PHSP = new RooGenericPdf("BdToPsiPiK_PHSP","3-body PHSP","sqrt( pow(mass2KPiFor,2) + pow(m2Pion,2) + pow(m2Kaon,2) - 2*mass2KPiFor*m2Pion - 2*mass2KPiFor*m2Kaon - 2*m2Pion*m2Kaon ) * sqrt( pow(m2Bd,2) + pow(mass2KPiFor,2) + pow(m2Psi,2) - 2*m2Bd*mass2KPiFor - 2*m2Bd*m2Psi - 2*mass2KPiFor*m2Psi ) / sqrt(mass2KPiFor)", RooArgSet(mass2KPiFor,m2Pion,m2Kaon,m2Bd,m2Psi)); // variables name used in the formula must be = name of the RooVariables in the list
   //cout <<"\nBdToPsiPiK_PHSP.getVal() =\n" <<BdToPsiPiK_PHSP->getVal() <<endl; return;
 
-  RooAbsPdf* bkgPDF = BdToPsiPiK_PHSP; //bkgPDF = 0;
+  RooAbsPdf* bkgPDF = BdToPsiPiK_PHSP; bkgPDF = 0;
 
   Double_t totEvents = 2000;
   //totEvents *= 2.5;
@@ -400,7 +400,8 @@ void Analysis()
   cout <<"Wallclock time: " << genTime.tv_sec + genTime.tv_usec/1000000.0 << " seconds\n" ;
   cout <<"Total CPU time: " << (genTimeCPU / CLOCKS_PER_SEC) <<" seconds\n" ;
   cout <<"My processes time: " << (genTimeProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
-  dataGenPDF->write(TString::Format("datasets/%s.txt",model->GetName()));
+  if (nEvents.getVal() > 100000)
+    dataGenPDF->write(TString::Format("%s/%s.txt",datasetsPath.Data(),model->GetName()));
   return;
 
   // Create corresponding m2 dataset + K* helicity angle if absent

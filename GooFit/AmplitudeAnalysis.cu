@@ -73,7 +73,8 @@ std::string doubleToStr (fptype dbl) {
   return strs.str();
 }
 
-Int_t numBins = 40, pdfBins = 100, dataBins = 100;
+Int_t compBins = 50, pdfBins = 50, dataBins = 100;
+//Int_t compBins = 100, pdfBins = 100, dataBins = 100;
 
 void printinstruction() {
   std::cerr << "======= Instructions \n"
@@ -81,10 +82,10 @@ void printinstruction() {
 	    << "\t-n <events> \t\t Specify the number of events to use\n"
   	    << "\t-r <path> \t\t Read Generated Events from txt in <path>\n"
             << "\t-H \t\t\t Run HESSE (after MIGRAD, defautl: MIGRAD only)\n"
-  	    << "\t-b1 <b1> \t\t Select binning for MassKPi (for normalisation & integration, default: " <<numBins <<")\n"
-            << "\t-b2 <b2> \t\t Select binning for CosMuMu (for normalisation & integration, default: " <<numBins <<")\n"
-            << "\t-b3 <b3> \t\t Select binning for massPsiPi (for normalisation & integration, default: " <<numBins <<")\n"
-            << "\t-b4 <b4> \t\t Select binning for Phi (for normalisation & integration, default: " <<numBins <<")\n"
+  	    << "\t-b1 <b1> \t\t Select binning for MassKPi (for normalisation & integration, default: " <<compBins <<")\n"
+            << "\t-b2 <b2> \t\t Select binning for CosMuMu (for normalisation & integration, default: " <<compBins <<")\n"
+            << "\t-b3 <b3> \t\t Select binning for massPsiPi (for normalisation & integration, default: " <<compBins <<")\n"
+            << "\t-b4 <b4> \t\t Select binning for Phi (for normalisation & integration, default: " <<compBins <<")\n"
             << "\t-p1 <p> \t\t Select p.d.f. plotting binning finenness (default: " <<pdfBins <<") for MassKPi \n"
             << "\t-p2 <p> \t\t Select p.d.f. plotting binning finenness (default: " <<pdfBins <<") for CosMuMu \n"
             << "\t-p3 <p> \t\t Select p.d.f. plotting binning finenness (default: " <<pdfBins <<") for MassPsiPi \n"
@@ -112,7 +113,7 @@ int main(int argc, char** argv) {
   unsigned int events = 10000;
   unsigned int nKstars = 0;
 
-  unsigned int bin1 = numBins, bin2 = numBins, bin3 = numBins, bin4 = numBins;
+  unsigned int bin1 = compBins, bin2 = compBins, bin3 = compBins, bin4 = compBins;
   unsigned int datapoints1 = dataBins, datapoints2 = dataBins, datapoints3 = dataBins, datapoints4 = dataBins;
   unsigned int plottingfine1 = pdfBins, plottingfine2 = pdfBins, plottingfine3 = pdfBins, plottingfine4 = pdfBins;
 
@@ -128,7 +129,7 @@ int main(int argc, char** argv) {
 
   bool hesse = false;
 
-  std::string datasetName = "Kstars";
+  TString datasetName = "Kstars";
   std::string underscores = "__";
   TString plotsDir = "./plots";
   std::vector< std::string> kStarNames;
@@ -138,235 +139,243 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  for (int i = 1; i < argc; ++i)
-    {
-      std::string arg = argv[i];
-      if ((arg == "-h") || (arg == "--help"))
-	{
-	  printinstruction();
-	  return 0;
-	}
-      else if (arg == "-n")
-	{
-	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-	    {
-	      i++;
-	      std::istringstream ss(argv[i]);
-	      if (!(ss >> events))
-		{
-		  std::cerr << "Invalid number " << argv[i] << '\n';
-		  exit(1);
-		}
-	    }
-	}
-      else if (arg == "-b1")
-	{
-	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-	    {
-	      i++;
-	      std::istringstream ss(argv[i]);
-	      if (!(ss >> bin1))
-		{
-		  std::cerr << "Invalid number " << argv[i] << '\n';
-		  exit(1);
-		}
-	    }
-	}
-      else if (arg == "-b2")
-	{
-	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-	    {
-	      i++;
-	      std::istringstream ss(argv[i]);
-	      if (!(ss >> bin2))
-		{
-		  std::cerr << "Invalid number " << argv[i] << '\n';
-		  exit(1);
-		}
-	    }
-	}
-      else if (arg == "-b3")
-	{
-	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-	    {
-	      i++;
-	      std::istringstream ss(argv[i]);
-	      if (!(ss >> bin3))
-		{
-		  std::cerr << "Invalid number " << argv[i] << '\n';
-		  exit(1);
-		}
-	    }
-	}
-      else if (arg == "-b4")
-	{
-	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-	    {
-	      i++;
-	      std::istringstream ss(argv[i]);
-	      if (!(ss >> bin4))
-		{
-		  std::cerr << "Invalid number " << argv[i] << '\n';
-		  exit(1);
-		}
-	    }
-	}
-      else if (arg == "-p1")
-	{
-	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-	    {
-	      i++;
-	      std::istringstream ss(argv[i]);
-	      if (!(ss >> plottingfine1))
-		{
-		  std::cerr << "Invalid number " << argv[i] << '\n';
-		  exit(1);
-		}
-	    }
-	}
-      else if (arg == "-p2")
-	{
-	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-	    {
-	      i++;
-	      std::istringstream ss(argv[i]);
-	      if (!(ss >> plottingfine2))
-		{
-		  std::cerr << "Invalid number " << argv[i] << '\n';
-		  exit(1);
-		}
-	    }
-	}
-      else if (arg == "-p3")
-	{
-	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-	    {
-	      i++;
-	      std::istringstream ss(argv[i]);
-	      if (!(ss >> plottingfine3))
-		{
-		  std::cerr << "Invalid number " << argv[i] << '\n';
-		  exit(1);
-		}
-	    }
-	}
-      else if (arg == "-p4")
-	{
-	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-	    {
-	      i++;
-	      std::istringstream ss(argv[i]);
-	      if (!(ss >> plottingfine4))
-		{
-		  std::cerr << "Invalid number " << argv[i] << '\n';
-		  exit(1);
-		}
-	    }
-	}
-      else if (arg == "-Bb")
-	{
-	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-	    {
-	      i++;
-	      std::istringstream ss(argv[i]);
-	      if (!(ss >> bMax))
-		{
-		  std::cerr << "Invalid number " << argv[i] << '\n';
-		  exit(1);
-		}
-	    }
-	  else
-	    bMax = TMath::Pi();
-	}
-      else if (arg == "-k892")
-	{
-	  k892Star = true;
-	  ++nKstars;
-	}
-      else if (arg == "-k800")
-	{
-	  k800Star = true;
-	  ++nKstars;
-	}
-      else if (arg == "-k1410")
-	{
-	  k1410Star = true;
-	  ++nKstars;
-	}
-      else if (arg == "-k1430_0")
-	{
-	  k1430Star0 = true;
-	  ++nKstars;
-	}
-      else if (arg == "-k1430_2")
-	{
-	  k1430Star2 = true;
-	  ++nKstars;
-	}
-      else if (arg == "-k1780")
-	{
-	  k1780Star = true;
-	  ++nKstars;
-	}
-      else if (arg == "-d1")
-	{
-	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-	    {
-	      i++;
-	      std::istringstream ss(argv[i]);
-	      if (!(ss >> datapoints1))
-		{
-		  std::cerr << "Invalid number " << argv[i] << '\n';
-		  exit(1);
-		}
-	    }
-	}
-      else if (arg == "-d2")
-	{
-	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-	    {
-	      i++;
-	      std::istringstream ss(argv[i]);
-	      if (!(ss >> datapoints2))
-		{
-		  std::cerr << "Invalid number " << argv[i] << '\n';
-		  exit(1);
-		}
-	    }
-	}
-      else if (arg == "-d3")
-	{
-	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-	    {
-	      i++;
-	      std::istringstream ss(argv[i]);
-	      if (!(ss >> datapoints3))
-		{
-		  std::cerr << "Invalid number " << argv[i] << '\n';
-		  exit(1);
-		}
-	    }
-	}
-      else if (arg == "-d4")
-	{
-	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-	    {
-	      i++;
-	      std::istringstream ss(argv[i]);
-	      if (!(ss >> datapoints4))
-		{
-		  std::cerr << "Invalid number " << argv[i] << '\n';
-		  exit(1);
-		}
-	    }
-	}
-      else if (arg == "-H")
-	{
-	  hesse = true;
-	}
+  for (int i = 1; i < argc; ++i) {
+    std::string arg = argv[i];
+    if ((arg == "-h") || (arg == "--help"))
+      {
+	printinstruction();
+	return 0;
+      }
+    else if (arg == "-n")
+      {
+	if (i + 1 < argc) // Make sure we aren't at the end of argv!
+	  {
+	    i++;
+	    std::istringstream ss(argv[i]);
+	    if (!(ss >> events))
+	      {
+		std::cerr << "Invalid number " << argv[i] << '\n';
+		exit(1);
+	      }
+	  }
+      }
+    else if (arg == "-b1")
+      {
+	if (i + 1 < argc) // Make sure we aren't at the end of argv!
+	  {
+	    i++;
+	    std::istringstream ss(argv[i]);
+	    if (!(ss >> bin1))
+	      {
+		std::cerr << "Invalid number " << argv[i] << '\n';
+		exit(1);
+	      }
+	  }
+      }
+    else if (arg == "-b2")
+      {
+	if (i + 1 < argc) // Make sure we aren't at the end of argv!
+	  {
+	    i++;
+	    std::istringstream ss(argv[i]);
+	    if (!(ss >> bin2))
+	      {
+		std::cerr << "Invalid number " << argv[i] << '\n';
+		exit(1);
+	      }
+	  }
+      }
+    else if (arg == "-b3")
+      {
+	if (i + 1 < argc) // Make sure we aren't at the end of argv!
+	  {
+	    i++;
+	    std::istringstream ss(argv[i]);
+	    if (!(ss >> bin3))
+	      {
+		std::cerr << "Invalid number " << argv[i] << '\n';
+		exit(1);
+	      }
+	  }
+      }
+    else if (arg == "-b4")
+      {
+	if (i + 1 < argc) // Make sure we aren't at the end of argv!
+	  {
+	    i++;
+	    std::istringstream ss(argv[i]);
+	    if (!(ss >> bin4))
+	      {
+		std::cerr << "Invalid number " << argv[i] << '\n';
+		exit(1);
+	      }
+	  }
+      }
+    else if (arg == "-p1")
+      {
+	if (i + 1 < argc) // Make sure we aren't at the end of argv!
+	  {
+	    i++;
+	    std::istringstream ss(argv[i]);
+	    if (!(ss >> plottingfine1))
+	      {
+		std::cerr << "Invalid number " << argv[i] << '\n';
+		exit(1);
+	      }
+	  }
+      }
+    else if (arg == "-p2")
+      {
+	if (i + 1 < argc) // Make sure we aren't at the end of argv!
+	  {
+	    i++;
+	    std::istringstream ss(argv[i]);
+	    if (!(ss >> plottingfine2))
+	      {
+		std::cerr << "Invalid number " << argv[i] << '\n';
+		exit(1);
+	      }
+	  }
+      }
+    else if (arg == "-p3")
+      {
+	if (i + 1 < argc) // Make sure we aren't at the end of argv!
+	  {
+	    i++;
+	    std::istringstream ss(argv[i]);
+	    if (!(ss >> plottingfine3))
+	      {
+		std::cerr << "Invalid number " << argv[i] << '\n';
+		exit(1);
+	      }
+	  }
+      }
+    else if (arg == "-p4")
+      {
+	if (i + 1 < argc) // Make sure we aren't at the end of argv!
+	  {
+	    i++;
+	    std::istringstream ss(argv[i]);
+	    if (!(ss >> plottingfine4))
+	      {
+		std::cerr << "Invalid number " << argv[i] << '\n';
+		exit(1);
+	      }
+	  }
+      }
+    else if (arg == "-Bb")
+      {
+	if (i + 1 < argc) // Make sure we aren't at the end of argv!
+	  {
+	    i++;
+	    std::istringstream ss(argv[i]);
+	    if (!(ss >> bMax))
+	      {
+		std::cerr << "Invalid number " << argv[i] << '\n';
+		exit(1);
+	      }
+	  }
+	else
+	  bMax = TMath::Pi();
+      }
+    else if (arg == "-k892")
+      {
+	k892Star = true;
+	++nKstars;
+      }
+    else if (arg == "-k800")
+      {
+	k800Star = true;
+	++nKstars;
+      }
+    else if (arg == "-k1410")
+      {
+	k1410Star = true;
+	++nKstars;
+      }
+    else if (arg == "-k1430_0")
+      {
+	k1430Star0 = true;
+	++nKstars;
+      }
+    else if (arg == "-k1430_2")
+      {
+	k1430Star2 = true;
+	++nKstars;
+      }
+    else if (arg == "-k1780")
+      {
+	k1780Star = true;
+	++nKstars;
+      }
+    else if (arg == "-d1")
+      {
+	if (i + 1 < argc) // Make sure we aren't at the end of argv!
+	  {
+	    i++;
+	    std::istringstream ss(argv[i]);
+	    if (!(ss >> datapoints1))
+	      {
+		std::cerr << "Invalid number " << argv[i] << '\n';
+		exit(1);
+	      }
+	  }
+      }
+    else if (arg == "-d2")
+      {
+	if (i + 1 < argc) // Make sure we aren't at the end of argv!
+	  {
+	    i++;
+	    std::istringstream ss(argv[i]);
+	    if (!(ss >> datapoints2))
+	      {
+		std::cerr << "Invalid number " << argv[i] << '\n';
+		exit(1);
+	      }
+	  }
+      }
+    else if (arg == "-d3")
+      {
+	if (i + 1 < argc) // Make sure we aren't at the end of argv!
+	  {
+	    i++;
+	    std::istringstream ss(argv[i]);
+	    if (!(ss >> datapoints3))
+	      {
+		std::cerr << "Invalid number " << argv[i] << '\n';
+		exit(1);
+	      }
+	  }
+      }
+    else if (arg == "-d4")
+      {
+	if (i + 1 < argc) // Make sure we aren't at the end of argv!
+	  {
+	    i++;
+	    std::istringstream ss(argv[i]);
+	    if (!(ss >> datapoints4))
+	      {
+		std::cerr << "Invalid number " << argv[i] << '\n';
+		exit(1);
+	      }
+	  }
+      }
+    else if (arg == "-H")
+      {
+	hesse = true;
+      }
 
-    }
+  } // for (int i = 1; i < argc; ++i)
 
+  if (bin1 > plottingfine1)
+    cout <<"WARNING! Bins for normalisation & integration (" <<bin1 <<") are more than bins for p.d.f. plotting (" <<plottingfine1 <<")\n" <<endl;
+  if (bin2 > plottingfine2)
+    cout <<"WARNING! Bins for normalisation & integration (" <<bin2 <<") are more than bins for p.d.f. plotting (" <<plottingfine2 <<")\n" <<endl;
+  if (bin3 > plottingfine3)
+    cout <<"WARNING! Bins for normalisation & integration (" <<bin3 <<") are more than bins for p.d.f. plotting (" <<plottingfine3 <<")\n" <<endl;
+  if (bin4 > plottingfine4)
+    cout <<"WARNING! Bins for normalisation & integration (" <<bin4 <<") are more than bins for p.d.f. plotting (" <<plottingfine4 <<")\n" <<endl;
+ 
   TString plotsName = "";
   TString extension = "eps"; extension = "png";
 
@@ -375,42 +384,41 @@ int main(int argc, char** argv) {
     printinstruction();
     return 1;
   } else {
-    cout <<"Starting Amplitude Analysis fit with " <<nKstars <<" K*s:" <<endl;
+    cout <<"- Performing Amplitude Analysis fit with\n" <<nKstars <<" K*(s) on\n" <<events <<" events, using\n" <<bin1 <<" bins for normalisation & integration and\n" <<plottingfine1 <<" bins for p.d.f. plotting:" <<endl;
     if (nKstars < 2) {
       datasetName = "Kstar";
       underscores = "_"; }
 
     if (k892Star) {
-      cout <<"- K*(892)"<<endl;
-      datasetName += underscores+"892_1"; plotsName.Append("__892_1");
+      cout <<"- K*(892)" <<endl;
+      datasetName.Append(underscores+"892_1"); plotsName.Append("__892_1");
       kStarNames.push_back("K*_{1}(892)");
     }
     if (k800Star) {
-      cout<<"- K*(800)"<<endl;
-      datasetName += underscores+"800_0"; plotsName.Append("__800_0");
+      cout <<"- K*(800)" <<endl;
+      datasetName.Append(underscores+"800_0"); plotsName.Append("__800_0");
       kStarNames.push_back("K*_{0}(800)");
     }
     if (k1410Star) {
-      cout<<"- K*(1410)"<<endl;
-      datasetName += underscores+"1410_1"; plotsName.Append("__1410_1");
+      cout <<"- K*(1410)" <<endl;
+      datasetName.Append(underscores+"1410_1"); plotsName.Append("__1410_1");
       kStarNames.push_back("K*_{1}(1410)");
     }
     if (k1430Star0) {
-      cout<<"- K*(1430_0)"<<endl;
-      datasetName += underscores+"1430_0"; plotsName.Append("__1430_0");
+      cout <<"- K*(1430_0)" <<endl;
+      datasetName.Append(underscores+"1430_0"); plotsName.Append("__1430_0");
       kStarNames.push_back("K*_{0}(1430)");
     }
     if (k1430Star2) {
-      cout<<"- K*(1430_2)"<<endl;
-      datasetName += underscores+"1430_2"; plotsName.Append("__1430_2");
+      cout <<"- K*(1430_2)" <<endl;
+      datasetName.Append(underscores+"1430_2"); plotsName.Append("__1430_2");
       kStarNames.push_back("K*_{2}(1430)");}
     if (k1780Star) {
-      cout<<"- K*(1780_3)"<<endl;
-      datasetName += underscores+"1780_3"; plotsName.Append("__1780_3");
+      cout <<"- K*(1780_3)" <<endl;
+      datasetName.Append(underscores+"1780_3"); plotsName.Append("__1780_3");
       kStarNames.push_back("K*_{3}(1780)");}
   }
 
-  datasetName += ".txt";
 
   fptype aMin = -aMax;
   fptype bMin = -bMax;
@@ -504,7 +512,7 @@ int main(int argc, char** argv) {
 
     pdfBkgHist.SetBinContent(k+1,ValsFondo[k]);
     totalFondo += ValsFondo[k];
-    std::cout<< ValsFondo[k]<<std::endl;
+    std::cout << ValsFondo[k]<<std::endl;
 
     }
     debug(__LINE__);
@@ -513,7 +521,7 @@ int main(int argc, char** argv) {
     valTot /= totalFondo;
     valTot *= events;
     pdfBkgHist.SetBinContent(k+1, valTot);
-    cout<<" "<<pdfBkgHist.GetBinContent(k+1)<<endl;
+    cout <<" " <<pdfBkgHist.GetBinContent(k+1)<<endl;
     }
     debug(__LINE__);
     pdfBkgHist.SetFillStyle(3002);
@@ -550,7 +558,6 @@ int main(int argc, char** argv) {
   fptype ratioPhi = ((fptype)(plottingfine4))/((fptype)datapoints4);
 
   std::vector<Variable*> obserVariables;
-
   obserVariables.push_back(massKPi);
   obserVariables.push_back(massPsiPi);
   obserVariables.push_back(cosMuMu);
@@ -690,21 +697,33 @@ int main(int argc, char** argv) {
   TH1F massPsiPiHisto(massPsiPi_name+"_Histo", massPsiPi_name+";"+massPsiPi_title+" [GeV]", datapoints3, massPsiPi->lowerlimit, massPsiPi->upperlimit); massPsiPiHisto.SetLineColor(kBlack); massPsiPiHisto.SetMarkerColor(kBlack);
   TH1F phiHisto(phi_name+"_Histo", phi_name+";"+phi_title, datapoints4, phi->lowerlimit, phi->upperlimit); phiHisto.SetLineColor(kBlack); phiHisto.SetMarkerColor(kBlack);
 
-  //ifstream dataTxt("dataset.txt");
-  ifstream dataTxt(("../datasets/"+datasetName).c_str());
+  datasetName = "dataGen_B0";
+  if (datasetName.EqualTo("dataGen_B0")) plotsDir.Append("/B0");
+  else if (datasetName.EqualTo("dataGen_B0bar")) plotsDir.Append("/B0bar");
+
+  datasetName.Append(".txt");
+  TString fullDatasetName = "./datasets/"+datasetName;
+  fullDatasetName = "../datasets/"+datasetName;
+  ifstream dataTxt(fullDatasetName.Data());
+  //ifstream dataTxt(("../datasets/"+datasetName).c_str());
   Int_t totEvents = 0;
   if ( !(dataTxt.good()) ) {
-    std::cout <<"No valid input at : " <<datasetName <<" provided. Returning." <<std::endl;
+    std::cout <<"No valid input at : " <<fullDatasetName <<" provided.\nReturning." <<std::endl;
     return 1;
-  } else
-    //totEvents = std::count(std::istreambuf_iterator<char>(dataTxt), std::istreambuf_iterator<char>(), '\n');
-    totEvents = 20000;
+  } else {
+    totEvents = std::count(std::istreambuf_iterator<char>(dataTxt), std::istreambuf_iterator<char>(), '\n');
+    if (events > totEvents) {
+      cout <<"\nWARNING! The number of events requested is " <<events <<" but " <<fullDatasetName <<" contains only " <<totEvents <<" events." <<endl;
+      events = totEvents;
+    }
+  }
 
   fptype var1, var2, var3, var4;
 
   if (dataTxt.good()) {
     Int_t evt=0;
-    cout <<"\nReading " <<events <<" out of " <<totEvents <<" events from " <<datasetName <<" and filling variables histograms" <<endl;
+    cout <<"\n- Reading " <<events <<" out of " <<totEvents <<" events from " <<datasetName <<" and filling variables histograms" <<endl;
+    dataTxt.clear(); dataTxt.seekg (0, ios::beg);
     while( (evt < events)  &&  (dataTxt >> var1 >> var2 >> var3 >> var4) ) {
       evt++;
       massKPi->value = var1;
@@ -712,26 +731,37 @@ int main(int argc, char** argv) {
       cosMuMu->value = var3;
       phi->value = var4;
 
-      //std::cout<< massKPi->value << " - " <<cosMuMu->value << " - " << massPsiPi->value << " - " << phi->value << " - " << std::endl;
+      //std::cout << massKPi->value << " - " <<cosMuMu->value << " - " << massPsiPi->value << " - " << phi->value << " - " << std::endl;
 
       dataset.addEvent();
       massKPiHisto.Fill(massKPi->value);
       cosMuMuHisto.Fill(cosMuMu->value);
       massPsiPiHisto.Fill(massPsiPi->value);
       phiHisto.Fill(phi->value);
+
+      dataTxt.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
   }
   dataTxt.close();
-  //return 0;
-  std::cout<<"Added " <<dataset.getNumEvents() <<" events" <<std::endl;
+  std::cout <<"Added " <<dataset.getNumEvents() <<" events to GooFit dataset" <<std::endl;
+  if (dataset.getNumEvents() < 1) {
+    cout <<"No events added from "  <<fullDatasetName <<"\nReturning." <<endl;
+    return 0;
+  }
+
   matrix->setData(&dataset);
   //total->setData(&dataset);
 
-  FitManager fitter(matrix,hesse);
   //FitManager fitter(total);
-  cout <<"\nFitting ..." <<endl;
-  fitter.fit();
-  fitter.getMinuitValues();
+  FitManager* fitter = 0;
+  if (!hesse)
+    fitter = new FitManager(matrix);
+  else
+    fitter = new FitManager(matrix,hesse);
+
+  cout <<"\n- Fitting ..." <<endl;
+  fitter->fit();
+  fitter->getMinuitValues();
 
   stopC = times(&stopProc);
   gettimeofday(&stopTime, NULL);
@@ -798,32 +828,32 @@ int main(int argc, char** argv) {
 
   fptype sum = 0.0;
 
-  std::cout<<"\n- Starting plotting cycle "<<std::endl;
-  std::cout<<"- Plotting dataset generation "<<std::endl;
+  std::cout <<"\n- Starting plotting cycle" ;
+  std::cout <<"\n- Plotting generated dataset" <<std::endl;
   for (int k = 0; k < phi->numbins; ++k) {
     phi->value = phi->lowerlimit + (phi->upperlimit - phi->lowerlimit)*(k + 0.5) / phi->numbins;
-    //std::cout<<"Phi : "<< k <<std::endl;
+    //std::cout <<"Phi : " << k <<std::endl;
     for (int j = 0; j < cosMuMu->numbins; ++j) {
       cosMuMu->value = cosMuMu->lowerlimit + (cosMuMu->upperlimit - cosMuMu->lowerlimit)*(j + 0.5) / cosMuMu->numbins;
-      //std::cout<<"CosMu : "<< j <<std::endl;
+      //std::cout <<"CosMu : " << j <<std::endl;
       for (int a = 0; a < massPsiPi->numbins; ++a) {
 	massPsiPi->value = massPsiPi->lowerlimit + (massPsiPi->upperlimit - massPsiPi->lowerlimit)*(a + 0.5) / massPsiPi->numbins;
-	//std::cout<<"CosK : "<< a <<std::endl;
+	//std::cout <<"CosK : " << a <<std::endl;
 	for (int i = 0; i < massKPi->numbins; ++i) {
 	  //std::vector<std::vector<fptype> > tempValues;
 	  //UnbinnedDataSet tempData(obserVariables);
 	  massKPi->value = massKPi->lowerlimit + (massKPi->upperlimit - massKPi->lowerlimit)*(i + 0.5) / massKPi->numbins;
-	  //std::cout<<"MKP : "<< i <<std::endl;
+	  //std::cout <<"MKP : " << i <<std::endl;
 
 	  /*tempData.addEvent();
 	    matrix->setData(&tempData);
 	    matrix->getCompProbsAtDataPoints(tempValues);
 
-	    std::cout<<massKPi->value<<" ";
-	    std::cout<<cosMuMu->value<<" ";
-	    std::cout<<massPsiPi->value<<" ";
-	    std::cout<<phi->value<<" ";
-	    std::cout<<tempValues[0][0]<<std::endl;*/
+	    std::cout <<massKPi->value<<" ";
+	    std::cout <<cosMuMu->value<<" ";
+	    std::cout <<massPsiPi->value<<" ";
+	    std::cout <<phi->value<<" ";
+	    std::cout <<tempValues[0][0]<<std::endl;*/
 
 	  //mkpTotalProjection[i]+=tempValues[0][0];
 	  //sum +=tempValues[0][0];
@@ -850,17 +880,17 @@ int main(int argc, char** argv) {
   TLegend *legPlot = new TLegend(legLeft, 0.6, legLeft+legWidth, yMax); // 0.6 will be replaced later
   TPaveText *fitStat = new TPaveText(legPlot->GetX2(), 0.4, xMax, yMax, "NDC");
 
-  std::cout<<"\n- Evaluating the total p.d.f."<<std::endl;
+  std::cout <<"\n- Evaluating the total p.d.f." <<std::endl;
   matrix->setData(&currData);
 
   gettimeofday(&startTime, NULL);
   startC = times(&startProc);
   //
   matrix->getCompProbsAtDataPoints(pdfTotalValues);
-  //std::cout<<" Vector size : "<<pdfTotalValues[0].size()<<std::endl;
-  //std::cout<<" Vector proj : "<<pdfTotalValues[0].size()/massKPi->numbins<<std::endl;
+  //std::cout <<" Vector size : " <<pdfTotalValues[0].size()<<std::endl;
+  //std::cout <<" Vector proj : " <<pdfTotalValues[0].size()/massKPi->numbins<<std::endl;
   for (int k = 0; k < pdfTotalValues[0].size(); k++) {
-    //std::cout<<mkpTotalProjection[k]*events/sum<<std::endl;
+    //std::cout <<mkpTotalProjection[k]*events/sum<<std::endl;
     sum += pdfTotalValues[0][k];
   }
   //
@@ -871,9 +901,9 @@ int main(int argc, char** argv) {
   gettimeofday(&startTime, NULL);
   startC = times(&startProc);
   //
-  std::cout<<"\n[ Total Pdf sum : "<<sum<<" ] "<<std::endl;
+  std::cout <<"\n[ Total Pdf sum : " <<sum<<" ] " <<std::endl;
   for (int k = 0; k<pdfTotalValues[0].size(); ++k) {
-    //std::cout<<mkpTotalProjection[k]*events/sum<<std::endl;
+    //std::cout <<mkpTotalProjection[k]*events/sum<<std::endl;
     pdfTotalValues[0][k] /= sum;
     pdfTotalValues[0][k] *= events;
   }
@@ -980,28 +1010,28 @@ int main(int argc, char** argv) {
     projMKPiHisto.SetBinContent(j+1,mkpTotalProjection[j]);
     pointsMKPiXTot[j] = projMKPiHisto.GetBinCenter(j+1);
     pointsMKPiYTot[j] = mkpTotalProjection[j];
-    //std::cout<<" Bin "<<j<<" center = "<<projMKPiHisto.GetBinCenter(j+1)<<" : "<<mkpTotalProjection[j]<<std::endl;
+    //std::cout <<" Bin " <<j<<" center = " <<projMKPiHisto.GetBinCenter(j+1)<<" : " <<mkpTotalProjection[j]<<std::endl;
   }
 
   projMKPiHisto.Scale(ratioMKPi);
 
   for (int j = 0; j < cosMuMu->numbins; ++j) {
     projCosMuMuHisto.SetBinContent(j+1,cosMuMuTotalProjection[j]);
-    //std::cout<<" Bin "<<j<<" center = "<<projMKPiHisto.GetBinCenter(j+1)<<" : "<<mkpTotalProjection[j]<<std::endl;
+    //std::cout <<" Bin " <<j<<" center = " <<projMKPiHisto.GetBinCenter(j+1)<<" : " <<mkpTotalProjection[j]<<std::endl;
   }
 
   projCosMuMuHisto.Scale(ratioCosMuMu);
 
   for (int j = 0; j < massPsiPi->numbins; ++j) {
     projmassPsiPiHisto.SetBinContent(j+1,massPsiPiTotalProjection[j]);
-    //std::cout<<" Bin "<<j<<" center = "<<projMKPiHisto.GetBinCenter(j+1)<<" : "<<mkpTotalProjection[j]<<std::endl;
+    //std::cout <<" Bin " <<j<<" center = " <<projMKPiHisto.GetBinCenter(j+1)<<" : " <<mkpTotalProjection[j]<<std::endl;
   }
 
   projmassPsiPiHisto.Scale(ratioMassPsiPi);
 
   for (int j = 0; j < phi->numbins; ++j) {
     projPhiHisto.SetBinContent(j+1,phiTotalProjection[j]);
-    //std::cout<<" Bin "<<j<<" center = "<<projMKPiHisto.GetBinCenter(j+1)<<" : "<<mkpTotalProjection[j]<<std::endl;
+    //std::cout <<" Bin " <<j<<" center = " <<projMKPiHisto.GetBinCenter(j+1)<<" : " <<mkpTotalProjection[j]<<std::endl;
   }
 
   projPhiHisto.Scale(ratioPhi);
@@ -1012,25 +1042,25 @@ int main(int argc, char** argv) {
   for (int j = 0; j < massKPi->numbins; ++j) {
     pointsMKPiXTot[j] = projMKPiHisto.GetBinCenter(j+1);
     pointsMKPiYTot[j] = projMKPiHisto.GetBinContent(j+1);
-    //std::cout<<" Bin "<<j<<" center = "<<projMKPiHisto.GetBinCenter(j+1)<<" : "<<mkpTotalProjection[j]<<std::endl;
+    //std::cout <<" Bin " <<j<<" center = " <<projMKPiHisto.GetBinCenter(j+1)<<" : " <<mkpTotalProjection[j]<<std::endl;
   }
 
   for (int j = 0; j < cosMuMu->numbins; ++j) {
     pointsCosMuMuXTot[j] = projCosMuMuHisto.GetBinCenter(j+1);
     pointsCosMuMuYTot[j] = projCosMuMuHisto.GetBinContent(j+1);
-    //std::cout<<" Bin "<<j<<" center = "<<projMKPiHisto.GetBinCenter(j+1)<<" : "<<mkpTotalProjection[j]<<std::endl;
+    //std::cout <<" Bin " <<j<<" center = " <<projMKPiHisto.GetBinCenter(j+1)<<" : " <<mkpTotalProjection[j]<<std::endl;
   }
 
   for (int j = 0; j < massPsiPi->numbins; ++j) {
     pointsmassPsiPiXTot[j] = projmassPsiPiHisto.GetBinCenter(j+1);
     pointsmassPsiPiYTot[j] = projmassPsiPiHisto.GetBinContent(j+1);
-    //std::cout<<" Bin "<<j<<" center = "<<projMKPiHisto.GetBinCenter(j+1)<<" : "<<mkpTotalProjection[j]<<std::endl;
+    //std::cout <<" Bin " <<j<<" center = " <<projMKPiHisto.GetBinCenter(j+1)<<" : " <<mkpTotalProjection[j]<<std::endl;
   }
 
   for (int j = 0; j < phi->numbins; ++j) {
     pointsPhiXTot[j] = projPhiHisto.GetBinCenter(j+1);
     pointsPhiYTot[j] = projPhiHisto.GetBinContent(j+1);
-    //std::cout<<" Bin "<<j<<" center = "<<projMKPiHisto.GetBinCenter(j+1)<<" : "<<mkpTotalProjection[j]<<std::endl;
+    //std::cout <<" Bin " <<j<<" center = " <<projMKPiHisto.GetBinCenter(j+1)<<" : " <<mkpTotalProjection[j]<<std::endl;
   }
 
   projPhiHisto.Scale(ratioPhi);
@@ -1153,7 +1183,7 @@ int main(int argc, char** argv) {
     compHistosPhi.push_back(new TH1F(bufferstring,bufferstring,phi->numbins, phi->lowerlimit, phi->upperlimit));
 
 
-    cout <<"\n- Plotting component " <<kStarNames[kCounter] <<" all other components to zero" <<endl;
+    cout <<"\n- Plotting " <<kStarNames[kCounter] <<" component by setting all other components to zero" <<endl;
     sum = 0.0;
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -1230,14 +1260,14 @@ int main(int argc, char** argv) {
 
     fractions.push_back(compsIntegral/totalIntegral);
 
-    cout<<"  Component "<<kStarNames[kCounter]<<" normalisation factor : "<<matrixPlot->normalise()<<" (fraction: "<<compsIntegral/totalIntegral*100.0<<"%)"<<endl;
+    cout <<"  Component " <<kStarNames[kCounter]<<" normalisation factor : " <<matrixPlot->normalise()<<" (fraction: " <<compsIntegral/totalIntegral*100.0<<"%)" <<endl;
 
     matrixPlot->getCompProbsAtDataPoints(pdfCompValues);
 
     matrixPlot->clearCurrentFit();
 
     for (int k = 0; k<pdfCompValues[0].size();k++) {
-      //std::cout<<" Bin : "<< k << " pdf : " << pdfCompValues[0][k] <<std::endl;
+      //std::cout <<" Bin : " << k << " pdf : " << pdfCompValues[0][k] <<std::endl;
       sum += pdfCompValues[0][k];
     }
 
@@ -1430,10 +1460,11 @@ int main(int argc, char** argv) {
   massKPiHisto.Draw("Esame");
   legPlot->Draw(); fitStat->Draw();
 
-  canvas->SetLogy(0);
-  canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),massKPi_name.Data(),plotsName.Data(),extension.Data()));
+  // first Logy(1) and after Logy(0), viceversa does not work
   canvas->SetLogy(1);
   canvas->SaveAs(TString::Format("%s/%s%s__logy.%s",plotsDir.Data(),massKPi_name.Data(),plotsName.Data(),extension.Data()));
+  canvas->SetLogy(0);
+  canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),massKPi_name.Data(),plotsName.Data(),extension.Data()));
   canvas->Clear();
   ////////////////////////////////////////////////////////////////////////////////
 
@@ -1443,10 +1474,10 @@ int main(int argc, char** argv) {
   // it's enough on the m(KPi) plot
   //legPlot->Draw(); //fitStat->Draw();
 
-  canvas->SetLogy(0);
-  canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),cosMuMu_name.Data(),plotsName.Data(),extension.Data()));
   canvas->SetLogy(1);
   canvas->SaveAs(TString::Format("%s/%s%s__logy.%s",plotsDir.Data(),cosMuMu_name.Data(),plotsName.Data(),extension.Data()));
+  canvas->SetLogy(0);
+  canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),cosMuMu_name.Data(),plotsName.Data(),extension.Data()));
   canvas->Clear();
   ////////////////////////////////////////////////////////////////////////////////
 
@@ -1456,10 +1487,10 @@ int main(int argc, char** argv) {
   // it's enough on the m(KPi) plot
   //legPlot->Draw(); //fitStat->Draw();
 
-  canvas->SetLogy(0);
-  canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),massPsiPi_name.Data(),plotsName.Data(),extension.Data()));
   canvas->SetLogy(1);
   canvas->SaveAs(TString::Format("%s/%s%s__logy.%s",plotsDir.Data(),massPsiPi_name.Data(),plotsName.Data(),extension.Data()));
+  canvas->SetLogy(0);
+  canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),massPsiPi_name.Data(),plotsName.Data(),extension.Data()));
   canvas->Clear();
   ////////////////////////////////////////////////////////////////////////////////
 
@@ -1469,28 +1500,28 @@ int main(int argc, char** argv) {
   // it's enough on the m(KPi) plot
   //legPlot->Draw(); //fitStat->Draw();
 
-  canvas->SetLogy(0);
-  canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),phi_name.Data(),plotsName.Data(),extension.Data()));
   canvas->SetLogy(1);
   canvas->SaveAs(TString::Format("%s/%s%s__logy.%s",plotsDir.Data(),phi_name.Data(),plotsName.Data(),extension.Data()));
+  canvas->SetLogy(0);
+  canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),phi_name.Data(),plotsName.Data(),extension.Data()));
   canvas->Clear();
   ////////////////////////////////////////////////////////////////////////////////
 
-  cout<<endl;
-  cout<<"~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~"<<endl;
+  cout <<endl;
+  cout <<"~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~" <<endl;
   cout << "PDF fitting time:       " << (fitClocks / CLOCKS_PER_SEC) << " s" << endl ;
   cout << "Data plotting time:     " << (dataSetClocks / CLOCKS_PER_SEC) << " s" << endl ;
   cout << "PDF sum time:           " << (sumClocks / CLOCKS_PER_SEC) << " s" << endl ;
   cout << "PDF normalization time: " << (normClocks / CLOCKS_PER_SEC) << " s" << endl ;
   cout << "PDF projection time:    " << (projClocks / CLOCKS_PER_SEC) << " s" << endl ;
-  cout<<"~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~"<<endl;
+  cout <<"~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~" <<endl;
 
 
   /*
     matrix->getCompProbsAtDataPoints(pdfTotalValuesNorm,events);
     for (int j = 0; j < massKPi->numbins; ++j) {
     projMKPiHisto.SetBinContent(j+1,mkpTotalProjection[j]);
-    std::cout<<" Bin "<<j<<" center = "<<projMKPiHisto.GetBinCenter(j+1)<<" : "<<mkpTotalProjection[j]<<std::endl;
+    std::cout <<" Bin " <<j<<" center = " <<projMKPiHisto.GetBinCenter(j+1)<<" : " <<mkpTotalProjection[j]<<std::endl;
 
     }*/
 
@@ -1509,7 +1540,7 @@ int main(int argc, char** argv) {
     tempData.addEvent();
     matrix->getCompProbsAtDataPoints(tempValues);
 
-    std::cout<< "Pdf value : "<<tempValues[0][0]<<std::endl;
+    std::cout << "Pdf value : " <<tempValues[0][0]<<std::endl;
   */
 
   return 0;
