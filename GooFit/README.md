@@ -22,9 +22,10 @@ INSTRUCTIONS
 
 NOTES FOR FURTHER UPDATES
 =========================
-- dataset generation within GooFit 
+- dataset generation within GooFit
 - plotting stuff ported to GPU
 - adding Hesse DONE
 - cleaning mass,gamma,spin inputs in MatrixPdf (constant variables repetition)
 - parameters plot DONE
 - projection plots on all the four variables DONE
+- adding Phase Space DONE

@@ -699,21 +699,23 @@ int main(int argc, char** argv) {
   vector<PdfBase*> pdfComponents;
   vector<Variable*> pdfYield;
 
+  std::string p = "phasespace";
+
   GooPdf* matrix = new MatrixPdf("Kstars_signal", massKPi, cosMuMu, massPsiPi, phi,Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
-  GooPdf* phaseSpace = new ThreeBodiesPsiPiK("phasespace",massKPi,&mBd,&mPion,&mKaon,&mMuMu);
+  GooPdf* phaseSpace = new ThreeBodiesPsiPiK("phasespace",massKPi,cosMuMu,massPsiPi,phi,&mBd,&mPion,&mKaon,&mMuMu);
 
-  Variable* nSig = new Variable("nSig",events*0.5);//,0.,1.E6);
-  Variable* nBkg = new Variable("nBkg",events*0.5);//,0.,1.E6);
-
+  //Variable* nSig = new Variable("nSig",events*0.5);//,0.,1.E6);
+  //Variable* nBkg = new Variable("nBkg",events*0.5);//,0.,1.E6);
+  Variable* sFrac = new Variable("nSig",0.5,0.,1.E6);
   if(bkgPhaseSpace){
 
-    pdfComponents.push_back(matrix);
-    pdfComponents.push_back(phaseSpace);
+    // pdfComponents.push_back(matrix);
+    // pdfComponents.push_back(phaseSpace);
+    //
+    // pdfYield.push_back(nSig);
+    // pdfYield.push_back(nBkg);
 
-    pdfYield.push_back(nSig);
-    pdfYield.push_back(nBkg);
-
-    totalPdf = new AddPdf("Kstars_signal + PhaseSpace", pdfYield, pdfComponents);
+    totalPdf = new AddPdf("Kstars_signal + PhaseSpace", sFrac, matrix,phaseSpace);
 
   }else{
 
@@ -737,8 +739,8 @@ int main(int argc, char** argv) {
   // else if (datasetName.EqualTo("dataGen_B0bar")) plotsDir.Append("/B0bar");
 
   datasetName.Append(".txt");
-  TString fullDatasetName = "../datasets/"+datasetName;
-  fullDatasetName = "../datasets/"+datasetName;
+  TString fullDatasetName = "./datasets/"+datasetName;
+  fullDatasetName = "./datasets/"+datasetName;
   ifstream dataTxt(fullDatasetName.Data());
   //ifstream dataTxt(("../datasets/"+datasetName).c_str());
   Int_t totEvents = 0;
@@ -979,10 +981,10 @@ int main(int argc, char** argv) {
     if(bkgPhaseSpace)
     {
       pdfTotalValues[1][k] /= sumSig;
-      pdfTotalValues[1][k] *= nSig->value;
+      pdfTotalValues[1][k] *= (events*sFrac->value);
 
       pdfTotalValues[2][k] /= sumBkg;
-      pdfTotalValues[2][k] *= nBkg->value;
+      pdfTotalValues[2][k] *= (events*(1.0-sFrac->value));
     }
   }
   //
@@ -1611,7 +1613,7 @@ int main(int argc, char** argv) {
   legPlot->SetY1( yMax - 0.05*(legPlot->GetNRows()) ) ;
   fitStat->SetY1( yMax - 0.03*nStatEntries ) ;
   //Mass K Pi
-  //multiGraphMKPi->Draw("AL");
+  multiGraphMKPi->Draw("AL");
   massKPiHisto.Draw("Esame");
   legPlot->Draw(); fitStat->Draw();
 
