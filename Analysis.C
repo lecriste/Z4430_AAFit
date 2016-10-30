@@ -232,7 +232,8 @@ void Analysis()
   
   // not accessible on cmssusyX
   TString path = "/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/";
-  TString inputFileName = "MC_K892_JPsi_Bd2MuMuKpi_2p0Sig_4p0to6p0SB.root";
+  //TString inputFileName = "MC_K892_JPsi_Bd2MuMuKpi_2p0Sig_4p0to6p0SB.root";
+  TString inputFileName = "MC_K892_JPsi_Bd2MuMuKpi_B0massConstraint.root";
   TString fullInputFileName = path+inputFileName ;
   TFile *inputFile = TFile::Open( fullInputFileName ); //inputFile = 0;
   //TFile *inputFile = TFile::Open( inputFileName );
@@ -250,16 +251,16 @@ void Analysis()
     cout <<"\nImporting dataNTuple..." <<endl;
     RooRealVar B0beauty("B0beauty","B^{0} beauty",0,-2,2);
     RooArgSet kinematicVars_withBeauty(kinematicVars, B0beauty, TString::Format("%s_with%s",kinematicVars.GetName(),B0beauty.GetName())) ;
-    RooDataSet *dataGen_B0 = new RooDataSet("dataGen_B0","Generated B0 data", dataNTuple, kinematicVars_withBeauty, "B0beauty > 0");
+    RooDataSet *dataGen_B0 = new RooDataSet("dataGen_B0_B0massConstraint","Generated B0 data", dataNTuple, kinematicVars_withBeauty, "B0beauty > 0");
     cout <<"\nImported TTree with " <<dataGen_B0->numEntries() <<" B0" <<endl ;
     dataGen_B0->write(TString::Format("%s/%s.txt",datasetsPath.Data(),dataGen_B0->GetName()));
-    RooDataSet *dataGen_B0bar = new RooDataSet("dataGen_B0bar","Generated B0bar data", dataNTuple, kinematicVars_withBeauty, "B0beauty < 0");
+    RooDataSet *dataGen_B0bar = new RooDataSet("dataGen_B0bar_B0massConstraint","Generated B0bar data", dataNTuple, kinematicVars_withBeauty, "B0beauty < 0");
     cout <<"\nImported TTree with " <<dataGen_B0bar->numEntries() <<" B0bar" <<endl ;
     dataGen_B0bar->write(TString::Format("%s/%s.txt",datasetsPath.Data(),dataGen_B0bar->GetName()));
-    //return ;
     //RooPlot* phi_frame = phi.frame(Name(massKPi.getTitle()+"_frame"),Title("Projection of "+massKPi.getTitle())) ; 
     //dataGen_B0->plotOn(phi_frame); dataGen_B0bar->plotOn(phi_frame, LineColor(kRed)); phi_frame->Draw() ; return;
   }
+  return ;
   
   const Double_t dRadB0 = 5.0; const Double_t dRadKs = 1.5;
 
@@ -362,7 +363,7 @@ void Analysis()
     //modelTitle = TString::Format("%s*(%s)",nBkg.GetTitle(),bkgPDF->GetTitle());
     model = bkgPDF ;
   } else {
-    cout <<"Neither sigPDF nor bkgPDF is != 0! please check";
+    cout <<"Neither sigPDF nor bkgPDF is != 0! Please check";
     return;
   }
   modelName = model->GetName();
@@ -370,7 +371,7 @@ void Analysis()
   TString noKinConstr = "_noKinConstr";
   //model->SetName( model->GetName()+noKinConstr );
   // Dalitz boundary
-  //Dalitz_contour* kinematicCheck = new Dalitz_contour("kinematicCheck","kinematic check", massKPi, massPsiPi, psi_nS) ;
+  Dalitz_contour* kinematicCheck = new Dalitz_contour("kinematicCheck","kinematic check", massKPi, massPsiPi, psi_nS) ;
   //RooProdPdf* modelWithKinCheck = new RooProdPdf(modelName,model->GetTitle(),RooArgSet(*kinematicCheck,*model)) ; model = modelWithKinCheck;
   
   RooRealVar nEvents("nEvents","nEvents",nSig.getVal() + nBkg.getVal()) ; nEvents.setConstant(kTRUE);
@@ -432,7 +433,7 @@ void Analysis()
     } //kinematicVars_m2.Print("extras") ; cout <<endl;
 
     // set K* helicity angle value
-    cosKstar.setVal( cosTheta_FromMasses(mass2KPiFor.getVal(), mass2PsiPiFor.getVal(), massMuMu, MBd2, MKaon2, MPion2) );
+    cosKstar.setVal( cosTheta_FromMasses_host(mass2KPiFor.getVal(), mass2PsiPiFor.getVal(), massMuMu, MBd2, MKaon2, MPion2) );
 
     dataGenPDF_m2->add( kinematicVars_m2 ) ;
     dataGenPDF_withCos->add( RooArgSet(kinematicVars,cosKstar) );     

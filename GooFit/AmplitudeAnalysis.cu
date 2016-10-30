@@ -18,6 +18,8 @@
 #include "TPaveText.h"
 #include "TAttLine.h"
 
+#include "../utilities.h"
+
 #include <vector>
 #include <string>
 #include <map>
@@ -26,7 +28,6 @@
 #include <utility> // std::make_pair
 #include <fstream>
 #include "TLegend.h"
-
 
 #include <sys/time.h> // for timeval
 #include <sys/times.h> // for tms
@@ -394,43 +395,43 @@ int main(int argc, char** argv) {
     printinstruction();
     return 1;
   } else {
-    cout <<"- Performing Amplitude Analysis fit with\n" <<nKstars <<" K*(s) on\n" <<events <<" events, using\n" <<bin1 <<" bins for normalisation & integration and\n" <<plottingfine1 <<" bins for p.d.f. plotting:" <<endl;
+    cout <<"- Performing Amplitude Analysis fit with\n  " <<nKstars <<" K*(s) on\n  " <<events <<" events, using\n  " <<bin1 <<" bins for normalisation & integration and\n  " <<plottingfine1 <<" bins for p.d.f. plotting:" <<endl;
     if (nKstars < 2) {
       datasetName = "Kstar";
       underscores = "_"; }
 
     if (k892Star) {
-      cout <<"- K*(892)" <<endl;
+      cout <<"  - K*(892)" <<endl;
       datasetName.Append(underscores+"892_1"); plotsName.Append("__892_1");
       kStarNames.push_back("K*_{1}(892)");
     }
     if (k800Star) {
-      cout <<"- K*(800)" <<endl;
+      cout <<"  - K*(800)" <<endl;
       datasetName.Append(underscores+"800_0"); plotsName.Append("__800_0");
       kStarNames.push_back("K*_{0}(800)");
     }
     if (k1410Star) {
-      cout <<"- K*(1410)" <<endl;
+      cout <<"  - K*(1410)" <<endl;
       datasetName.Append(underscores+"1410_1"); plotsName.Append("__1410_1");
       kStarNames.push_back("K*_{1}(1410)");
     }
     if (k1430Star0) {
-      cout <<"- K*(1430_0)" <<endl;
+      cout <<"  - K*(1430_0)" <<endl;
       datasetName.Append(underscores+"1430_0"); plotsName.Append("__1430_0");
       kStarNames.push_back("K*_{0}(1430)");
     }
     if (k1430Star2) {
-      cout <<"- K*(1430_2)" <<endl;
+      cout <<"  - K*(1430_2)" <<endl;
       datasetName.Append(underscores+"1430_2"); plotsName.Append("__1430_2");
       kStarNames.push_back("K*_{2}(1430)");}
     if (k1780Star) {
-      cout <<"- K*(1780_3)" <<endl;
+      cout <<"  - K*(1780_3)" <<endl;
       datasetName.Append(underscores+"1780_3"); plotsName.Append("__1780_3");
       kStarNames.push_back("K*_{3}(1780)");}
     if (bkgPhaseSpace) {
-        cout <<"- Three Bodies Phase-space background" <<endl;
-        datasetName.Append(underscores+"plus__BdToPsiPiK_PHSP"); plotsName.Append("_PHSP");
-        }
+      cout <<"  - Three Bodies Phase-space background" <<endl;
+      datasetName.Append(underscores+"plus__BdToPsiPiK_PHSP"); plotsName.Append("_PHSP");
+    }
   }
 
   fptype aMin = -aMax;
@@ -734,13 +735,14 @@ int main(int argc, char** argv) {
   TH1F massPsiPiHisto(massPsiPi_name+"_Histo", massPsiPi_name+";"+massPsiPi_title+" [GeV]", datapoints3, massPsiPi->lowerlimit, massPsiPi->upperlimit); massPsiPiHisto.SetLineColor(kBlack); massPsiPiHisto.SetMarkerColor(kBlack);
   TH1F phiHisto(phi_name+"_Histo", phi_name+";"+phi_title, datapoints4, phi->lowerlimit, phi->upperlimit); phiHisto.SetLineColor(kBlack); phiHisto.SetMarkerColor(kBlack);
 
-  // datasetName = "dataGen_B0";
-  // if (datasetName.EqualTo("dataGen_B0")) plotsDir.Append("/B0");
-  // else if (datasetName.EqualTo("dataGen_B0bar")) plotsDir.Append("/B0bar");
+  datasetName = "dataGen_B0"; //datasetName = "dataGen_B0bar";
+  datasetName.Append("_B0massConstraint");
+  if (datasetName.Contains("dataGen_B0")) plotsDir.Append("/B0");
+  else if (datasetName.Contains("dataGen_B0bar")) plotsDir.Append("/B0bar");
 
   datasetName.Append(".txt");
   TString fullDatasetName = "./datasets/"+datasetName;
-  fullDatasetName = "./datasets/"+datasetName;
+  fullDatasetName = "../datasets/"+datasetName;
   ifstream dataTxt(fullDatasetName.Data());
   //ifstream dataTxt(("../datasets/"+datasetName).c_str());
   Int_t totEvents = 0;
@@ -769,12 +771,13 @@ int main(int argc, char** argv) {
       phi->value = var4;
 
       //std::cout << massKPi->value << " - " <<cosMuMu->value << " - " << massPsiPi->value << " - " << phi->value << " - " << std::endl;
-
-      dataset.addEvent();
-      massKPiHisto.Fill(massKPi->value);
-      cosMuMuHisto.Fill(cosMuMu->value);
-      massPsiPiHisto.Fill(massPsiPi->value);
-      phiHisto.Fill(phi->value);
+      if ( Dalitz_contour(massKPi->value, massPsiPi->value, (Int_t)psi_nS->value) ) {
+	dataset.addEvent();
+	massKPiHisto.Fill(massKPi->value);
+	cosMuMuHisto.Fill(cosMuMu->value);
+	massPsiPiHisto.Fill(massPsiPi->value);
+	phiHisto.Fill(phi->value);
+      }
 
       dataTxt.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
