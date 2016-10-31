@@ -1240,10 +1240,10 @@ int main(int argc, char** argv) {
     } else {
       nStatEntries +=4 ;
       fitStat->AddText(TString::Format("\n------------------- %s -------------------", kStarNames[kCounter].c_str()));
-      fitStat->AddText(TString::Format("a_{0} = %.2f #pm %.2f, b_{0} = %.2f #pm %.2f",as[amplitudeCounter]->value,as[u]->error,bs[u]->value,bs[u]->error));
-      fitStat->AddText(TString::Format("a_{p1} = %.2f #pm %.2f, b_{p1} = %.2f #pm %.2f",as[amplitudeCounter+1]->value,as[u+1]->error,bs[amplitudeCounter+1]->value,bs[amplitudeCounter+1]->error));
+      fitStat->AddText(TString::Format("a_{0} = %.2f #pm %.2f, b_{0} = %.2f #pm %.2f",as[amplitudeCounter]->value,as[amplitudeCounter]->error,bs[amplitudeCounter]->value,bs[amplitudeCounter]->error));
+      fitStat->AddText(TString::Format("a_{p1} = %.2f #pm %.2f, b_{p1} = %.2f #pm %.2f",as[amplitudeCounter+1]->value,as[amplitudeCounter+1]->error,bs[amplitudeCounter+1]->value,bs[amplitudeCounter+1]->error));
       fitStat->AddText(TString::Format("a_{m1} = %.2f #pm %.2f, b_{m1} = %.2f #pm %.2f",as[amplitudeCounter+2]->value,as[amplitudeCounter+2]->error,bs[amplitudeCounter+2]->value,bs[amplitudeCounter+2]->error));
-      amplitudeCounter +=2;
+      amplitudeCounter +=3;
     }
 
     ++kCounter;
