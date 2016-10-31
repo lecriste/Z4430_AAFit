@@ -588,15 +588,15 @@ int main(int argc, char** argv) {
     //as.push_back(new Variable("a_K_892_0",0.844));
     //bs.push_back(new Variable("b_K_892_0",3.14,bMin,bMax));
 
-    Masses.push_back(new Variable("K_892_Mass_p1",M892) );
-    Gammas.push_back(new Variable("K_892_Gamma_p1",G892) );
-    Spins.push_back(new Variable("K_892_Spin_p1",1.0) );
+    // Masses.push_back(new Variable("K_892_Mass_p1",M892) );
+    // Gammas.push_back(new Variable("K_892_Gamma_p1",G892) );
+    // Spins.push_back(new Variable("K_892_Spin_p1",1.0) );
     as.push_back(new Variable("a_K_892_p1",0.844,aMin,aMax) );
     bs.push_back(new Variable("b_K_892_p1",3.14,bMin,bMax) );
 
-    Masses.push_back(new Variable("K_892_Mass_m1",M892) );
-    Gammas.push_back(new Variable("K_892_Gamma_m1",G892) );
-    Spins.push_back(new Variable("K_892_Spin_m1",1.0));
+    // Masses.push_back(new Variable("K_892_Mass_m1",M892) );
+    // Gammas.push_back(new Variable("K_892_Gamma_m1",G892) );
+    // Spins.push_back(new Variable("K_892_Spin_m1",1.0));
     as.push_back(new Variable("a_K_892_m1",0.196,aMin,aMax));
     bs.push_back(new Variable("b_K_892_m1",-1.7,bMin,bMax));
   }
@@ -623,15 +623,15 @@ int main(int argc, char** argv) {
     //as.push_back(new Variable("a_K_1410_0",0.844));
     //bs.push_back(new Variable("b_K_1410_0",3.14,bMin,bMax));
 
-    Masses.push_back(new Variable("K_1410_Mass_p1",M1410) );
-    Gammas.push_back(new Variable("K_1410_Gamma_p1",G1410) );
-    Spins.push_back(new Variable("K_1410_Spin_p1",1.0) );
+    // Masses.push_back(new Variable("K_1410_Mass_p1",M1410) );
+    // Gammas.push_back(new Variable("K_1410_Gamma_p1",G1410) );
+    // Spins.push_back(new Variable("K_1410_Spin_p1",1.0) );
     as.push_back(new Variable("a_K_1410_p1",0.123,aMin,aMax) );
     bs.push_back(new Variable("b_K_1410_p1",-1.04,bMin,bMax) );
 
-    Masses.push_back(new Variable("K_1410_Mass_m1",M1410) );
-    Gammas.push_back(new Variable("K_1410_Gamma_m1",G1410) );
-    Spins.push_back(new Variable("K_1410_Spin_m1",1.0));
+    // Masses.push_back(new Variable("K_1410_Mass_m1",M1410) );
+    // Gammas.push_back(new Variable("K_1410_Gamma_m1",G1410) );
+    // Spins.push_back(new Variable("K_1410_Spin_m1",1.0));
     as.push_back(new Variable("a_K_1410_m1",0.036,aMin,aMax));
     bs.push_back(new Variable("b_K_1410_m1",0.67,bMin,bMax));
   }
@@ -658,15 +658,15 @@ int main(int argc, char** argv) {
     //as.push_back(new Variable("a_K_1430_2_0",0.844));
     //bs.push_back(new Variable("b_K_1430_2_0",3.14,bMin,bMax));
 
-    Masses.push_back(new Variable("K_1430_2_Mass_p1",M1430_2) );
-    Gammas.push_back(new Variable("K_1430_2_Gamma_p1",G1430_2) );
-    Spins.push_back(new Variable("K_1430_2_Spin_p1",2.0) );
+    // Masses.push_back(new Variable("K_1430_2_Mass_p1",M1430_2) );
+    // Gammas.push_back(new Variable("K_1430_2_Gamma_p1",G1430_2) );
+    // Spins.push_back(new Variable("K_1430_2_Spin_p1",2.0) );
     as.push_back(new Variable("a_K_1430_2_p1",4.65,aMin,aMax) );
     bs.push_back(new Variable("b_K_1430_2_p1",-3.05,bMin,bMax) );
 
-    Masses.push_back(new Variable("K_1430_2_Mass_m1",M1430_2) );
-    Gammas.push_back(new Variable("K_1430_2_Gamma_m1",G1430_2) );
-    Spins.push_back(new Variable("K_1430_2_Spin_m1",2.0));
+    // Masses.push_back(new Variable("K_1430_2_Mass_m1",M1430_2) );
+    // Gammas.push_back(new Variable("K_1430_2_Gamma_m1",G1430_2) );
+    // Spins.push_back(new Variable("K_1430_2_Spin_m1",2.0));
     as.push_back(new Variable("a_K_1430_2_m1",1.26,aMin,aMax));
     bs.push_back(new Variable("b_K_1430_2_m1",-1.92,bMin,bMax));
   }
@@ -683,15 +683,15 @@ int main(int argc, char** argv) {
     //as.push_back(new Variable("a_K_1780_3_0",0.844));
     //bs.push_back(new Variable("b_K_1780_3_0",3.14,bMin,bMax));
 
-    Masses.push_back(new Variable("K_1780_3_Mass_p1",M1780_3) );
-    Gammas.push_back(new Variable("K_1780_3_Gamma_p1",G1780_3) );
-    Spins.push_back(new Variable("K_1780_3_Spin_p1",3.0) );
+    // Masses.push_back(new Variable("K_1780_3_Mass_p1",M1780_3) );
+    // Gammas.push_back(new Variable("K_1780_3_Gamma_p1",G1780_3) );
+    // Spins.push_back(new Variable("K_1780_3_Spin_p1",3.0) );
     as.push_back(new Variable("a_K_1780_3_p1",19.1,aMin,aMax) );
     bs.push_back(new Variable("b_K_1780_3_p1",2.03,bMin,bMax) );
 
-    Masses.push_back(new Variable("K_1780_3_Mass_m1",M1780_3) );
-    Gammas.push_back(new Variable("K_1780_3_Gamma_m1",G1780_3) );
-    Spins.push_back(new Variable("K_1780_3_Spin_m1",3.0));
+    // Masses.push_back(new Variable("K_1780_3_Mass_m1",M1780_3) );
+    // Gammas.push_back(new Variable("K_1780_3_Gamma_m1",G1780_3) );
+    // Spins.push_back(new Variable("K_1780_3_Spin_m1",3.0));
     as.push_back(new Variable("a_K_1780_3_m1",10.2,aMin,aMax));
     bs.push_back(new Variable("b_K_1780_3_m1",1.55,bMin,bMax));
   }
@@ -841,13 +841,13 @@ int main(int argc, char** argv) {
   fptype pointsMKPiYTot[massKPi->numbins],pointsMKPiYTotSig[massKPi->numbins],pointsMKPiYTotBkg[massKPi->numbins];
 
   fptype pointsCosMuMuXTot[cosMuMu->numbins];
-  fptype pointsCosMuMuYTot[cosMuMu->numbins],pointsCosMuMuYTotSig[cosMuMu->numbins],pointsCosMuMuYTotBkg[cosMuMu->numbins];
+  fptype pointsCosMuMuYTot[cosMuMu->numbins];
 
   fptype pointsmassPsiPiXTot[massPsiPi->numbins];
-  fptype pointsmassPsiPiYTot[massPsiPi->numbins],pointsmassPsiPiYTotSig[massPsiPi->numbins],pointsmassPsiPiYTotBkg[massPsiPi->numbins];
+  fptype pointsmassPsiPiYTot[massPsiPi->numbins];
 
   fptype pointsPhiXTot[phi->numbins];
-  fptype pointsPhiYTot[phi->numbins],pointsPhiYTotSig[phi->numbins],pointsPhiYTotBkg[phi->numbins];
+  fptype pointsPhiYTot[phi->numbins];
 
   //Total pdf projection histos
   TH1F projMKPiHisto("projMKPiHisto", "projMKPiHisto",massKPi->numbins, massKPi->lowerlimit, massKPi->upperlimit);
@@ -1046,11 +1046,11 @@ int main(int argc, char** argv) {
     for (int k = 0; k < phi->numbins * cosMuMu->numbins; ++k) {
       for (int i = 0; i < massKPi->numbins; ++i) {
         massPsiPiTotalProjection[j] += pdfTotalValues[0][i  +  k * massKPi->numbins * massPsiPi->numbins  +  j * massKPi->numbins];
-        if(bkgPhaseSpace)
-        {
-          massPsiPiTotalSigProjection[j] += pdfTotalValues[1][i  +  k * massKPi->numbins * massPsiPi->numbins  +  j * massKPi->numbins];
-          massPsiPiTotalBkgProjection[j] += pdfTotalValues[2][i  +  k * massKPi->numbins * massPsiPi->numbins  +  j * massKPi->numbins];
-        }
+        // if(bkgPhaseSpace)
+        // {
+        //   massPsiPiTotalSigProjection[j] += pdfTotalValues[1][i  +  k * massKPi->numbins * massPsiPi->numbins  +  j * massKPi->numbins];
+        //   massPsiPiTotalBkgProjection[j] += pdfTotalValues[2][i  +  k * massKPi->numbins * massPsiPi->numbins  +  j * massKPi->numbins];
+        // }
       }
     }
   }
@@ -1078,11 +1078,11 @@ int main(int argc, char** argv) {
     for (int k = 0; k < phi->numbins; ++k) {
       for (int i = 0; i < massKPi->numbins*cosMuMu->numbins; ++i) {
         cosMuMuTotalProjection[j] += pdfTotalValues[0][i  +  j * massKPi->numbins * massPsiPi->numbins  +  k * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
-        if(bkgPhaseSpace)
-        {
-          cosMuMuTotalSigProjection[j] += pdfTotalValues[1][i  +  j * massKPi->numbins * massPsiPi->numbins  +  k * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
-          cosMuMuTotalBkgProjection[j] += pdfTotalValues[2][i  +  j * massKPi->numbins * massPsiPi->numbins  +  k * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
-        }
+        // if(bkgPhaseSpace)
+        // {
+        //   cosMuMuTotalSigProjection[j] += pdfTotalValues[1][i  +  j * massKPi->numbins * massPsiPi->numbins  +  k * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
+        //   cosMuMuTotalBkgProjection[j] += pdfTotalValues[2][i  +  j * massKPi->numbins * massPsiPi->numbins  +  k * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
+        // }
       }
     }
   }
@@ -1091,11 +1091,11 @@ int main(int argc, char** argv) {
   for (int j = 0; j < phi->numbins; ++j) {
     for (int k = 0; k < massPsiPi->numbins * massKPi->numbins * cosMuMu->numbins; ++k) {
         phiTotalProjection[j] += pdfTotalValues[0][k  +  j * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
-        if(bkgPhaseSpace)
-        {
-          phiTotalSigProjection[j] += pdfTotalValues[1][k  +  j * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
-          phiTotalBkgProjection[j] += pdfTotalValues[2][k  +  j * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
-        }
+        // if(bkgPhaseSpace)
+        // {
+        //   phiTotalSigProjection[j] += pdfTotalValues[1][k  +  j * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
+        //   phiTotalBkgProjection[j] += pdfTotalValues[2][k  +  j * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
+        // }
     }
   }
 
@@ -1122,36 +1122,36 @@ int main(int argc, char** argv) {
 
   for (int j = 0; j < cosMuMu->numbins; ++j) {
     projCosMuMuHisto.SetBinContent(j+1,cosMuMuTotalProjection[j]);
-    projCosMuMuHistoSig.SetBinContent(j+1,cosMuMuTotalSigProjection[j]);
-    projCosMuMuHistoBkg.SetBinContent(j+1,cosMuMuTotalBkgProjection[j]);
+    // projCosMuMuHistoSig.SetBinContent(j+1,cosMuMuTotalSigProjection[j]);
+    // projCosMuMuHistoBkg.SetBinContent(j+1,cosMuMuTotalBkgProjection[j]);
     //std::cout <<" Bin " <<j<<" center = " <<projMKPiHisto.GetBinCenter(j+1)<<" : " <<mkpTotalProjection[j]<<std::endl;
   }
 
   projCosMuMuHisto.Scale(ratioCosMuMu);
-  projCosMuMuHistoSig.Scale(ratioCosMuMu);
-  projCosMuMuHistoBkg.Scale(ratioCosMuMu);
+  // projCosMuMuHistoSig.Scale(ratioCosMuMu);
+  // projCosMuMuHistoBkg.Scale(ratioCosMuMu);
 
   for (int j = 0; j < massPsiPi->numbins; ++j) {
     projmassPsiPiHisto.SetBinContent(j+1,massPsiPiTotalProjection[j]);
-    projmassPsiPiHistoSig.SetBinContent(j+1,massPsiPiTotalSigProjection[j]);
-    projmassPsiPiHistoBkg.SetBinContent(j+1,massPsiPiTotalBkgProjection[j]);
+    // projmassPsiPiHistoSig.SetBinContent(j+1,massPsiPiTotalSigProjection[j]);
+    // projmassPsiPiHistoBkg.SetBinContent(j+1,massPsiPiTotalBkgProjection[j]);
     //std::cout <<" Bin " <<j<<" center = " <<projMKPiHisto.GetBinCenter(j+1)<<" : " <<mkpTotalProjection[j]<<std::endl;
   }
 
   projmassPsiPiHisto.Scale(ratioMassPsiPi);
-  projmassPsiPiHistoSig.Scale(ratioMassPsiPi);
-  projmassPsiPiHistoBkg.Scale(ratioMassPsiPi);
+  // projmassPsiPiHistoSig.Scale(ratioMassPsiPi);
+  // projmassPsiPiHistoBkg.Scale(ratioMassPsiPi);
 
   for (int j = 0; j < phi->numbins; ++j) {
     projPhiHisto.SetBinContent(j+1,phiTotalProjection[j]);
-    projPhiHistoSig.SetBinContent(j+1,phiTotalSigProjection[j]);
-    projPhiHistoBkg.SetBinContent(j+1,phiTotalBkgProjection[j]);
+    // projPhiHistoSig.SetBinContent(j+1,phiTotalSigProjection[j]);
+    // projPhiHistoBkg.SetBinContent(j+1,phiTotalBkgProjection[j]);
     //std::cout <<" Bin " <<j<<" center = " <<projMKPiHisto.GetBinCenter(j+1)<<" : " <<mkpTotalProjection[j]<<std::endl;
   }
 
   projPhiHisto.Scale(ratioPhi);
-  projPhiHistoSig.Scale(ratioPhi);
-  projPhiHistoBkg.Scale(ratioPhi);
+  // projPhiHistoSig.Scale(ratioPhi);
+  // projPhiHistoBkg.Scale(ratioPhi);
 
   //////////////////////////////////////////////////////////////////////
   //Fillling projection histograms and TGraphs
@@ -1195,32 +1195,32 @@ int main(int argc, char** argv) {
   TGraph signalTotalBkgPlotMKPi(massKPi->numbins,pointsMKPiXTot,pointsMKPiYTotBkg);
 
   TGraph signalTotalPlotCosMuMu(cosMuMu->numbins,pointsCosMuMuXTot,pointsCosMuMuYTot);
-  TGraph signalTotalSigPlotCosMuMu(cosMuMu->numbins,pointsCosMuMuXTot,pointsCosMuMuYTotSig);
-  TGraph signalTotalBkgPlotCosMuMu(cosMuMu->numbins,pointsCosMuMuXTot,pointsCosMuMuYTotBkg);
+  // TGraph signalTotalSigPlotCosMuMu(cosMuMu->numbins,pointsCosMuMuXTot,pointsCosMuMuYTotSig);
+  // TGraph signalTotalBkgPlotCosMuMu(cosMuMu->numbins,pointsCosMuMuXTot,pointsCosMuMuYTotBkg);
 
   TGraph signalTotalPlotmassPsiPi(massPsiPi->numbins,pointsmassPsiPiXTot,pointsmassPsiPiYTot);
-  TGraph signalTotalSigPlotmassPsiPi(massPsiPi->numbins,pointsmassPsiPiXTot,pointsmassPsiPiYTotSig);
-  TGraph signalTotalBkgPlotmassPsiPi(massPsiPi->numbins,pointsmassPsiPiXTot,pointsmassPsiPiYTotBkg);
+  // TGraph signalTotalSigPlotmassPsiPi(massPsiPi->numbins,pointsmassPsiPiXTot,pointsmassPsiPiYTotSig);
+  // TGraph signalTotalBkgPlotmassPsiPi(massPsiPi->numbins,pointsmassPsiPiXTot,pointsmassPsiPiYTotBkg);
 
   TGraph signalTotalPlotPhi(phi->numbins,pointsPhiXTot,pointsPhiYTot);
-  TGraph signalTotalSigPlotPhi(phi->numbins,pointsPhiXTot,pointsPhiYTotSig);
-  TGraph signalTotalBkgPlotPhi(phi->numbins,pointsPhiXTot,pointsPhiYTotBkg);
+  // TGraph signalTotalSigPlotPhi(phi->numbins,pointsPhiXTot,pointsPhiYTotSig);
+  // TGraph signalTotalBkgPlotPhi(phi->numbins,pointsPhiXTot,pointsPhiYTotBkg);
 
   signalTotalPlotMKPi.SetLineColor(kRed); signalTotalPlotMKPi.SetLineWidth(2);
-  signalTotalPlotMKPi.SetLineColor(kRed); signalTotalPlotMKPi.SetLineWidth(2);
-  signalTotalPlotMKPi.SetLineColor(kRed); signalTotalPlotMKPi.SetLineWidth(2);
+  signalTotalBkgPlotMKPi.SetLineColor(kRed); signalTotalBkgPlotMKPi.SetLineWidth(2);signalTotalBkgPlotMKPi.SetLineStyle(kDashDotted);
+  signalTotalBkgPlotMKPi.SetLineColor(kRed); signalTotalBkgPlotMKPi.SetLineWidth(2);signalTotalBkgPlotMKPi.SetLineStyle(kDashed);
 
   signalTotalPlotCosMuMu.SetLineColor(kRed); signalTotalPlotCosMuMu.SetLineWidth(2);
-  signalTotalSigPlotCosMuMu.SetLineColor(kRed); signalTotalSigPlotCosMuMu.SetLineWidth(2); signalTotalSigPlotCosMuMu.SetLineStyle(kDashDotted);
-  signalTotalBkgPlotCosMuMu.SetLineColor(kRed); signalTotalBkgPlotCosMuMu.SetLineWidth(2); signalTotalSigPlotCosMuMu.SetLineStyle(kDashed);
+  // signalTotalSigPlotCosMuMu.SetLineColor(kRed); signalTotalSigPlotCosMuMu.SetLineWidth(2); signalTotalSigPlotCosMuMu.SetLineStyle(kDashDotted);
+  // signalTotalBkgPlotCosMuMu.SetLineColor(kRed); signalTotalBkgPlotCosMuMu.SetLineWidth(2); signalTotalSigPlotCosMuMu.SetLineStyle(kDashed);
 
   signalTotalPlotmassPsiPi.SetLineColor(kRed); signalTotalPlotmassPsiPi.SetLineWidth(2);
-  signalTotalSigPlotmassPsiPi.SetLineColor(kRed); signalTotalSigPlotmassPsiPi.SetLineWidth(2); signalTotalSigPlotmassPsiPi.SetLineStyle(kDashDotted);
-  signalTotalBkgPlotmassPsiPi.SetLineColor(kRed); signalTotalBkgPlotmassPsiPi.SetLineWidth(2); signalTotalBkgPlotmassPsiPi.SetLineStyle(kDashed);
+  // signalTotalSigPlotmassPsiPi.SetLineColor(kRed); signalTotalSigPlotmassPsiPi.SetLineWidth(2); signalTotalSigPlotmassPsiPi.SetLineStyle(kDashDotted);
+  // signalTotalBkgPlotmassPsiPi.SetLineColor(kRed); signalTotalBkgPlotmassPsiPi.SetLineWidth(2); signalTotalBkgPlotmassPsiPi.SetLineStyle(kDashed);
 
   signalTotalPlotPhi.SetLineColor(kRed); signalTotalPlotPhi.SetLineWidth(2);
-  signalTotalSigPlotPhi.SetLineColor(kRed); signalTotalSigPlotPhi.SetLineWidth(2); signalTotalSigPlotPhi.SetLineStyle(kDashDotted);
-  signalTotalBkgPlotPhi.SetLineColor(kRed); signalTotalBkgPlotPhi.SetLineWidth(2); signalTotalBkgPlotPhi.SetLineStyle(kDashed);
+  // signalTotalSigPlotPhi.SetLineColor(kRed); signalTotalSigPlotPhi.SetLineWidth(2); signalTotalSigPlotPhi.SetLineStyle(kDashDotted);
+  // signalTotalBkgPlotPhi.SetLineColor(kRed); signalTotalBkgPlotPhi.SetLineWidth(2); signalTotalBkgPlotPhi.SetLineStyle(kDashed);
 
   fptype totalIntegral = totalPdf->normalise();
   fptype compsIntegral = 0.0;
@@ -1229,19 +1229,21 @@ int main(int argc, char** argv) {
   int kCounter = 0;
 
   Int_t nStatEntries = 0;
-  for (size_t u=0; u<as.size(); ++u) {
+  Int_t amplitudeCounter = 0;
+  for (size_t u=0; u<Masses.size(); ++u) {
 
     if (Spins[u]->value==0.0) {
       nStatEntries +=2 ;
       fitStat->AddText(TString::Format("\n------------------- %s -------------------", kStarNames[kCounter].c_str()));
-      fitStat->AddText(TString::Format("a_{0} = %.2f #pm %.2f, b_{0} = %.2f #pm %.2f",as[u]->value,as[u]->error,bs[u]->value,bs[u]->error));
+      fitStat->AddText(TString::Format("a_{0} = %.2f #pm %.2f, b_{0} = %.2f #pm %.2f",as[amplitudeCounter]->value,as[amplitudeCounter]->error,bs[amplitudeCounter]->value,bs[amplitudeCounter]->error));
+      ++amplitudeCounter;
     } else {
       nStatEntries +=4 ;
       fitStat->AddText(TString::Format("\n------------------- %s -------------------", kStarNames[kCounter].c_str()));
-      fitStat->AddText(TString::Format("a_{0} = %.2f #pm %.2f, b_{0} = %.2f #pm %.2f",as[u]->value,as[u]->error,bs[u]->value,bs[u]->error));
-      fitStat->AddText(TString::Format("a_{p1} = %.2f #pm %.2f, b_{p1} = %.2f #pm %.2f",as[u+1]->value,as[u+1]->error,bs[u+1]->value,bs[u+1]->error));
-      fitStat->AddText(TString::Format("a_{m1} = %.2f #pm %.2f, b_{m1} = %.2f #pm %.2f",as[u+2]->value,as[u+2]->error,bs[u+2]->value,bs[u+2]->error));
-      u+=2;
+      fitStat->AddText(TString::Format("a_{0} = %.2f #pm %.2f, b_{0} = %.2f #pm %.2f",as[amplitudeCounter]->value,as[u]->error,bs[u]->value,bs[u]->error));
+      fitStat->AddText(TString::Format("a_{p1} = %.2f #pm %.2f, b_{p1} = %.2f #pm %.2f",as[amplitudeCounter+1]->value,as[u+1]->error,bs[amplitudeCounter+1]->value,bs[amplitudeCounter+1]->error));
+      fitStat->AddText(TString::Format("a_{m1} = %.2f #pm %.2f, b_{m1} = %.2f #pm %.2f",as[amplitudeCounter+2]->value,as[amplitudeCounter+2]->error,bs[amplitudeCounter+2]->value,bs[amplitudeCounter+2]->error));
+      amplitudeCounter +=2;
     }
 
     ++kCounter;
@@ -1288,7 +1290,15 @@ int main(int argc, char** argv) {
 
   Bool_t plotSingleKstars = kTRUE; //plotSingleKstars = kFALSE;
 
-  for (int k = 0; k < (int)as.size(); ++k) {
+  int lastAmplitude = 0;
+
+  for (int i = 0; i < (int)Masses.size(); ++i) {
+    MassesPlot.push_back(Masses[i]);
+    GammasPlot.push_back(Gammas[i]);
+    SpinsPlot.push_back(Spins[i]);
+  }
+
+  for (int k = 0; k < (int)Masses.size(); ++k) {
 
     ////////////////////////////////////////////////////////////////////////////////
     //Initialising projection vectors
@@ -1337,58 +1347,43 @@ int main(int argc, char** argv) {
       bs[l]->fixed = true;
     }
 
+    std::cout<<" Plotting KStars - Mass : "<<Masses[k]<<" Spin : "<<Spins[k]<<"Last Amplitude : "<<lastAmplitude<<std::endl;
+
     //For Spin = 0.0 only one component
     if (Spins[k]->value==0.0) {
 
-      as[k]->fixed;
-      bs[k]->fixed;
-
-      MassesPlot.push_back(Masses[k]);
-      GammasPlot.push_back(Gammas[k]);
-      SpinsPlot.push_back(Spins[k]);
-      asPlot.push_back(as[k]);
-      bsPlot.push_back(bs[k]);
-
+      as[lastAmplitude]->fixed;
+      bs[lastAmplitude]->fixed;
+      std::cout<<" - Amplitude vector pushing: "<<lastAmplitude<<" index ";
+      asPlot.push_back(as[lastAmplitude]);
+      bsPlot.push_back(bs[lastAmplitude]);
 
       for (int j = 0; j < (int)as.size(); ++j) {
-	if (j!=k) {
-
-	  MassesPlot.push_back(Masses[j]);
-	  GammasPlot.push_back(Gammas[j]);
-	  SpinsPlot.push_back(Spins[j]);
-	  asPlot.push_back(new Variable("zero_a",0.0));
-	  bsPlot.push_back(new Variable("zero_b",0.0));
-
-
-	}}
-
+        if (j!=lastAmplitude) {
+          std::cout<<" putting zero: "<<j<<" index "<<std::endl;
+      	  asPlot.push_back(new Variable("zero_a",0.0));
+      	  bsPlot.push_back(new Variable("zero_b",0.0));
+        }
+      }
+      ++lastAmplitude;
     } else {
       // For Spin != 0 three components
-      for (int i = k; i <= k+2; ++i) {
-
-
-	as[i]->fixed;
-	bs[i]->fixed;
-
-	MassesPlot.push_back(Masses[i]);
-	GammasPlot.push_back(Gammas[i]);
-	SpinsPlot.push_back(Spins[i]);
-	asPlot.push_back(as[i]);
-	bsPlot.push_back(bs[i]);
+      for (int i = lastAmplitude; i <= lastAmplitude+2; ++i) {
+        std::cout<<" - Amplitude vector pushing: "<<i<<" index ";
+        as[i]->fixed;
+        bs[i]->fixed;
+        asPlot.push_back(as[i]);
+        bsPlot.push_back(bs[i]);
 
       }
       for (int d = 0; d < as.size(); ++d) {
-	if (d!=k && d!=k+1 && d!=k+2) {
-
-	  MassesPlot.push_back(Masses[d]);
-	  GammasPlot.push_back(Gammas[d]);
-	  SpinsPlot.push_back(Spins[d]);
+	if (d!=lastAmplitude && d!=lastAmplitude+1 && d!=lastAmplitude+2) {
+    std::cout<<" putting zero: "<<d<<" index "<<std::endl;
 	  asPlot.push_back(new Variable("zero_a",0.0));
 	  bsPlot.push_back(new Variable("zero_b",0.0));
 
-
 	}}
-      k+=2;
+      lastAmplitude+=2;
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -1557,9 +1552,6 @@ int main(int argc, char** argv) {
       canvas->Clear();*/
     ++kCounter;
 
-    MassesPlot.clear();
-    GammasPlot.clear();
-    SpinsPlot.clear();
     asPlot.clear();
     bsPlot.clear();
     pdfCompValues.clear();
@@ -1575,7 +1567,7 @@ int main(int argc, char** argv) {
   if(bkgPhaseSpace)
   {
     multiGraphMKPi->Add(&signalTotalBkgPlotMKPi,"L");
-    multiGraphMKPi->Add(&signalTotalSigPlotMKPi,"L");
+    //multiGraphMKPi->Add(&signalTotalSigPlotMKPi,"L");
   }
   multiGraphMKPi->Add(&signalTotalPlotMKPi,"L");
   multiGraphMKPi->Add(pointsMKP,"P");
@@ -1583,30 +1575,30 @@ int main(int argc, char** argv) {
   pointsX[0] = massPsiPi->lowerlimit; pointsX[1] = massPsiPi->upperlimit;
   pointsY[0] = massPsiPiHisto.GetMinimum();pointsY[1] = massPsiPiHisto.GetMaximum();
   TGraph* pointsCKS = new TGraph(2,pointsX,pointsY);
-  if(bkgPhaseSpace)
-  {
-    multiGraphmassPsiPi->Add(&signalTotalBkgPlotmassPsiPi,"L");
-    multiGraphmassPsiPi->Add(&signalTotalSigPlotmassPsiPi,"L");
-  }
+  // if(bkgPhaseSpace)
+  // {
+  //   multiGraphmassPsiPi->Add(&signalTotalBkgPlotmassPsiPi,"L");
+  //   multiGraphmassPsiPi->Add(&signalTotalSigPlotmassPsiPi,"L");
+  // }
   multiGraphmassPsiPi->Add(&signalTotalPlotmassPsiPi,"L");
   multiGraphmassPsiPi->Add(pointsCKS,"P");
 
   pointsX[0] = cosMuMu->lowerlimit; pointsX[1] = cosMuMu->upperlimit;
   pointsY[0] = cosMuMuHisto.GetMinimum(); pointsY[1] = cosMuMuHisto.GetMaximum();
   TGraph* pointsCMM = new TGraph(2,pointsX,pointsY);
-  if(bkgPhaseSpace)
-  {
-    multiGraphCosMuMu->Add(&signalTotalBkgPlotCosMuMu,"L");
-    multiGraphCosMuMu->Add(&signalTotalSigPlotCosMuMu,"L");
-  }
+  // if(bkgPhaseSpace)
+  // {
+  //   multiGraphCosMuMu->Add(&signalTotalBkgPlotCosMuMu,"L");
+  //   multiGraphCosMuMu->Add(&signalTotalSigPlotCosMuMu,"L");
+  // }
   multiGraphCosMuMu->Add(&signalTotalPlotCosMuMu,"L");
   multiGraphCosMuMu->Add(pointsCMM,"P");
 
   pointsX[0] = phi->lowerlimit; pointsX[1] = phi->upperlimit;
   pointsY[0] = phiHisto.GetMinimum(); pointsY[1] = phiHisto.GetMaximum();
   TGraph* pointsPHI = new TGraph(2,pointsX,pointsY);
-  multiGraphPhi->Add(&signalTotalBkgPlotPhi,"L");
-  multiGraphPhi->Add(&signalTotalPlotPhi,"L");
+  // multiGraphPhi->Add(&signalTotalBkgPlotPhi,"L");
+  // multiGraphPhi->Add(&signalTotalSigPlotPhi,"L");
   multiGraphPhi->Add(&signalTotalPlotPhi,"L");
   multiGraphPhi->Add(pointsPHI,"P");
 
