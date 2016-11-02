@@ -191,7 +191,7 @@ dRadB0(other.dRadB0), dRadKs(other.dRadKs)
    Double_t mKP2 = mKP*mKP;
    Double_t mPsiP2 = mPsiP*mPsiP;
    Double_t MPsi_nS2 = MPsi_nS*MPsi_nS;
-   Double_t cKs = cosTheta_FromMasses(mKP2, mPsiP2, MPsi_nS2, MBd2, MKaon2, MPion2);
+   Double_t cKs = cosTheta_FromMasses_host(mKP2, mPsiP2, MPsi_nS2, MBd2, MKaon2, MPion2);
    //cout <<"cKs = " <<cKs <<" for mKP2 = " <<mKP2 <<" and mPsiP2 = " <<mPsiP2 <<endl;
    
    if (fabs(cKs) > 1) {

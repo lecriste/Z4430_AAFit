@@ -33,19 +33,8 @@ ClassImp(Dalitz_contour)
    RooAbsPdf(other,name), 
    mKP("mKP",this,other.mKP),
    mPsiP("mPsiP",this,other.mPsiP),
-   MPsi_nS(other.MPsi_nS),
    psi_nS(other.psi_nS)
  { 
-
-  if (psi_nS.EqualTo("1")) 
-    MPsi_nS = MJpsi;
-  else if (psi_nS.EqualTo("2"))
-    MPsi_nS = MPsi2S;
-  else {
-    cout <<"psi_nS = " <<psi_nS <<" not allowed at the moment." <<endl;
-    return;
-  }
-
  } 
 
 
@@ -54,19 +43,5 @@ ClassImp(Dalitz_contour)
  { 
    // ENTER EXPRESSION IN TERMS OF VARIABLE ARGUMENTS HERE 
 
-   if ((mKP < MKaon + MPion) || (mKP > MBd - MPsi_nS) || (mPsiP < MPsi_nS + MPion) || (mPsiP > MBd - MKaon))
-     return 0.;
-   else { // Dalitz border from PDG KINEMATICS 43.4.3.1. 
-     Float_t E_P = (mPsiP*mPsiP - MJpsi2 + MPion2)/(2*mPsiP) ;
-     Float_t E_K = (MBd2 - mPsiP*mPsiP - MKaon2)/(2*mPsiP) ;
-     Float_t E_PpE_K_2 = TMath::Power((E_P + E_K),2);
-     Float_t sqrt_E_P2mMP2 = TMath::Sqrt(E_P*E_P - MPion2);
-     Float_t sqrt_E_K2mMK2 = TMath::Sqrt(E_K*E_K - MKaon2);
-     Float_t mKP2_min = E_PpE_K_2 - TMath::Power(sqrt_E_P2mMP2 + sqrt_E_K2mMK2,2);
-     Float_t mKP2_max = E_PpE_K_2 - TMath::Power(sqrt_E_P2mMP2 - sqrt_E_K2mMK2,2);
-     if ((mKP*mKP < mKP2_min) || (mKP*mKP > mKP2_max))
-       return 0.;
-   }
-
-   return 1.0 ; 
+   return Dalitz_contour_host(mKP, mPsiP, psi_nS.Atoi());
  } 

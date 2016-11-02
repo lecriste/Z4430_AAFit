@@ -44,7 +44,8 @@ timeval startTime, stopTime, totalTime;
 clock_t startC, stopC;
 tms startProc, stopProc;
 
-const fptype M892 = 0.89581 ; const fptype G892 = 0.0474; // From PDG charged only K*(892)
+//const fptype M892 = 0.89581 ; const fptype G892 = 0.0474; // From PDG charged only K*(892)
+const fptype M892 = 0.8961 ; const fptype G892 = 0.0507; // From EvtGen
 const fptype M1410 = 1.414; const fptype G1410 = 0.232; // K*1410
 const fptype M800 = 0.931; const fptype G800 = 0.578; // K*800
 const fptype M1430_0 = 1.425; const fptype G1430_0 = 0.270; // K*1430_0
@@ -554,6 +555,7 @@ int main(int argc, char** argv) {
 
   TString massKPi_name = "massKPi", cosMuMu_name = "cosMuMu", massPsiPi_name = "massPsiPi", phi_name = "phi";
   Variable* massKPi = new Variable(massKPi_name.Data(),1.,0.6,2.2); massKPi->numbins = bin1;
+  //Variable* massKPi = new Variable(massKPi_name.Data(),1.,0.6,1.67); massKPi->numbins = bin1;
   Variable* massPsiPi = new Variable(massPsiPi_name.Data(),TMath::Sqrt(23),3.2,4.9); massPsiPi->numbins = bin3;
   // cosine of the psi(nS) helicity angle
   Variable* cosMuMu = new Variable(cosMuMu_name.Data(),0.,-1,1); cosMuMu->numbins = bin2;
@@ -582,23 +584,29 @@ int main(int argc, char** argv) {
     Masses.push_back(new Variable("K_892_Mass_0",M892));
     Gammas.push_back(new Variable("K_892_Gamma_0",G892));
     Spins.push_back(new Variable("K_892_Spin_0",1.0));
-    as.push_back(new Variable("a_K_892_0",1.0));//,aMin,aMax) );
-    bs.push_back(new Variable("b_K_892_0",0.0));//,bMin,bMax) );
-
-    //as.push_back(new Variable("a_K_892_0",0.844));
-    //bs.push_back(new Variable("b_K_892_0",3.14,bMin,bMax));
+    //as.push_back(new Variable("a_K_892_0",1.0));//,aMin,aMax) );
+    //bs.push_back(new Variable("b_K_892_0",0.0));//,bMin,bMax) );
+    // EvtGen
+    as.push_back(new Variable("a_K_892_0",0.775));
+    //bs.push_back(new Variable("b_K_892_0",0.0));
+    //as.push_back(new Variable("a_K_892_0",0.775,0.50,0.8));
+    bs.push_back(new Variable("b_K_892_0",0.0));
 
     // Masses.push_back(new Variable("K_892_Mass_p1",M892) );
     // Gammas.push_back(new Variable("K_892_Gamma_p1",G892) );
     // Spins.push_back(new Variable("K_892_Spin_p1",1.0) );
-    as.push_back(new Variable("a_K_892_p1",0.844,aMin,aMax) );
-    bs.push_back(new Variable("b_K_892_p1",3.14,bMin,bMax) );
+    //as.push_back(new Variable("a_K_892_p1",0.844,aMin,aMax) );
+    //bs.push_back(new Variable("b_K_892_p1",3.14,bMin,bMax) );
+    as.push_back(new Variable("a_K_892_p1",0.159,0.14,0.17) );
+    bs.push_back(new Variable("b_K_892_p1",1.563,1.4,1.57) );
 
     // Masses.push_back(new Variable("K_892_Mass_m1",M892) );
     // Gammas.push_back(new Variable("K_892_Gamma_m1",G892) );
     // Spins.push_back(new Variable("K_892_Spin_m1",1.0));
-    as.push_back(new Variable("a_K_892_m1",0.196,aMin,aMax));
-    bs.push_back(new Variable("b_K_892_m1",-1.7,bMin,bMax));
+    //as.push_back(new Variable("a_K_892_m1",0.196,aMin,aMax));
+    //bs.push_back(new Variable("b_K_892_m1",-1.7,bMin,bMax));
+    as.push_back(new Variable("a_K_892_m1",0.612,0.50,0.63));
+    bs.push_back(new Variable("b_K_892_m1",2.712,1.0,2.73));
   }
 
   if (k800Star) {
@@ -735,16 +743,16 @@ int main(int argc, char** argv) {
   TH1F massPsiPiHisto(massPsiPi_name+"_Histo", massPsiPi_name+";"+massPsiPi_title+" [GeV]", datapoints3, massPsiPi->lowerlimit, massPsiPi->upperlimit); massPsiPiHisto.SetLineColor(kBlack); massPsiPiHisto.SetMarkerColor(kBlack);
   TH1F phiHisto(phi_name+"_Histo", phi_name+";"+phi_title, datapoints4, phi->lowerlimit, phi->upperlimit); phiHisto.SetLineColor(kBlack); phiHisto.SetMarkerColor(kBlack);
 
-  datasetName = "dataGen_B0"; //datasetName = "dataGen_B0bar";
-  datasetName.Append("_B0massConstraint");
+  //datasetName = "dataGen_B0"; //datasetName = "dataGen_B0bar";
+  //datasetName.Append("_B0massConstraint");
   if (datasetName.Contains("dataGen_B0")) plotsDir.Append("/B0");
   else if (datasetName.Contains("dataGen_B0bar")) plotsDir.Append("/B0bar");
 
+  datasetName.Append("__EvtGen");
   datasetName.Append(".txt");
   TString fullDatasetName = "./datasets/"+datasetName;
   fullDatasetName = "../datasets/"+datasetName;
   ifstream dataTxt(fullDatasetName.Data());
-  //ifstream dataTxt(("../datasets/"+datasetName).c_str());
   Int_t totEvents = 0;
   if ( !(dataTxt.good()) ) {
     std::cout <<"No valid input at : " <<fullDatasetName <<" provided.\nReturning." <<std::endl;
@@ -771,7 +779,7 @@ int main(int argc, char** argv) {
       phi->value = var4;
 
       //std::cout << massKPi->value << " - " <<cosMuMu->value << " - " << massPsiPi->value << " - " << phi->value << " - " << std::endl;
-      if ( Dalitz_contour(massKPi->value, massPsiPi->value, (Int_t)psi_nS->value) ) {
+      if ( Dalitz_contour_host(massKPi->value, massPsiPi->value, (Int_t)psi_nS->value) ) {
 	dataset.addEvent();
 	massKPiHisto.Fill(massKPi->value);
 	cosMuMuHisto.Fill(cosMuMu->value);

@@ -16,8 +16,6 @@
 #include "RooAbsCategory.h"
 #include "TComplex.h"
 
-#include "utilities.h"
-
 const Double_t MLb = 5.61951;
 const Double_t MBd = 5.27961;
 const Double_t MPsi2S = 3.686109;
@@ -25,7 +23,6 @@ const Double_t MJpsi = 3.096916;
 const Double_t MProton = 0.938272046;
 const Double_t MKaon = 0.493677;
 const Double_t MPion = 0.13957018;
-
 
 const Double_t MLb2 = MLb*MLb;
 const Double_t MLb4 = MLb2*MLb2;
@@ -54,6 +51,9 @@ const Double_t MKaon4mTwoMKaon2MProton2pMProton4 = MKaon4 - 2.*MKaon2*MProton2 +
 const Double_t MKaon4mTwoMKaon2MPion2pMPion4 = MKaon4 - 2.*MKaon2*MPion2 + MPion4;
 const Double_t TwoMKaon2pTwoMProton2 = 2.*(MKaon2 + MProton2);
 const Double_t TwoMKaon2pTwoMPion2 = 2.*(MKaon2 + MPion2);
+
+#include "utilities.h"
+#include "Dalitz_contour.h"
 
 // Lambda*
 const Double_t M1600 = 1.600 ;

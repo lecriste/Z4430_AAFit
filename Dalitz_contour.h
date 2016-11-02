@@ -35,7 +35,6 @@ protected:
   Double_t evaluate() const ;
 
 private:
-  Double_t MPsi_nS;
   TString psi_nS;
 
   ClassDef(Dalitz_contour,1) // Your description goes here...

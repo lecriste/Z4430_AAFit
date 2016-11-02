@@ -8,7 +8,7 @@ Double_t cosTheta_FromMasses_host(const Double_t sameSideM2, const Double_t oppo
 }
 
 
-Bool_t Dalitz_contour(const Double_t mKP, const Double_t mPsiP, const Int_t psi_nS) {
+Bool_t Dalitz_contour_host(const Double_t mKP, const Double_t mPsiP, const Int_t psi_nS) {
 
   Double_t MPsi_nS = 0; 
   if (psi_nS == 1) 
