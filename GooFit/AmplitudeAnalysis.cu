@@ -52,6 +52,10 @@ const fptype M1430_0 = 1.425; const fptype G1430_0 = 0.270; // K*1430_0
 const fptype M1430_2 = 1.4324; const fptype G1430_2 = 0.109; // K*1430_2
 const fptype M1780_3 = 1.776; const fptype G1780_3 = 0.159; // K*1780_3
 
+std::string migrad("MIGRAD");std::string m("M");
+std::string hesse("HESSE");std::string h("H");
+std::string minos("MINOS");std::string n("N");
+
 fptype phaseSpaceFunction(fptype x,fptype mP,fptype m1,fptype m2,fptype m3)
 {
   fptype function = isnan(sqrt(pow(x,4) + pow(m1,4) + pow(m2,4) - 2*pow(x,2)*pow(m1,2) - 2*pow(x,2)*pow(m2,2) - 2*pow(m1,2)*pow(m2,2)) * sqrt(pow(mP,4) + pow(x,4) + pow(m3,4) - 2*pow(mP,2)*pow(x,2) - 2*pow(mP,2)*pow(m3,2) - 2*pow(x,2)*pow(m3,2) ) / (x)) ? 0 : (sqrt(pow(x,4) + pow(m1,4) + pow(m2,4) - 2*pow(x,2)*pow(m1,2) - 2*pow(x,2)*pow(m2,2) - 2*pow(m1,2)*pow(m2,2)) * sqrt(pow(mP,4) + pow(x,4) + pow(m3,4) - 2*pow(mP,2)*pow(x,2) - 2*pow(mP,2)*pow(m3,2) - 2*pow(x,2)*pow(m3,2) ) / (x));
@@ -81,11 +85,12 @@ Int_t compBins = 50, pdfBins = 50, dataBins = 100;
 
 void printinstruction() {
   std::cerr << "======= Instructions \n"
-  	    << "\t-h,--help \t\t Show this help message\n"
-	    << "\t-n <events> \t\t Specify the number of events to use\n"
-  	    << "\t-r <path> \t\t Read Generated Events from txt in <path>\n"
-            << "\t-H \t\t\t Run HESSE (after MIGRAD, defautl: MIGRAD only)\n"
-  	    << "\t-b1 <b1> \t\t Select binning for MassKPi (for normalisation & integration, default: 40)\n"
+  	        << "\t-h,--help \t\t Show this help message\n"
+            << "\t-evtGen \t\t\t Select EvtGen dataset and p.d.f. parameters\n"
+	          << "\t-n <events> \t\t Specify the number of events to use\n"
+  	        << "\t-r <path> \t\t Read Generated Events from txt in <path>\n"
+            << "\t-algos <algo1algo2...>\t\t\t Select the mimimisation algos in the order they should \n be performed (MIGRAD at least once) ["<<m<<" for MIGRAD, "<<h<<" for HESSE, "<<n<<" for MINOS]\n (e.g -algo "<<h<<m<<h<<n<<" for HESSE MIGRAD HESSE MINOS - default: MIGRAD only)"
+  	        << "\t-b1 <b1> \t\t Select binning for MassKPi (for normalisation & integration, default: 40)\n"
             << "\t-b2 <b2> \t\t Select binning for CosMuMu (for normalisation & integration, default: 40)\n"
             << "\t-b3 <b3> \t\t Select binning for massPsiPi (for normalisation & integration, default: 40)\n"
             << "\t-b4 <b4> \t\t Select binning for Phi (for normalisation & integration, default: 40)\n"
@@ -133,7 +138,10 @@ int main(int argc, char** argv) {
 
   bool bkgPhaseSpace = false;
 
-  bool hesse = false;
+  //bool hesse = false;
+
+  std::vector<std::string> algos;
+  algos.push_back(migrad);
 
   TString datasetName = "Kstars";
   std::string underscores = "__";
@@ -150,10 +158,10 @@ int main(int argc, char** argv) {
       {
         std::string arg = argv[i];
         if ((arg == "-h") || (arg == "--help"))
-  	{
-  	  printinstruction();
-  	  return 0;
-  	}
+    	{
+    	  printinstruction();
+    	  return 0;
+    	}
         else if (arg == "-n")
   	{
   	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
@@ -372,12 +380,54 @@ int main(int argc, char** argv) {
   		}
   	    }
   	}
-        else if (arg == "-H")
-  	{
-  	  hesse = true;
-  	}
+    //     else if (arg == "-H")
+  	// {
+  	//   hesse = true;
+  	// }
+        else if (arg == "-algos")
+    {
+      algos.clear();
+      if (i + 1 < argc) // Make sure we aren't at the end of argv!
+  	    {
+  	      i++;
 
+  	      std::string algosInput= argv[i];
+          std::size_t found = algosInput.find(m);
+
+          if (found == std::string::npos)
+          {
+            std::cout << "Minimisation algorithms invalid input : MIGRAD to be called at least once \n";
+            exit(1);
+          }
+          std::cout << "Minimisation algorithms sequence : "<<std::endl;
+
+          for (std::string::size_type l = 0; l < algosInput.length(); ++l)
+          {
+            std::string::value_type algo = algosInput[l];
+
+            if(algo==m)
+            {
+              algos.push_back(migrad);
+              std::cout<<"  - MIGRAD "<<std::endl;
+            }
+            else if(algo==n)
+            {
+              algos.push_back(hesse);
+              std::cout<<"  - MIGRAD "<<std::endl;
+            }
+            else if(algo==n)
+            {
+              algos.push_back(minos);
+              std::cout<<"  - MIGRAD "<<std::endl;
+            }
+            else std:: cout<<" - \""<<algo<<"\" invalid input, ignored "<<std::endl;
+          }
+
+  	    }
       }
+
+
+    }
 
       if (bin1 > plottingfine1)
         cout <<"WARNING! Bins for normalisation & integration (" <<bin1 <<") are more than bins for p.d.f. plotting (" <<plottingfine1 <<")\n" <<endl;
@@ -584,29 +634,27 @@ int main(int argc, char** argv) {
     Masses.push_back(new Variable("K_892_Mass_0",M892));
     Gammas.push_back(new Variable("K_892_Gamma_0",G892));
     Spins.push_back(new Variable("K_892_Spin_0",1.0));
-    //as.push_back(new Variable("a_K_892_0",1.0));//,aMin,aMax) );
-    //bs.push_back(new Variable("b_K_892_0",0.0));//,bMin,bMax) );
-    // EvtGen
-    as.push_back(new Variable("a_K_892_0",0.775));
-    //bs.push_back(new Variable("b_K_892_0",0.0));
-    //as.push_back(new Variable("a_K_892_0",0.775,0.50,0.8));
-    bs.push_back(new Variable("b_K_892_0",0.0));
+    if(!evtGen)
+    {
+      as.push_back(new Variable("a_K_892_0",1.0));//,aMin,aMax) );
+      bs.push_back(new Variable("b_K_892_0",0.0));//,bMin,bMax) );
+      as.push_back(new Variable("a_K_892_p1",0.844,aMin,aMax) );
+      bs.push_back(new Variable("b_K_892_p1",3.14,bMin,bMax) );
+      as.push_back(new Variable("a_K_892_m1",0.196,aMin,aMax));
+      bs.push_back(new Variable("b_K_892_m1",-1.7,bMin,bMax));
+    }else
+    {
+      // EvtGen
+      as.push_back(new Variable("a_K_892_0",0.775));
+      //bs.push_back(new Variable("b_K_892_0",0.0));
+      //as.push_back(new Variable("a_K_892_0",0.775,0.50,0.8));
+      bs.push_back(new Variable("b_K_892_0",0.0));
+      as.push_back(new Variable("a_K_892_p1",0.159,0.14,0.17) );
+      bs.push_back(new Variable("b_K_892_p1",1.563,1.4,1.57) );
+      as.push_back(new Variable("a_K_892_m1",0.612,0.50,0.63));
+      bs.push_back(new Variable("b_K_892_m1",2.712,1.0,2.73));
+    }
 
-    // Masses.push_back(new Variable("K_892_Mass_p1",M892) );
-    // Gammas.push_back(new Variable("K_892_Gamma_p1",G892) );
-    // Spins.push_back(new Variable("K_892_Spin_p1",1.0) );
-    //as.push_back(new Variable("a_K_892_p1",0.844,aMin,aMax) );
-    //bs.push_back(new Variable("b_K_892_p1",3.14,bMin,bMax) );
-    as.push_back(new Variable("a_K_892_p1",0.159,0.14,0.17) );
-    bs.push_back(new Variable("b_K_892_p1",1.563,1.4,1.57) );
-
-    // Masses.push_back(new Variable("K_892_Mass_m1",M892) );
-    // Gammas.push_back(new Variable("K_892_Gamma_m1",G892) );
-    // Spins.push_back(new Variable("K_892_Spin_m1",1.0));
-    //as.push_back(new Variable("a_K_892_m1",0.196,aMin,aMax));
-    //bs.push_back(new Variable("b_K_892_m1",-1.7,bMin,bMax));
-    as.push_back(new Variable("a_K_892_m1",0.612,0.50,0.63));
-    bs.push_back(new Variable("b_K_892_m1",2.712,1.0,2.73));
   }
 
   if (k800Star) {
@@ -631,15 +679,9 @@ int main(int argc, char** argv) {
     //as.push_back(new Variable("a_K_1410_0",0.844));
     //bs.push_back(new Variable("b_K_1410_0",3.14,bMin,bMax));
 
-    // Masses.push_back(new Variable("K_1410_Mass_p1",M1410) );
-    // Gammas.push_back(new Variable("K_1410_Gamma_p1",G1410) );
-    // Spins.push_back(new Variable("K_1410_Spin_p1",1.0) );
     as.push_back(new Variable("a_K_1410_p1",0.123,aMin,aMax) );
     bs.push_back(new Variable("b_K_1410_p1",-1.04,bMin,bMax) );
 
-    // Masses.push_back(new Variable("K_1410_Mass_m1",M1410) );
-    // Gammas.push_back(new Variable("K_1410_Gamma_m1",G1410) );
-    // Spins.push_back(new Variable("K_1410_Spin_m1",1.0));
     as.push_back(new Variable("a_K_1410_m1",0.036,aMin,aMax));
     bs.push_back(new Variable("b_K_1410_m1",0.67,bMin,bMax));
   }
@@ -666,15 +708,9 @@ int main(int argc, char** argv) {
     //as.push_back(new Variable("a_K_1430_2_0",0.844));
     //bs.push_back(new Variable("b_K_1430_2_0",3.14,bMin,bMax));
 
-    // Masses.push_back(new Variable("K_1430_2_Mass_p1",M1430_2) );
-    // Gammas.push_back(new Variable("K_1430_2_Gamma_p1",G1430_2) );
-    // Spins.push_back(new Variable("K_1430_2_Spin_p1",2.0) );
     as.push_back(new Variable("a_K_1430_2_p1",4.65,aMin,aMax) );
     bs.push_back(new Variable("b_K_1430_2_p1",-3.05,bMin,bMax) );
 
-    // Masses.push_back(new Variable("K_1430_2_Mass_m1",M1430_2) );
-    // Gammas.push_back(new Variable("K_1430_2_Gamma_m1",G1430_2) );
-    // Spins.push_back(new Variable("K_1430_2_Spin_m1",2.0));
     as.push_back(new Variable("a_K_1430_2_m1",1.26,aMin,aMax));
     bs.push_back(new Variable("b_K_1430_2_m1",-1.92,bMin,bMax));
   }
@@ -691,15 +727,9 @@ int main(int argc, char** argv) {
     //as.push_back(new Variable("a_K_1780_3_0",0.844));
     //bs.push_back(new Variable("b_K_1780_3_0",3.14,bMin,bMax));
 
-    // Masses.push_back(new Variable("K_1780_3_Mass_p1",M1780_3) );
-    // Gammas.push_back(new Variable("K_1780_3_Gamma_p1",G1780_3) );
-    // Spins.push_back(new Variable("K_1780_3_Spin_p1",3.0) );
     as.push_back(new Variable("a_K_1780_3_p1",19.1,aMin,aMax) );
     bs.push_back(new Variable("b_K_1780_3_p1",2.03,bMin,bMax) );
 
-    // Masses.push_back(new Variable("K_1780_3_Mass_m1",M1780_3) );
-    // Gammas.push_back(new Variable("K_1780_3_Gamma_m1",G1780_3) );
-    // Spins.push_back(new Variable("K_1780_3_Spin_m1",3.0));
     as.push_back(new Variable("a_K_1780_3_m1",10.2,aMin,aMax));
     bs.push_back(new Variable("b_K_1780_3_m1",1.55,bMin,bMax));
   }
@@ -801,14 +831,17 @@ int main(int argc, char** argv) {
   //total->setData(&dataset);
 
   //FitManager fitter(total);
-  FitManager* fitter = 0;
-  if (!hesse)
-    fitter = new FitManager(totalPdf);
-  else
-    fitter = new FitManager(totalPdf,hesse);
+  // FitManager* fitter = 0;
+  // if (!hesse)
+  //   fitter = new FitManager(totalPdf);
+  // else
+  //   fitter = new FitManager(totalPdf,hesse);
+
+  FitManager* fitter = new FitManager(totalPdf);
+
 
   cout <<"\n- Fitting ..." <<endl;
-  fitter->fit();
+  fitter->fitOrdered(algos);
   fitter->getMinuitValues();
 
   stopC = times(&stopProc);
@@ -1355,7 +1388,7 @@ int main(int argc, char** argv) {
       bs[l]->fixed = true;
     }
 
-    std::cout<<" Plotting KStars - Mass : "<<Masses[k]<<" Spin : "<<Spins[k]<<"Last Amplitude : "<<lastAmplitude<<std::endl;
+    // std::cout<<" Plotting KStars - Mass : "<<Masses[k]->value<<" Spin : "<<Spins[k]->value<<"Last Amplitude : "<<lastAmplitude<<std::endl;
 
     //For Spin = 0.0 only one component
     if (Spins[k]->value==0.0) {
