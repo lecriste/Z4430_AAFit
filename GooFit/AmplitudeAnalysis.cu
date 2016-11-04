@@ -52,9 +52,11 @@ const fptype M1430_0 = 1.425; const fptype G1430_0 = 0.270; // K*1430_0
 const fptype M1430_2 = 1.4324; const fptype G1430_2 = 0.109; // K*1430_2
 const fptype M1780_3 = 1.776; const fptype G1780_3 = 0.159; // K*1780_3
 
-std::string migrad("MIGRAD");std::string m("M");
-std::string hesse("HESSE");std::string h("H");
-std::string minos("MINOS");std::string n("N");
+const fptype TMATH_PI = TMath::Pi();
+
+std::string migrad("MIGRAD"); std::string m("M");
+std::string hesse("HESSE");   std::string h("H");
+std::string minos("MINOS");   std::string n("N");
 
 fptype phaseSpaceFunction(fptype x,fptype mP,fptype m1,fptype m2,fptype m3)
 {
@@ -82,6 +84,18 @@ std::string doubleToStr (fptype dbl) {
 
 Int_t compBins = 50, pdfBins = 50, dataBins = 100;
 //Int_t compBins = 100, pdfBins = 100, dataBins = 100;
+
+void addHelAmplStat(TPaveText *fitStat, TString hel, Variable* a, Variable* b) {
+  TString a_value = TString::Format("a_{%s} = %.2f",hel.Data(),a->value) ;
+  TString a_error = TString::Format("#pm %.2f",a->error) ;
+  if (a->fixed) a_error = "fixed";
+
+  TString b_value = TString::Format("b_{%s} = %.2f",hel.Data(),b->value) ;
+  TString b_error = TString::Format("#pm %.2f",b->error) ;
+  if (b->fixed) b_error = "fixed";
+
+  fitStat->AddText(TString::Format("%s %s, %s %s",a_value.Data(),a_error.Data(),b_value.Data(),b_error.Data()));
+}
 
 void printinstruction() {
   std::cerr << "======= Instructions \n"
@@ -294,7 +308,7 @@ int main(int argc, char** argv) {
   		}
   	    }
   	  else
-  	    bMax = TMath::Pi();
+  	    bMax = TMATH_PI;
   	}
         else if (arg == "-k892")
   	{
@@ -483,7 +497,7 @@ int main(int argc, char** argv) {
       kStarNames.push_back("K*_{3}(1780)");}
     if (bkgPhaseSpace) {
       cout <<"  - Three Bodies Phase-space background" <<endl;
-      datasetName.Append(underscores+"plus__BdToPsiPiK_PHSP"); plotsName.Append("_PHSP");
+      datasetName.Append("__plus__BdToPsiPiK_PHSP"); plotsName.Append("_PHSP");
     }
   }
 
@@ -494,10 +508,6 @@ int main(int argc, char** argv) {
 
   //CANVAS
   TCanvas* canvas = new TCanvas("","",2000,1200);
-
-  //START TIME//
-  gettimeofday(&startTime, NULL);
-  startC = times(&startProc);
 
   Variable* dRadB0  = new Variable("dRadB0",5.0);
   Variable* dRadKs  = new Variable("dRadKs",1.5);
@@ -614,7 +624,7 @@ int main(int argc, char** argv) {
   // cosine of the K* helicity angle
   //Variable* massPsiPi = new Variable(massPsiPi_name.Data(),0.,-1,1); massPsiPi->numbins = bin3;
   // angle between decay planes
-  Variable* phi = new Variable(phi_name.Data(),0.25,-TMath::Pi(),TMath::Pi()); phi->numbins = bin4;
+  Variable* phi = new Variable(phi_name.Data(),0.25,-TMATH_PI,TMATH_PI); phi->numbins = bin4;
 
   //fptype ratio = ((fptype)(plottingfine))/((fptype)massKPi->numbins);
   fptype ratioMKPi = ((fptype)(plottingfine1))/((fptype)datapoints1);
@@ -633,8 +643,7 @@ int main(int argc, char** argv) {
   if (k892Star) {
     cout <<"\nAdding K*(892) ..." <<endl;
 
-    if(!evtGen)
-    {
+    if (!evtGen) {
       Masses.push_back(new Variable("K_892_Mass_0",M892));
       Gammas.push_back(new Variable("K_892_Gamma_0",G892));
       Spins.push_back(new Variable("K_892_Spin_0",1.0));
@@ -644,8 +653,7 @@ int main(int argc, char** argv) {
       bs.push_back(new Variable("b_K_892_p1",3.14,bMin,bMax) );
       as.push_back(new Variable("a_K_892_m1",0.196,aMin,aMax));
       bs.push_back(new Variable("b_K_892_m1",-1.7,bMin,bMax));
-    }else
-    {
+    } else {
       Masses.push_back(new Variable("K_892_Mass_0",M892e));
       Gammas.push_back(new Variable("K_892_Gamma_0",G892e));
       Spins.push_back(new Variable("K_892_Spin_0",1.0));
@@ -739,6 +747,8 @@ int main(int argc, char** argv) {
     bs.push_back(new Variable("b_K_1780_3_m1",1.55,bMin,bMax));
   }
 
+  Int_t nHelAmps = as.size();
+
   GooPdf* totalPdf;
   vector<PdfBase*> pdfComponents;
   vector<Variable*> pdfYield;
@@ -750,19 +760,15 @@ int main(int argc, char** argv) {
 
   //Variable* nSig = new Variable("nSig",events*0.5);//,0.,1.E6);
   //Variable* nBkg = new Variable("nBkg",events*0.5);//,0.,1.E6);
-  Variable* sFrac = new Variable("sFrac",0.5,0.,1.E6);
-  if(bkgPhaseSpace){
-
+  Variable* sFrac = new Variable("sFrac",0.5,0.,events);
+  if (bkgPhaseSpace) {
     // pdfComponents.push_back(matrix);
     // pdfComponents.push_back(phaseSpace);
     //
     // pdfYield.push_back(nSig);
     // pdfYield.push_back(nBkg);
-
     totalPdf = new AddPdf("Kstars_signal + PhaseSpace", sFrac, matrix,phaseSpace);
-
-  }else{
-
+  } else {
     totalPdf = matrix;
   }
 
@@ -784,7 +790,7 @@ int main(int argc, char** argv) {
   else if (datasetName.Contains("dataGen_B0bar")) plotsDir.Append("/B0bar");
 
   if(evtGen) datasetName.Append("__EvtGen");
-
+  //datasetName.Append("_mPhi");
   datasetName.Append(".txt");
   TString fullDatasetName = "./datasets/"+datasetName;
   fullDatasetName = "../datasets/"+datasetName;
@@ -827,7 +833,7 @@ int main(int argc, char** argv) {
     }
   }
   dataTxt.close();
-  std::cout <<"Added " <<dataset.getNumEvents() <<" events to GooFit dataset" <<std::endl;
+  std::cout <<"Added " <<dataset.getNumEvents() <<" events within Dalitz border to GooFit dataset" <<std::endl;
   if (dataset.getNumEvents() < 1) {
     cout <<"No events added from "  <<fullDatasetName <<"\nReturning." <<endl;
     return 0;
@@ -836,6 +842,7 @@ int main(int argc, char** argv) {
   totalPdf->setData(&dataset);
   //total->setData(&dataset);
 
+  cout <<"\n- Fitting ..." <<endl;
   //FitManager fitter(total);
   // FitManager* fitter = 0;
   // if (!hesse)
@@ -844,17 +851,22 @@ int main(int argc, char** argv) {
   //   fitter = new FitManager(totalPdf,hesse);
 
   FitManager* fitter = new FitManager(totalPdf);
-
-
-  cout <<"\n- Fitting ..." <<endl;
+  gettimeofday(&startTime, NULL);
+  startC = times(&startProc);
+  //
   fitter->fitOrdered(algos);
   fitter->getMinuitValues();
-
+  //
   stopC = times(&stopProc);
   gettimeofday(&stopTime, NULL);
-
   fptype fitClocks = (stopC - startC)*10000.;
 
+  // Bring phases within [-TMath::Pi,+TMath::Pi]
+  fptype period = 2*TMATH_PI;
+  for (int i = 0; i < nHelAmps; i++) {
+    while (fabs(bs[i]->value) > TMATH_PI)
+      bs[i]->value += bs[i]->value > 0 ? -period : period ;
+  }
   gettimeofday(&startTime, NULL);
   startC = times(&startProc);
   //
@@ -1274,23 +1286,17 @@ int main(int argc, char** argv) {
   std::cout <<"\nTotal Normalisation Factor = " <<totalIntegral <<std::endl;
 
   int kCounter = 0;
-
   Int_t nStatEntries = 0;
   Int_t amplitudeCounter = 0;
-  for (size_t u=0; u<Masses.size(); ++u) {
+  for (size_t u=0; u<nKstars; ++u) {
+    fitStat->AddText(TString::Format("\n------------------  %s  ------------------", kStarNames[kCounter].c_str()));
+    addHelAmplStat(fitStat, "0", as[amplitudeCounter], bs[amplitudeCounter]); ++amplitudeCounter;
+    nStatEntries +=2 ;
 
-    if (Spins[u]->value==0.0) {
+    if (Spins[u]->value > 0.) {
+      addHelAmplStat(fitStat, "+1", as[amplitudeCounter], bs[amplitudeCounter]); ++amplitudeCounter;
+      addHelAmplStat(fitStat, "-1", as[amplitudeCounter], bs[amplitudeCounter]); ++amplitudeCounter;
       nStatEntries +=2 ;
-      fitStat->AddText(TString::Format("\n------------------- %s -------------------", kStarNames[kCounter].c_str()));
-      fitStat->AddText(TString::Format("a_{0} = %.2f #pm %.2f, b_{0} = %.2f #pm %.2f",as[amplitudeCounter]->value,as[amplitudeCounter]->error,bs[amplitudeCounter]->value,bs[amplitudeCounter]->error));
-      ++amplitudeCounter;
-    } else {
-      nStatEntries +=4 ;
-      fitStat->AddText(TString::Format("\n------------------- %s -------------------", kStarNames[kCounter].c_str()));
-      fitStat->AddText(TString::Format("a_{0} = %.2f #pm %.2f, b_{0} = %.2f #pm %.2f",as[amplitudeCounter]->value,as[amplitudeCounter]->error,bs[amplitudeCounter]->value,bs[amplitudeCounter]->error));
-      fitStat->AddText(TString::Format("a_{p1} = %.2f #pm %.2f, b_{p1} = %.2f #pm %.2f",as[amplitudeCounter+1]->value,as[amplitudeCounter+1]->error,bs[amplitudeCounter+1]->value,bs[amplitudeCounter+1]->error));
-      fitStat->AddText(TString::Format("a_{m1} = %.2f #pm %.2f, b_{m1} = %.2f #pm %.2f",as[amplitudeCounter+2]->value,as[amplitudeCounter+2]->error,bs[amplitudeCounter+2]->value,bs[amplitudeCounter+2]->error));
-      amplitudeCounter +=3;
     }
 
     ++kCounter;
@@ -1317,7 +1323,7 @@ int main(int argc, char** argv) {
   std::vector<fptype> originalAs;
   std::vector<fptype> originalBs;
 
-  for (int i = 0; i < (int)as.size(); i++) {
+  for (int i = 0; i < nHelAmps; i++) {
     originalAs.push_back(as[i]->value);
     originalBs.push_back(bs[i]->value);
   }
@@ -1339,13 +1345,13 @@ int main(int argc, char** argv) {
 
   int lastAmplitude = 0;
 
-  for (int i = 0; i < (int)Masses.size(); ++i) {
+  for (int i = 0; i < nKstars; ++i) {
     MassesPlot.push_back(Masses[i]);
     GammasPlot.push_back(Gammas[i]);
     SpinsPlot.push_back(Spins[i]);
   }
 
-  for (int k = 0; k < (int)Masses.size(); ++k) {
+  for (int k = 0; k < nKstars; ++k) {
 
     ////////////////////////////////////////////////////////////////////////////////
     //Initialising projection vectors
@@ -1387,15 +1393,13 @@ int main(int argc, char** argv) {
     sum = 0.0;
 
     ////////////////////////////////////////////////////////////////////////////////
-    // Setting other components to zero and fixing al useful parameters
-
-    for (int l = 0; l < as.size(); ++l) {
+    // Setting other components to zero and fixing all useful parameters
+    for (int l = 0; l < nHelAmps; ++l) {
       as[l]->fixed = true;
       bs[l]->fixed = true;
     }
 
     // std::cout<<" Plotting KStars - Mass : "<<Masses[k]->value<<" Spin : "<<Spins[k]->value<<"Last Amplitude : "<<lastAmplitude<<std::endl;
-
     //For Spin = 0.0 only one component
     if (Spins[k]->value==0.0) {
 
@@ -1405,7 +1409,7 @@ int main(int argc, char** argv) {
       asPlot.push_back(as[lastAmplitude]);
       bsPlot.push_back(bs[lastAmplitude]);
 
-      for (int j = 0; j < (int)as.size(); ++j) {
+      for (int j = 0; j < nHelAmps; ++j) {
         if (j!=lastAmplitude) {
           // std::cout<<" putting zero: "<<j<<" index "<<std::endl;
       	  asPlot.push_back(new Variable("zero_a",0.0));
@@ -1421,14 +1425,12 @@ int main(int argc, char** argv) {
         bs[i]->fixed;
         asPlot.push_back(as[i]);
         bsPlot.push_back(bs[i]);
-
       }
-      for (int d = 0; d < as.size(); ++d) {
+      for (int d = 0; d < nHelAmps; ++d) {
 	if (d!=lastAmplitude && d!=lastAmplitude+1 && d!=lastAmplitude+2) {
-    // std::cout<<" putting zero: "<<d<<" index "<<std::endl;
+	  // std::cout<<" putting zero: "<<d<<" index "<<std::endl;
 	  asPlot.push_back(new Variable("zero_a",0.0));
 	  bsPlot.push_back(new Variable("zero_b",0.0));
-
 	}}
       lastAmplitude+=2;
     }
@@ -1603,7 +1605,7 @@ int main(int argc, char** argv) {
     bsPlot.clear();
     pdfCompValues.clear();
 
-  } // for (int k = 0; k < (int)as.size(); ++k) {
+  } // for (int k = 0; k < nHelAmps; ++k) {
 
   //Adding single points to plot better and total plots
 
