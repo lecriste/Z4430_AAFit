@@ -44,8 +44,8 @@ timeval startTime, stopTime, totalTime;
 clock_t startC, stopC;
 tms startProc, stopProc;
 
-//const fptype M892 = 0.89581 ; const fptype G892 = 0.0474; // From PDG charged only K*(892)
-const fptype M892 = 0.8961 ; const fptype G892 = 0.0507; // From EvtGen
+const fptype M892 = 0.89581 ; const fptype G892 = 0.0474; // From PDG charged only K*(892)
+const fptype M892e = 0.8961 ; const fptype G892e = 0.0507; // From EvtGen
 const fptype M1410 = 1.414; const fptype G1410 = 0.232; // K*1410
 const fptype M800 = 0.931; const fptype G800 = 0.578; // K*800
 const fptype M1430_0 = 1.425; const fptype G1430_0 = 0.270; // K*1430_0
@@ -137,6 +137,8 @@ int main(int argc, char** argv) {
   bool k1780Star = false;
 
   bool bkgPhaseSpace = false;
+
+  bool evtGen = false;
 
   //bool hesse = false;
 
@@ -399,7 +401,7 @@ int main(int argc, char** argv) {
             std::cout << "Minimisation algorithms invalid input : MIGRAD to be called at least once \n";
             exit(1);
           }
-          std::cout << "Minimisation algorithms sequence : "<<std::endl;
+          std::cout << "- Minimisation algorithms sequence : "<<std::endl;
 
           for (std::string::size_type l = 0; l < algosInput.length(); ++l)
           {
@@ -410,17 +412,17 @@ int main(int argc, char** argv) {
               algos.push_back(migrad);
               std::cout<<"  - MIGRAD "<<std::endl;
             }
-            else if(algo==n)
+            else if(algo==h)
             {
               algos.push_back(hesse);
-              std::cout<<"  - MIGRAD "<<std::endl;
+              std::cout<<"  - HESSE "<<std::endl;
             }
             else if(algo==n)
             {
               algos.push_back(minos);
-              std::cout<<"  - MIGRAD "<<std::endl;
+              std::cout<<"  - MINOS "<<std::endl;
             }
-            else std:: cout<<" - \""<<algo<<"\" invalid input, ignored "<<std::endl;
+            else std:: cout<<"  - \""<<algo<<"\" invalid input, ignored "<<std::endl;
           }
 
   	    }
@@ -446,7 +448,7 @@ int main(int argc, char** argv) {
     printinstruction();
     return 1;
   } else {
-    cout <<"- Performing Amplitude Analysis fit with\n  " <<nKstars <<" K*(s) on\n  " <<events <<" events, using\n  " <<bin1 <<" bins for normalisation & integration and\n  " <<plottingfine1 <<" bins for p.d.f. plotting:" <<endl;
+    cout <<"- Performing Amplitude Analysis fit with\n  " <<nKstars <<" K*(s) on\n  " <<events <<" events, using\n  " <<bin1 <<" bins for normalisation & integration and\n  " <<plottingfine1 <<" bins for p.d.f. plotting" <<endl;
     if (nKstars < 2) {
       datasetName = "Kstar";
       underscores = "_"; }
@@ -631,11 +633,11 @@ int main(int argc, char** argv) {
   if (k892Star) {
     cout <<"\nAdding K*(892) ..." <<endl;
 
-    Masses.push_back(new Variable("K_892_Mass_0",M892));
-    Gammas.push_back(new Variable("K_892_Gamma_0",G892));
-    Spins.push_back(new Variable("K_892_Spin_0",1.0));
     if(!evtGen)
     {
+      Masses.push_back(new Variable("K_892_Mass_0",M892));
+      Gammas.push_back(new Variable("K_892_Gamma_0",G892));
+      Spins.push_back(new Variable("K_892_Spin_0",1.0));
       as.push_back(new Variable("a_K_892_0",1.0));//,aMin,aMax) );
       bs.push_back(new Variable("b_K_892_0",0.0));//,bMin,bMax) );
       as.push_back(new Variable("a_K_892_p1",0.844,aMin,aMax) );
@@ -644,6 +646,9 @@ int main(int argc, char** argv) {
       bs.push_back(new Variable("b_K_892_m1",-1.7,bMin,bMax));
     }else
     {
+      Masses.push_back(new Variable("K_892_Mass_0",M892e));
+      Gammas.push_back(new Variable("K_892_Gamma_0",G892e));
+      Spins.push_back(new Variable("K_892_Spin_0",1.0));
       // EvtGen
       as.push_back(new Variable("a_K_892_0",0.775));
       //bs.push_back(new Variable("b_K_892_0",0.0));
@@ -745,7 +750,7 @@ int main(int argc, char** argv) {
 
   //Variable* nSig = new Variable("nSig",events*0.5);//,0.,1.E6);
   //Variable* nBkg = new Variable("nBkg",events*0.5);//,0.,1.E6);
-  Variable* sFrac = new Variable("nSig",0.5,0.,1.E6);
+  Variable* sFrac = new Variable("sFrac",0.5,0.,1.E6);
   if(bkgPhaseSpace){
 
     // pdfComponents.push_back(matrix);
@@ -778,7 +783,8 @@ int main(int argc, char** argv) {
   if (datasetName.Contains("dataGen_B0")) plotsDir.Append("/B0");
   else if (datasetName.Contains("dataGen_B0bar")) plotsDir.Append("/B0bar");
 
-  datasetName.Append("__EvtGen");
+  if(evtGen) datasetName.Append("__EvtGen");
+
   datasetName.Append(".txt");
   TString fullDatasetName = "./datasets/"+datasetName;
   fullDatasetName = "../datasets/"+datasetName;
@@ -1395,13 +1401,13 @@ int main(int argc, char** argv) {
 
       as[lastAmplitude]->fixed;
       bs[lastAmplitude]->fixed;
-      std::cout<<" - Amplitude vector pushing: "<<lastAmplitude<<" index ";
+      // std::cout<<" - Amplitude vector pushing: "<<lastAmplitude<<" index ";
       asPlot.push_back(as[lastAmplitude]);
       bsPlot.push_back(bs[lastAmplitude]);
 
       for (int j = 0; j < (int)as.size(); ++j) {
         if (j!=lastAmplitude) {
-          std::cout<<" putting zero: "<<j<<" index "<<std::endl;
+          // std::cout<<" putting zero: "<<j<<" index "<<std::endl;
       	  asPlot.push_back(new Variable("zero_a",0.0));
       	  bsPlot.push_back(new Variable("zero_b",0.0));
         }
@@ -1410,7 +1416,7 @@ int main(int argc, char** argv) {
     } else {
       // For Spin != 0 three components
       for (int i = lastAmplitude; i <= lastAmplitude+2; ++i) {
-        std::cout<<" - Amplitude vector pushing: "<<i<<" index ";
+        // std::cout<<" - Amplitude vector pushing: "<<i<<" index ";
         as[i]->fixed;
         bs[i]->fixed;
         asPlot.push_back(as[i]);
@@ -1419,7 +1425,7 @@ int main(int argc, char** argv) {
       }
       for (int d = 0; d < as.size(); ++d) {
 	if (d!=lastAmplitude && d!=lastAmplitude+1 && d!=lastAmplitude+2) {
-    std::cout<<" putting zero: "<<d<<" index "<<std::endl;
+    // std::cout<<" putting zero: "<<d<<" index "<<std::endl;
 	  asPlot.push_back(new Variable("zero_a",0.0));
 	  bsPlot.push_back(new Variable("zero_b",0.0));
 
