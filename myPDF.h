@@ -53,7 +53,7 @@ const Double_t TwoMKaon2pTwoMProton2 = 2.*(MKaon2 + MProton2);
 const Double_t TwoMKaon2pTwoMPion2 = 2.*(MKaon2 + MPion2);
 
 #include "utilities.h"
-#include "Dalitz_contour.h"
+//#include "Dalitz_contour.h"
 
 // Lambda*
 const Double_t M1600 = 1.600 ;

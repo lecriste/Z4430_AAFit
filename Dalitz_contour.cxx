@@ -19,12 +19,14 @@ ClassImp(Dalitz_contour)
  Dalitz_contour::Dalitz_contour(const char *name, const char *title, 
 				RooAbsReal& _mKP,
 				RooAbsReal& _mPsiP,
+				const Bool_t _massSquared,
 				const TString& _psi_nS
 				) :
-   RooAbsPdf(name,title), 
-   mKP("mKP","mKP",this,_mKP),
-   mPsiP("mPsiP","mPsiP",this,_mPsiP),
-   psi_nS(_psi_nS)
+  RooAbsPdf(name,title), 
+  mKP("mKP","mKP",this,_mKP),
+  mPsiP("mPsiP","mPsiP",this,_mPsiP),
+  massSquared(_massSquared),
+  psi_nS(_psi_nS)
 { 
 } 
 
@@ -33,6 +35,7 @@ ClassImp(Dalitz_contour)
    RooAbsPdf(other,name), 
    mKP("mKP",this,other.mKP),
    mPsiP("mPsiP",this,other.mPsiP),
+   massSquared(other.massSquared),
    psi_nS(other.psi_nS)
  { 
  } 
@@ -43,5 +46,5 @@ ClassImp(Dalitz_contour)
  { 
    // ENTER EXPRESSION IN TERMS OF VARIABLE ARGUMENTS HERE 
 
-   return Dalitz_contour_host(mKP, mPsiP, psi_nS.Atoi());
+   return Dalitz_contour_host(mKP, mPsiP, massSquared, psi_nS.Atoi());
  } 

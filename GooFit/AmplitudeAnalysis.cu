@@ -821,7 +821,7 @@ int main(int argc, char** argv) {
       phi->value = var4;
 
       //std::cout << massKPi->value << " - " <<cosMuMu->value << " - " << massPsiPi->value << " - " << phi->value << " - " << std::endl;
-      if ( Dalitz_contour_host(massKPi->value, massPsiPi->value, (Int_t)psi_nS->value) ) {
+      if ( Dalitz_contour_host(massKPi->value, massPsiPi->value, kFALSE, (Int_t)psi_nS->value) ) {
 	dataset.addEvent();
 	massKPiHisto.Fill(massKPi->value);
 	cosMuMuHisto.Fill(cosMuMu->value);
@@ -1290,6 +1290,7 @@ int main(int argc, char** argv) {
   Int_t amplitudeCounter = 0;
   for (size_t u=0; u<nKstars; ++u) {
     fitStat->AddText(TString::Format("\n------------------  %s  ------------------", kStarNames[kCounter].c_str()));
+    ((TText*)fitStat->GetListOfLines()->Last())->SetTextColor(kCounter+3);
     addHelAmplStat(fitStat, "0", as[amplitudeCounter], bs[amplitudeCounter]); ++amplitudeCounter;
     nStatEntries +=2 ;
 

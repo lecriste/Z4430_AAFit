@@ -634,8 +634,8 @@ Double_t myPDF::ME2(Double_t cKs) const
 Double_t myPDF::PDF(Double_t cKs) const
 {
   //cout <<"\nME2() = " <<ME2() <<endl;
-  return ME2(cKs) * PhiPHSP(mKP); // missing * efficiency(from reconstructed PHSP MC)
-  //return ME2() ; // missing PHSP * efficiency(from reconstructed PHSP MC)
+  return ME2(cKs) * PhiPHSP(mKP);
+  //return ME2() ; // missing PHSP
 }
 
 /*

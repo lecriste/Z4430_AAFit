@@ -8,7 +8,7 @@ Double_t cosTheta_FromMasses_host(const Double_t sameSideM2, const Double_t oppo
 }
 
 
-Bool_t Dalitz_contour_host(const Double_t mKP, const Double_t mPsiP, const Int_t psi_nS) {
+Bool_t Dalitz_contour_host(const Double_t mKP, const Double_t mPsiP, const Bool_t massSquared, const Int_t psi_nS) {
 
   Double_t MPsi_nS = 0; 
   if (psi_nS == 1) 
@@ -20,17 +20,24 @@ Bool_t Dalitz_contour_host(const Double_t mKP, const Double_t mPsiP, const Int_t
     return kFALSE;
   }
 
-  if ((mKP < MKaon + MPion) || (mKP > MBd - MPsi_nS) || (mPsiP < MPsi_nS + MPion) || (mPsiP > MBd - MKaon))
+  Double_t mKP_1 = mKP;
+  Double_t mPsiP_1 = mPsiP;
+  if (massSquared) {
+    mKP_1 = TMath::Sqrt( mKP );
+    mPsiP_1 = TMath::Sqrt( mPsiP );
+  }
+
+  if ((mKP_1 < MKaon + MPion) || (mKP_1 > MBd - MPsi_nS) || (mPsiP_1 < MPsi_nS + MPion) || (mPsiP_1 > MBd - MKaon))
     return kFALSE;
   else { // Dalitz border from PDG KINEMATICS 43.4.3.1. 
-    Float_t E_P = (mPsiP*mPsiP - MJpsi2 + MPion2)/(2*mPsiP) ;
-    Float_t E_K = (MBd2 - mPsiP*mPsiP - MKaon2)/(2*mPsiP) ;
+    Float_t E_P = (mPsiP_1*mPsiP_1 - MJpsi2 + MPion2)/(2*mPsiP_1) ;
+    Float_t E_K = (MBd2 - mPsiP_1*mPsiP_1 - MKaon2)/(2*mPsiP_1) ;
     Float_t E_PpE_K_2 = TMath::Power((E_P + E_K),2);
     Float_t sqrt_E_P2mMP2 = TMath::Sqrt(E_P*E_P - MPion2);
     Float_t sqrt_E_K2mMK2 = TMath::Sqrt(E_K*E_K - MKaon2);
     Float_t mKP2_min = E_PpE_K_2 - TMath::Power(sqrt_E_P2mMP2 + sqrt_E_K2mMK2,2);
     Float_t mKP2_max = E_PpE_K_2 - TMath::Power(sqrt_E_P2mMP2 - sqrt_E_K2mMK2,2);
-    if ((mKP*mKP < mKP2_min) || (mKP*mKP > mKP2_max))
+    if ((mKP_1*mKP_1 < mKP2_min) || (mKP_1*mKP_1 > mKP2_max))
       return kFALSE;
   }
 

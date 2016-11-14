@@ -21,6 +21,7 @@ public:
   Dalitz_contour(const char *name, const char *title,
 		 RooAbsReal& _mKP,
 		 RooAbsReal& _mPsiP,
+		 const Bool_t _massSquared,
 		 const TString& _psi_nS
 		 );
   Dalitz_contour(const Dalitz_contour& other, const char* name=0) ;
@@ -35,6 +36,7 @@ protected:
   Double_t evaluate() const ;
 
 private:
+  Bool_t massSquared;
   TString psi_nS;
 
   ClassDef(Dalitz_contour,1) // Your description goes here...
