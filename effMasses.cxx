@@ -55,10 +55,12 @@ ClassImp(effMasses)
    y2->setVal( y*y );
    RooArgSet nSet(*x2,*y2);
 
+   Double_t detJ = 1; detJ = 4*x*y;
    if (effDalitz) {
      //cout <<"effDalitz->getValV() = " <<effDalitz->getValV() <<endl;
      //cout <<"effDalitz->getVal() = " <<effDalitz->getVal() <<endl;
-     return effDalitz->getVal() ;
+     //return detJ * effDalitz->getVal() ;
+     return effDalitz->getVal()/detJ ;
      //return effDalitz->getValV() ;
      //return effDalitz->getValV( &nSet ) ; 
    } else {

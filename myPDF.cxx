@@ -184,6 +184,9 @@ dRadB0(other.dRadB0), dRadKs(other.dRadKs)
  Double_t myPDF::evaluate() const 
  {
    // ENTER EXPRESSION IN TERMS OF VARIABLE ARGUMENTS HERE
+   if (fabs(cJ) > 1  ||  fabs(phi) > TMath::Pi())
+     return 0.;
+
    if ((mKP < MKaon + MPion) || (mKP > MBd - MPsi_nS) || (mPsiP < MPsi_nS + MPion) || (mPsiP > MBd - MKaon))
      return 0.;
 
