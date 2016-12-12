@@ -6,7 +6,24 @@ Double_t cosTheta_FromMasses_host(const Double_t sameSideM2, const Double_t oppo
 
   return num / TMath::Sqrt(denom2) ;
 }
+/*
+TString cosTheta_FromMasses_TFormula_host(const TString sameSideM2, const TString oppositeSideM2, const Double_t psi_nSM2, const Double_t motherM2, const Double_t refM2, const Double_t otherM2) {
 
+  RooConstVar m2Psi_nS("m2Psi_nS","m2Psi_nS",psi_nSM2); const char* m2Psi_nSName = m2Psi_nS.GetName();
+  RooConstVar m2Mother("m2Mother","m2Mother",motherM2); const char* m2MotherName = m2Mother.GetName();
+  RooConstVar m2Ref("m2Ref","m2Ref",refM2);             const char* m2RefName = m2Ref.GetName();
+  RooConstVar m2Other("m2Other","m2Other",otherM2);     const char* m2OtherName = m2Other.GetName();
+
+  const char* m2SameSide = sameSideM2.Data();
+  const char* m2OppositeSide = oppositeSideM2.Data();
+
+  TString num = TString::Format("(%s/2)*(%s + %s - %s) - (1./4.)*(%s - %s + %s)*(%s - %s + %s)", m2SameSide,m2MotherName,m2RefName,m2OppositeSide, m2MotherName,m2Psi_nSName,m2SameSide,m2SameSide,m2OtherName,m2RefName);
+  TString denom = TString::Format();
+  Double_t denom2 = ((1./4.)*pow(motherM2 - psi_nSM2 + sameSideM2,2) - sameSideM2*motherM2) * ((1./4.)*pow(sameSideM2 - otherM2 + refM2,2) - sameSideM2*refM2) ;
+
+  return num / TMath::Sqrt(denom2) ;
+}
+*/
 
 Bool_t Dalitz_contour_host(const Double_t mKP, const Double_t mPsiP, const Bool_t massSquared, const Int_t psi_nS) {
 
