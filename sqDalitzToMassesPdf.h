@@ -21,6 +21,7 @@ public:
 		      RooAbsReal& _y,
 		      const RooAbsPdf *_squareDalitz,
 		      RooRealVar* _cosKstar,
+		      RooRealVar* _m2KPi,
 		      const Double_t _MPsi_nS
 		      );
   sqDalitzToMassesPdf(const sqDalitzToMassesPdf& other, const char* name=0) ;
@@ -29,10 +30,9 @@ public:
 
 protected:
 
-  RooRealProxy x ;
-  RooRealProxy y ;
+  RooRealProxy x, y ;
   const RooAbsPdf *squareDalitz ;
-  RooRealVar* cosKstar;
+  RooRealVar* cosKstar, *m2KPi;
   Double_t MPsi_nS ;
 
   Double_t evaluate() const ;

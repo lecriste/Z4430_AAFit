@@ -8,5 +8,5 @@ gROOT->ProcessLine(".x effMasses.cxx+");
 gROOT->ProcessLine(".x Angles_contour.cxx+");
 gROOT->ProcessLine(".x sqDalitzToMassesPdf.cxx+");
 gROOT->ProcessLine(".x sqDalitz_contour.cxx+");
-gROOT->ProcessLine(".x Analysis.C++g");
+gROOT->ProcessLine(".x Analysis.C+");
 }

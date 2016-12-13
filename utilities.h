@@ -1,8 +1,12 @@
+Double_t denom2_for_cosTheta_FromMasses(const Double_t sameSideM2, const Double_t psi_nSM2, const Double_t motherM2, const Double_t refM2, const Double_t otherM2) {
+  return ((1./4.)*pow(motherM2 - psi_nSM2 + sameSideM2,2) - sameSideM2*motherM2) * ((1./4.)*pow(sameSideM2 - otherM2 + refM2,2) - sameSideM2*refM2) ;
+}
+
 // The same function is defined in /lustrehome/cristella/work/MyGooFit/PDFs/MatrixPdf.hh, since "calling a __host__ function from a __device__ function is not allowed"; remember to propagate any change:
 Double_t cosTheta_FromMasses_host(const Double_t sameSideM2, const Double_t oppositeSideM2, const Double_t psi_nSM2, const Double_t motherM2, const Double_t refM2, const Double_t otherM2) {
 
   Double_t num = (sameSideM2/2)*(motherM2 + refM2 - oppositeSideM2) - (1./4.)*(motherM2 - psi_nSM2 + sameSideM2)*(sameSideM2 - otherM2 + refM2) ;
-  Double_t denom2 = ((1./4.)*pow(motherM2 - psi_nSM2 + sameSideM2,2) - sameSideM2*motherM2) * ((1./4.)*pow(sameSideM2 - otherM2 + refM2,2) - sameSideM2*refM2) ;
+  Double_t denom2 = denom2_for_cosTheta_FromMasses(sameSideM2, psi_nSM2, motherM2, refM2, otherM2) ;
 
   return num / TMath::Sqrt(denom2) ;
 }

@@ -186,18 +186,6 @@ RooAbsPdf* effFit(RooAbsReal& x, RooAbsReal& y, TH2F* hist, const Int_t psi_nS) 
 
   cout <<"\nNormalized chi2 = " <<finalTF2->GetChisquare()/finalTF2->GetNDF() <<endl; 
 
-  if (!effName.Contains("helicityAngle_vs_KPiSq",TString::kIgnoreCase))
-  //if (kTRUE)
-    return RooFit::bindPdf(finalTF2,x,y) ;
-  else {
-    RooRealVar cosKstar("cosKstar","cos(#theta_{K*})",0.,yMin,yMax); // cosine of the K* helicity angle
-    RooAbsPdf* squareDalitz = RooFit::bindPdf(finalTF2, x,cosKstar) ;
-    RooAbsPdf* finalPdf = 0;
-    if (squareDalitz) {
-      cout <<"squareDalitz->getVal() = " <<squareDalitz->getVal() <<endl;
-      finalPdf = new sqDalitzToMassesPdf("sqDalitzToMassesPdf","sqDalitzToMassesPdf", x, y, squareDalitz, &cosKstar, MPsi_nS);
-    }
-    return finalPdf;
-  }
+  return RooFit::bindPdf(finalTF2,x,y) ;
 }
 
