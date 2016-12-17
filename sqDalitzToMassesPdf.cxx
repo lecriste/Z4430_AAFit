@@ -66,6 +66,7 @@ ClassImp(sqDalitzToMassesPdf)
    if (jacobianDen2 > 0) {
      Double_t jacobian = fabs( (2*x)*(-x2*y/TMath::Sqrt(jacobianDen2)) ) ;
      //printf("\njacobian = %f", jacobian);
+     jacobian = 1;
      return squareDalitz->getVal() * jacobian ; 
    }
    else return 0;

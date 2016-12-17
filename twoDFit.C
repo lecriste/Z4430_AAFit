@@ -1,4 +1,4 @@
-#include "RooAbsReal.h"
+‰#include "RooAbsReal.h"
 #include "RooDataHist.h"
 #include "RooBernstein.h"
 #include "RooChebychev.h"
@@ -8,9 +8,7 @@
 
 const Int_t nVars = 2;
 
-const Int_t xOrder = 4;
-const Int_t yOrder = 4;
-Int_t varOrder[nVars] = {xOrder,yOrder};
+Int_t varOrder[nVars] = {0,0};
 
 //Double_t varLimit[] = {0,0}; // {xMin/Max, yMin/Max}
 Double_t varLimit[] = {0,0,0,0}; // {xMin/Max,yMin/Max,xMin/Max,yMin/Max}
@@ -19,7 +17,7 @@ const Int_t nThrPar = sizeof(varLimit)/sizeof(varLimit[0]) ;
 
 
 // with RooFit
-RooAbsPdf* effFit(RooAbsReal& x, RooAbsReal& y, RooDataHist* hist) {
+RooAbsPdf* twoDFit(RooAbsReal& x, RooAbsReal& y, RooDataHist* hist) {
 
   RooArgList xCoeff("xCoeff");
   RooArgList yCoeff("yCoeff");
@@ -86,7 +84,10 @@ Double_t polXY_times_thresholdXY(Double_t* var, Double_t* par) {
   return thresholdXY(var, &par[0]) * polXY(var, &par[nThrPar]) ;
 }
 
-RooAbsPdf* effFit(RooAbsReal& x, RooAbsReal& y, TH2F* hist, const Int_t psi_nS) {
+RooAbsPdf* twoDFit(RooAbsReal& x, RooAbsReal& y, TH2F* hist, const Int_t psi_nS, const Int_t xOrder, const Int_t yOrder, Float_t& chi2N) {
+
+  varOrder[0] = xOrder;
+  varOrder[nVars-1] = yOrder;
 
   Double_t MPsi_nS = 0; 
   if (psi_nS == 1) 
@@ -115,7 +116,7 @@ RooAbsPdf* effFit(RooAbsReal& x, RooAbsReal& y, TH2F* hist, const Int_t psi_nS) 
     xLow = MKaon + MPion; xHigh = MBd - MPsi_nS;
     yLow = MPsi_nS + MPion; yHigh = MBd - MKaon;
   }
-  
+  cout <<"Fitting in range [" <<xLow <<"," <<xHigh <<"] * [" <<yLow <<"," <<yHigh <<"]" <<endl;
 
   Float_t xMin = hist->GetXaxis()->GetXmin(); Float_t xMax = hist->GetXaxis()->GetXmax();
   Float_t yMin = hist->GetYaxis()->GetXmin(); Float_t yMax = hist->GetYaxis()->GetXmax();
@@ -136,7 +137,7 @@ RooAbsPdf* effFit(RooAbsReal& x, RooAbsReal& y, TH2F* hist, const Int_t psi_nS) 
   }
   
   funcTF2->SetRange(xLow, yLow, xHigh, yHigh);
-  hist->Fit("funcTF2","WLVR");
+  hist->Fit("funcTF2","WLR"); //V
   finalTF2 = funcTF2;
 
   // threshold(x,y)
@@ -184,7 +185,8 @@ RooAbsPdf* effFit(RooAbsReal& x, RooAbsReal& y, TH2F* hist, const Int_t psi_nS) 
   //RooFitResult* fitres = pdf->fitTo(*hist, RooFit::SumW2Error(kTRUE), RooFit::Minos(kTRUE), RooFit::Save(kTRUE), RooFit::Verbose(kTRUE), RooFit::PrintLevel(3)); // solution for bug: RooFit::Optimize(1), RooFit::Minimizer("Minuit2")
   //fitres->Print("v");
 
-  cout <<"\nNormalized chi2 = " <<finalTF2->GetChisquare()/finalTF2->GetNDF() <<endl; 
+  chi2N = finalTF2->GetChisquare()/finalTF2->GetNDF();
+  cout <<"\nNormalized chi2 = " <<chi2N <<endl; 
 
   return RooFit::bindPdf(finalTF2,x,y) ;
 }
