@@ -1,4 +1,4 @@
-‰//
+//
 //  Analysis.C
 //  
 //  A simple AA analysis code.
@@ -47,6 +47,7 @@
 #include <TFile.h>
 #include <TNtupleD.h>
 #include "TPaveText.h"
+#include "TPaletteAxis.h"
 
 #include "myPDF.h"
 #include "Dalitz_contour.h"
@@ -54,6 +55,7 @@
 #include "Angles_contour.h"
 #include "sqDalitz_contour.h"
 #include "twoDFit.C"
+#include "twoD_chiSquare.C"
 
 using namespace RooFit ;
 
@@ -179,7 +181,8 @@ void Analysis()
   Float_t massKPi_min = 0.6, massKPi_max = 2.2; 
   RooRealVar massKPi(massKPi_name, massKPi_title+" [GeV]", TMath::Sqrt(0.7),massKPi_min,massKPi_max);
   //RooRealVar massKPi(massKPi_name,"m(K^{-}#pi^{+}) [GeV]",TMath::Sqrt(0.7),0.,9.2);
-  RooFormulaVar mass2KPiFor(mass2KPi_name+"For","m^{2}(K^{-}#pi^{+}) [GeV^{2}]","pow(massKPi,2)",massKPi);
+  TString mass2KPi_title = massKPi_title; mass2KPi_title.ReplaceAll("m(","m^{2}(");
+  RooFormulaVar mass2KPiFor(mass2KPi_name+"For",mass2KPi_title+" [GeV^{2}]","pow(massKPi,2)",massKPi);
   RooRealVar mass2KPi(mass2KPi_name,mass2KPiFor.getTitle(),TMath::Power(massKPi.getVal(),2),TMath::Power(massKPi.getMin(),2),TMath::Power(massKPi.getMax(),2));
 
   TString massPsiPi_name = "massMuMuPi"; TString mass2PsiPi_name = massPsiPi_name; mass2PsiPi_name.ReplaceAll("mass","mass2"); 
@@ -187,7 +190,8 @@ void Analysis()
   Float_t massPsiPi_min = 3.2, massPsiPi_max = 4.9; 
   RooRealVar massPsiPi(massPsiPi_name,massPsiPi_title+" [GeV]",TMath::Sqrt(23),massPsiPi_min,massPsiPi_max);
   //RooRealVar massPsiPi(massPsiPi_name,massPsiPi_title+" [GeV]",TMath::Sqrt(23),0.,99.9);
-  RooFormulaVar mass2PsiPiFor(mass2PsiPi_name+"For","m^{2}(#psi#pi^{+}) [GeV^{2}]","pow(massMuMuPi,2)",massPsiPi);
+  TString mass2PsiPi_title = massPsiPi_title; mass2PsiPi_title.ReplaceAll("m(","m^{2}(");
+  RooFormulaVar mass2PsiPiFor(mass2PsiPi_name+"For",mass2PsiPi_title+" [GeV^{2}]","pow(massMuMuPi,2)",massPsiPi);
   RooRealVar mass2PsiPi(mass2PsiPi_name,mass2PsiPiFor.getTitle(),TMath::Power(massPsiPi.getVal(),2),TMath::Power(massPsiPi.getMin(),2),TMath::Power(massPsiPi.getMax(),2));
 
   TString massVars_name = "massVars"; RooArgSet massVars(massKPi, massPsiPi, massVars_name); 
@@ -196,7 +200,8 @@ void Analysis()
 
   TString cosMuMu_title = "cos(#theta_{#psi})";
   RooRealVar cosMuMu("cosMuMu",cosMuMu_title,0.,-1,1); // cosine of the psi(nS) helicity angle
-  RooRealVar cosKstar("cosKstar","cos(#theta_{K*})",0.,-1,1); // cosine of the K* helicity angle
+  TString cosKstar_title = "cos(#theta_{K*})";
+  RooRealVar cosKstar("cosKstar",cosKstar_title,0.,-1,1); // cosine of the K* helicity angle
   TString phi_title = "#phi";
   RooRealVar phi("phi",phi_title,0.25,-TMath::Pi(),TMath::Pi());
   //RooRealVar phi("phi","#phi",0.25,-2*TMath::Pi(),2*TMath::Pi());
@@ -361,8 +366,8 @@ void Analysis()
   TString noKinConstr = "_noKinConstr";
   //model->SetName( model->GetName()+noKinConstr );
   // Dalitz boundary
-  Dalitz_contour* kinematicCheck = new Dalitz_contour("kinematicCheck","kinematic check", massKPi, massPsiPi, kFALSE, psi_nS) ;
-  //RooProdPdf* modelWithKinCheck = new RooProdPdf(modelName,model->GetTitle(),RooArgSet(*kinematicCheck,*model)) ; model = modelWithKinCheck;
+  //Dalitz_contour* kinCheck = new Dalitz_contour("kinCheck","kinematic check", massKPi, massPsiPi, kFALSE, psi_nS) ;
+  //RooProdPdf* modelWithKinCheck = new RooProdPdf(modelName,model->GetTitle(),RooArgSet(*kinCheck,*model)) ; model = modelWithKinCheck;
 
 
   TString dir = "plots/";
@@ -376,234 +381,360 @@ void Analysis()
   Float_t TH2_offset = 1.6;
 
 
-  // Masses and angles efficiencies
-  TFile *effFile = TFile::Open(path+"officialMC_noPtEtaCuts_JPsi_Bd2MuMuKPi_2p0Sig_4p0to6p0SB.root");
-  RooProdPdf* modelWithEff = 0;
+  TString anglesScatt_name = "planesAngle_vs_cos_psi2S_helicityAngle";
+
+  // Model background from sidebands
+  TString sbFileName = "Data_JPsi_2p0Sig_4p0to6p0SB.root";
+  sbFileName = "Data_JPsi_2p0Sig_5p0to9p0SB.root";
+  TFile *sbFile = TFile::Open(path+sbFileName);
+  RooAbsPdf* null = 0;
+  pair<RooAbsPdf*, Float_t> bkgPdf[2][2] = {{make_pair(null,0.),make_pair(null,0.)},{make_pair(null,0.),make_pair(null,0.)}};
+
+  TString sb_name[] = {"leftSb","rightSb"};
   const Int_t m2KPi_order = 5, m2PsiPi_order = 4, cosMuMu_order = 5, phi_order = 5;
   const Int_t mKPi_order = 4, mPsiPi_order = 4, cosKstar_order = 4;
   Bool_t DalitzEff = kFALSE;
-  pair< pair<TString, pair<RooArgSet*,pair<Int_t,Int_t> > >, pair<TString,pair<TString,TString> > > effHisto_names[] = {make_pair( make_pair("RelEff_psi2SPi_vs_KPi_B0constr_Dalitz",make_pair(&mass2Vars,make_pair(m2KPi_order,m2PsiPi_order))), make_pair("relEffDalitz",make_pair("m2KPi","m2PsiPi"))), make_pair(make_pair("RelEff_planesAngle_vs_cos_psi2S_helicityAngle",make_pair(&angleVars,make_pair(cosMuMu_order,phi_order))), make_pair("relEffAngles",make_pair("cosMuMu","phi")))}; DalitzEff = kTRUE;
+  pair< pair<TString, pair<RooArgSet*,pair<Int_t,Int_t> > >, pair<TString,pair< pair<TString,TString>,pair<TString,TString> > > > bkgHisto_names[] = {make_pair( make_pair("RelEff_psi2SPi_vs_KPi_B0constr_Dalitz",make_pair(&mass2Vars,make_pair(m2KPi_order,m2PsiPi_order))), make_pair("bkgDalitz",make_pair(make_pair("m2KPi",mass2KPi_title),make_pair("m2PsiPi",mass2PsiPi_title)))), make_pair(make_pair(anglesScatt_name,make_pair(&angleVars,make_pair(cosMuMu_order,phi_order))), make_pair("bkgAngles",make_pair(make_pair("cosMuMu",cosMuMu_title),make_pair("phi",phi_title))))};
+  for (Int_t iVars=1; iVars < 2; ++iVars) { // only angles to start with (iVars=1)
+
+    for (Int_t iSb=0; iSb < 2; ++iSb) {
+      TString histName = bkgHisto_names[iVars].first.first+"_"+sb_name[iSb];
+      const TH2F* sbTH2 = (TH2F*)sbFile->Get( histName ) ;
+      if (!sbTH2) {
+	cout <<"WARNING! No TH2F \"" <<histName <<"\" found in TFile \"" <<sbFile->GetName() <<"\".\nSkipping " <<histName <<" evaluation" <<endl;
+	continue; }
+
+      Float_t xMin = sbTH2->GetXaxis()->GetXmin(), xMax = sbTH2->GetXaxis()->GetXmax(); Int_t xBins = sbTH2->GetNbinsX();
+      Float_t yMin = sbTH2->GetYaxis()->GetXmin(), yMax = sbTH2->GetYaxis()->GetXmax(); Int_t yBins = sbTH2->GetNbinsY();
+      //
+      const TArrayD* xArray = sbTH2->GetXaxis()->GetXbins(); const Double_t* xBinning = 0;
+      const TArrayD* yArray = sbTH2->GetYaxis()->GetXbins(); const Double_t* yBinning = 0;
+      if (xArray) { xBinning = xArray->GetArray(); xMin = xBinning[0]; xMax = xBinning[xBins]; }
+      if (yArray) { yBinning = yArray->GetArray(); yMin = yBinning[0]; yMax = yBinning[yBins]; }
+
+      RooBinning* xRooBinning = new RooBinning(xBins,xMin,xMax);
+      if (xBinning) { xRooBinning = new RooBinning(xBins,xBinning); }
+      RooBinning* yRooBinning = new RooBinning(yBins,yMin,yMax); 
+      if (yBinning) { yRooBinning = new RooBinning(yBins,yBinning); }
+
+      // get x and y vars
+      RooArgSet* bkgVars = bkgHisto_names[iVars].first.second.first ;
+      TIterator* iter = bkgVars->createIterator(); // now iter does not point to x yet
+      RooRealVar* x = (RooRealVar*)bkgVars->first(); iter->Next(); // now iter points to x
+      RooRealVar* y = (RooRealVar*)iter->Next();
+      x->setRange(xMin,xMax);
+      y->setRange(yMin,yMax);
+
+
+      // with RooHistPDF
+      RooDataHist* bkgHist = new RooDataHist(sbTH2->GetName(), sbTH2->GetTitle(), *bkgVars, sbTH2) ;
+      TString bkgName = bkgHisto_names[iVars].second.first+"_"+sb_name[iSb];
+      TString bkgType = bkgName; bkgType.ReplaceAll("bkg","");
+      TString first = TString(bkgType,1);
+      if (!bkgType.EqualTo("Dalitz")) first.ToLower();
+      TString bkgtype = bkgType; bkgtype.Remove(0,1); bkgtype.Prepend(first);  
+      
+      RooHistPdf* bkgHistPdf = new RooHistPdf(bkgName+"PDF","bkg("+bkgtype+") pdf", *bkgVars, *bkgHist, 9) ; //If last argument is zero, the weight for the bin enclosing the coordinates contained in 'bin' is returned. For higher values, the result is interpolated in the real dimensions of the dataset with an order of interpolation equal to the value provided (more than ? does not work for Dalitz efficiencies, ? for masses efficiencies, ? for angles)
+      bkgHistPdf->setUnitNorm(kTRUE);
+
+      TString method = "";
+      bkgPdf[iVars][iSb].first = bkgHistPdf; method = "interp";
+      Int_t xOrder = bkgHisto_names[iVars].first.second.second.first;
+      Int_t yOrder = bkgHisto_names[iVars].first.second.second.second;
+      bkgPdf[iVars][iSb].first = twoDFit(*x, *y, sbTH2, psi_nS.Atoi(), xOrder, yOrder, bkgPdf[iVars][iSb].second); method = "fit";
+      const Float_t chi2N = bkgPdf[iVars][iSb].second;
+
+      RooAbsPdf* kinematicCheck(0), *bkgWithKinCheck(0);
+      if (bkgVars->GetName() == massVars_name  ||  bkgVars->GetName() == mass2Vars_name)
+	kinematicCheck = new Dalitz_contour("Dalitz_kinCheck","kinematic check for Dalitz", *x, *y, DalitzEff, psi_nS) ;
+      else if (bkgVars->GetName() == sqDalitz_name)
+	kinematicCheck = new sqDalitz_contour("sqDalitz_kinCheck","kinematic check for square Dalitz", *x, *y, DalitzEff, psi_nS.Atoi()) ;
+      else if (bkgVars->GetName() == angleVars_name)
+	kinematicCheck = new Angles_contour("angles_kinCheck","kinematic check for angles", *x, *y) ;
+      //
+      if (kinematicCheck) {
+	cout <<"Multiplying " <<bkgHistPdf->GetTitle() <<" by " <<kinematicCheck->GetTitle() <<endl;
+	bkgWithKinCheck = new RooProdPdf(TString::Format("%s_withKinCheck",bkgHistPdf->GetName()),TString::Format("%s with kinematic check",bkgHistPdf->GetTitle()),RooArgSet(*kinematicCheck,*bkgPdf[iVars][iSb].first)) ;
+	if (bkgWithKinCheck)
+	  bkgPdf[iVars][iSb].first = bkgWithKinCheck;
+      }
+
+      TH2F* sbTH2_fromHist = (TH2F*)bkgHist->createHistogram(bkgName+"TH2_fromHist", *x, Binning(*xRooBinning), YVar(*y, Binning(*yRooBinning)) ) ;
+      sbTH2_fromHist->SetTitle(sbTH2->GetTitle()); sbTH2_fromHist->SetTitleOffset(TH2_offset,"XY");
+      sbTH2_fromHist->Draw("LEGO");
+      Int_t binDivision = 40;
+      cout <<"Using " <<binDivision <<" binDivision to plot " <<bkgHistPdf->GetTitle() <<endl;
+      TH2F* bkgPdf_TH2 = (TH2F*)bkgPdf[iVars][iSb].first->createHistogram("", *x, Binning(binDivision*xBins,xMin,xMax), YVar(*y, Binning(binDivision*yBins,yMin,yMax)) ) ;
+      bkgPdf_TH2->SetName(TString::Format("%s_TH2",bkgHistPdf->GetName())); bkgPdf_TH2->SetTitle(sbTH2->GetTitle()); bkgPdf_TH2->SetTitleOffset(TH2_offset,"XY");
+      bkgPdf_TH2->SetLineColor(kRed);
+      bkgPdf_TH2->Draw("SURF2"); sbTH2_fromHist->Draw("LEGO same");
+      //bkgPdf_TH2->Draw("LEGO2"); sbTH2_fromHist->Draw("LEGO same");
+      //sbTH2_fromHist->Draw("LEGO"); bkgPdf_TH2->Draw("SURF3 same"); //sbTH2_fromHist->SetMaximum( 1.2*sbTH2_fromHist->GetMaximum() );
+      //bkgPdf_TH2->Draw("SURF3"); sbTH2_fromHist->Draw("LEGO same"); bkgPdf_TH2->SetMaximum( 1.5*bkgPdf_TH2->GetMaximum() );
+      TPaveText* fitInfo = new TPaveText(0.78,0.8,0.99,0.9,"NDC");
+      if (chi2N) {
+	fitInfo->AddText("Fit function:");
+	fitInfo->AddText(TString::Format("- pol_{%d}[%s] * pol_{%d}[%s]",xOrder,bkgHisto_names[iVars].second.second.first.second.Data(),yOrder,bkgHisto_names[iVars].second.second.second.second.Data()));
+	fitInfo->AddText(TString::Format("- #chi^{2}/n.d.f. = %.3f",chi2N));
+	fitInfo->SetTextAlign(12); fitInfo->SetShadowColor(0); fitInfo->SetFillColor(0);
+	fitInfo->Draw();
+      }
+      gPad->SaveAs(TString::Format("%s/%s_%s%s",dir.Data(),bkgPdf_TH2->GetName(),method.Data(),extension.Data()));
+
+    } // for (Int_t iSb=0; iSb < 2; ++iSb)
+  } // for (Int_t iVars=1; iVars < 2; ++iVars)
+  return;
+
+  // Masses and angles efficiencies
+  TString effFileName = "officialMC_noPtEtaCuts_JPsi_Bd2MuMuKPi_2p0Sig_4p0to6p0SB.root";
+  effFileName = "officialMC_noPtEtaCuts_JPsi_Bd2MuMuKPi_2p0Sig_5p0to9p0SB.root";
+  TFile *effFile = TFile::Open(path+effFileName);
+  RooProdPdf* modelWithEff = 0;
+  pair< pair<TString, pair<RooArgSet*,pair<Int_t,Int_t> > >, pair<TString,pair< pair<TString,TString>,pair<TString,TString> > > > effHisto_names[] = {make_pair( make_pair("RelEff_psi2SPi_vs_KPi_B0constr_Dalitz",make_pair(&mass2Vars,make_pair(m2KPi_order,m2PsiPi_order))), make_pair("relEffDalitz",make_pair(make_pair("m2KPi",mass2KPi_title),make_pair("m2PsiPi",mass2PsiPi_title)))), make_pair(make_pair("RelEff_"+anglesScatt_name,make_pair(&angleVars,make_pair(cosMuMu_order,phi_order))), make_pair("relEffAngles",make_pair(make_pair("cosMuMu",cosMuMu_title),make_pair("phi",phi_title))))}; DalitzEff = kTRUE;
   // if you use &mass2Fors you get "ERROR:InputArguments -- RooAbsDataStore::initialize(RelEff_psi2SPi_vs_KPi_B0constr): Data set cannot contain non-fundamental types"
-  effHisto_names[0] = make_pair(make_pair("RelEff_psi2SPi_vs_KPi_B0constr",make_pair(&massVars,make_pair(mKPi_order,mPsiPi_order))), make_pair("relEffMasses",make_pair("m2KPi","m2PsiPi"))); DalitzEff = kFALSE;
-  effHisto_names[0] = make_pair(make_pair("RelEff_cos_Kstar_helicityAngle_vs_KPiSq_varBins",make_pair(&sqDalitz,make_pair(m2KPi_order,cosKstar_order))), make_pair("relEffSqDalitz",make_pair("m2KPi","cosKstar"))); DalitzEff = kTRUE;
-
-  RooAbsPdf* null = 0;
+  effHisto_names[0] = make_pair(make_pair("RelEff_psi2SPi_vs_KPi_B0constr",make_pair(&massVars,make_pair(mKPi_order,mPsiPi_order))), make_pair("relEffMasses",make_pair(make_pair("mKPi",massKPi_title),make_pair("mPsiPi",massPsiPi_title)))); DalitzEff = kFALSE;
+  effHisto_names[0] = make_pair(make_pair("RelEff_cos_Kstar_helicityAngle_vs_KPiSq_varBins",make_pair(&sqDalitz,make_pair(m2KPi_order,cosKstar_order))), make_pair("relEffSqDalitz",make_pair(make_pair("m2KPi",mass2KPi_title),make_pair("cosKstar",cosKstar_title)))); DalitzEff = kTRUE;
+  
   pair<RooAbsPdf*, Float_t> effPdf[] = {make_pair(null,0.),make_pair(null,0.)};
-  for (Int_t iEff=0; iEff < 2; ++iEff) {
-    TH2F* relEffTH2 = (TH2F*)effFile->Get( effHisto_names[iEff].first.first ) ;
-    if (!relEffTH2) {
-      cout <<"WARNING! No TH2F \"" <<effHisto_names[iEff].first.first <<"\" found in TFile \"" <<effFile->GetName() <<"\".\nSkipping ? efficiency correction" <<endl;
-      continue; }
+  if (effFile)
+    for (Int_t iEff=0; iEff < 2; ++iEff) {
+      TString effName = effHisto_names[iEff].second.first;
+      const TH2F* relEffTH2 = (TH2F*)effFile->Get( effHisto_names[iEff].first.first ) ;
+      if (!relEffTH2) {
+	cout <<"WARNING! No TH2F \"" <<effHisto_names[iEff].first.first <<"\" found in TFile \"" <<effFile->GetName() <<"\".\nSkipping " <<effName <<" correction" <<endl;
+	continue; }
 
-    Float_t xMin = relEffTH2->GetXaxis()->GetXmin(), xMax = relEffTH2->GetXaxis()->GetXmax(); Int_t xBins = relEffTH2->GetNbinsX();
-    Float_t yMin = relEffTH2->GetYaxis()->GetXmin(), yMax = relEffTH2->GetYaxis()->GetXmax(); Int_t yBins = relEffTH2->GetNbinsY();
-    //
-    const TArrayD* xArray = relEffTH2->GetXaxis()->GetXbins(); const Double_t* xBinning = 0;
-    const TArrayD* yArray = relEffTH2->GetYaxis()->GetXbins(); const Double_t* yBinning = 0;
-    if (xArray) { xBinning = xArray->GetArray(); xMin = xBinning[0]; xMax = xBinning[xBins]; }
-    if (yArray) { yBinning = yArray->GetArray(); yMin = yBinning[0]; yMax = yBinning[yBins]; }
+      Float_t xMin = relEffTH2->GetXaxis()->GetXmin(), xMax = relEffTH2->GetXaxis()->GetXmax(); Int_t xBins = relEffTH2->GetNbinsX();
+      Float_t yMin = relEffTH2->GetYaxis()->GetXmin(), yMax = relEffTH2->GetYaxis()->GetXmax(); Int_t yBins = relEffTH2->GetNbinsY();
+      //
+      const TArrayD* xArray = relEffTH2->GetXaxis()->GetXbins(); const Double_t* xBinning = 0;
+      const TArrayD* yArray = relEffTH2->GetYaxis()->GetXbins(); const Double_t* yBinning = 0;
+      if (xArray) { xBinning = xArray->GetArray(); xMin = xBinning[0]; xMax = xBinning[xBins]; }
+      if (yArray) { yBinning = yArray->GetArray(); yMin = yBinning[0]; yMax = yBinning[yBins]; }
 
-    RooBinning* xRooBinning = new RooBinning(xBins,xMin,xMax);
-    if (xBinning) { xRooBinning = new RooBinning(xBins,xBinning); }
-    RooBinning* yRooBinning = new RooBinning(yBins,yMin,yMax); 
-    if (yBinning) { yRooBinning = new RooBinning(yBins,yBinning); }
+      RooBinning* xRooBinning = new RooBinning(xBins,xMin,xMax);
+      if (xBinning) { xRooBinning = new RooBinning(xBins,xBinning); }
+      RooBinning* yRooBinning = new RooBinning(yBins,yMin,yMax); 
+      if (yBinning) { yRooBinning = new RooBinning(yBins,yBinning); }
 
-    // get x and y vars
-    RooArgSet* effVars = effHisto_names[iEff].first.second.first ;
-    TIterator* iter = effVars->createIterator(); // now iter does not point to x yet
-    RooRealVar* x = (RooRealVar*)effVars->first(); iter->Next(); // now iter points to x
-    RooRealVar* y = (RooRealVar*)iter->Next();
-    x->setRange(xMin,xMax);
-    y->setRange(yMin,yMax);
+      // get x and y vars
+      RooArgSet* effVars = effHisto_names[iEff].first.second.first ;
+      TIterator* iter = effVars->createIterator(); // now iter does not point to x yet
+      RooRealVar* x = (RooRealVar*)effVars->first(); iter->Next(); // now iter points to x
+      RooRealVar* y = (RooRealVar*)iter->Next();
+      x->setRange(xMin,xMax);
+      y->setRange(yMin,yMax);
 
 
-    // with RooHistPDF
-    RooDataHist* relEffHist = new RooDataHist(relEffTH2->GetName(), relEffTH2->GetTitle(), *effVars, relEffTH2) ;
-    /* // already done in the PROOF macro
-    for (Int_t iBin=0; iBin<relEffHist->numEntries(); ++iBin) { // remove bins whose center is out of Dalitz border
-      *effVars = *(relEffHist->get( iBin ));
-      //cout <<"x = " <<mass2KPi.getVal() <<", y = " <<mass2PsiPi.getVal() <<":\noriginal value = " <<relEffHist->weight(*effVars) <<", corrected value = " <<Dalitz_contour_host(mass2KPi.getVal(), mass2PsiPi.getVal(), kTRUE, psi_nS.Atoi()) * relEffHist->weight(*effVars) <<endl;
-      if (!Dalitz_contour_host(x->getVal(), y->getVal(), DalitzEff, psi_nS.Atoi()))
-	relEffHist->set(*effVars, 0, 0);
-    }
-    */
-    TString effName = effHisto_names[iEff].second.first;
-    TString effType = effName; effType.ReplaceAll("relEff","");
-    TString efftype = effType; efftype.ToLower();
-    RooHistPdf* relHistPdf = new RooHistPdf(effName+"PDF","#epsilon_{rel}("+efftype+") pdf", *effVars, *relEffHist, 9) ; //If last argument is zero, the weight for the bin enclosing the coordinates contained in 'bin' is returned. For higher values, the result is interpolated in the real dimensions of the dataset with an order of interpolation equal to the value provided (more than 10 does not work for Dalitz efficiencies, 9 for masses efficiencies, 10 for angles)
-    relHistPdf->setUnitNorm(kTRUE);
-
-    /*
-    // with RooNDKeysPDF
-    RooRealVar binContent("binContent","binContent",1,0,99);
-    effVars->add(binContent);
-    RooDataSet* relEffSet = new RooDataSet(relEffTH2->GetName(), relEffTH2->GetTitle(), *effVars, WeightVar("binContent"));
-    //RooDataSet* relEffSet = new RooDataSet(relEffTH2->GetName(), relEffTH2->GetTitle(), *effVars);
-    for (Int_t i=0; i<=xBins+1; ++i)
-      for (Int_t j=0; j<=yBins+1; ++j) {
-	x->setVal( relEffTH2->GetXaxis()->GetBinCenter(i) );
-	y->setVal( relEffTH2->GetYaxis()->GetBinCenter(j) );
-	binContent.setVal( relEffTH2->GetBinContent(i,j) );
-	//cout <<"x = " <<x->getVal() <<", y = " <<y->getVal() <<", w = " <<binContent.getVal() <<endl;
-	relEffSet->add( *effVars );
-	//relEffSet->add( *effVars, binContent.getVal() );
-      }
-    relEffSet->printArgs(cout); cout <<"; "; relEffSet->printValue(cout); cout <<"; relEffSet->isWeighted() = " <<relEffSet->isWeighted() <<" and relEffSet->sumEntries() = " <<relEffSet->sumEntries() <<endl;
-    //TH2F* relEffTH2_fromSet = (TH2F*)relEffSet->createHistogram("relEffTH2_fromSet", *x, Binning(*xRooBinning), YVar(*y, Binning(*yRooBinning)) ) ;
-    TH2F* relEffTH2_fromSet = (TH2F*)relEffSet->createHistogram(*x, *y, xBins, yBins, "", "relEffTH2_fromSet") ;
-    relEffTH2_fromSet->Draw("LEGO");
-    return;
-    RooNDKeysPdf* relHistPdf = new RooNDKeysPdf("relHistPdf","relHistPdf", *effVars, *relEffSet, "amdv");
-    */
-
-    effPdf[iEff].first = relHistPdf; TString method = "interp";
-    Int_t xOrder = effHisto_names[iEff].first.second.second.first;
-    Int_t yOrder = effHisto_names[iEff].first.second.second.second;
-    effPdf[iEff].first = twoDFit(*x,*y,relEffTH2,psi_nS.Atoi(),xOrder,yOrder,effPdf[iEff].second); method = "fit";
-    const Float_t chi2N = effPdf[iEff].second;
-
-    RooAbsPdf* kinematicCheck(0), *effWithKinCheck(0);
-    if (effVars->GetName() == massVars_name  ||  effVars->GetName() == mass2Vars_name)
-      kinematicCheck = new Dalitz_contour("Dalitz_kinCheck","kinematic check for Dalitz", *x, *y, DalitzEff, psi_nS) ;
-    else if (effVars->GetName() == sqDalitz_name)
-      kinematicCheck = new sqDalitz_contour("sqDalitz_kinCheck","kinematic check for square Dalitz", *x, *y, DalitzEff, psi_nS.Atoi()) ;
-    else if (effVars->GetName() == angleVars_name)
-      kinematicCheck = new Angles_contour("angles_kinCheck","kinematic check for angles", *x, *y) ;
-    //
-    if (kinematicCheck) {
-      cout <<"Multiplying " <<relHistPdf->GetTitle() <<" by " <<kinematicCheck->GetTitle() <<endl;
-      effWithKinCheck = new RooProdPdf(TString::Format("%s_withKinCheck",relHistPdf->GetName()),TString::Format("%s with kinematic check",relHistPdf->GetTitle()),RooArgSet(*kinematicCheck,*effPdf[iEff].first)) ;
-      if (effWithKinCheck)
-	effPdf[iEff].first = effWithKinCheck;
-    }
-    //return;
-    //relEffTH2->Draw("LEGO");
-    TH2F* relEffTH2_fromHist = (TH2F*)relEffHist->createHistogram(effName+"TH2_fromHist", *x, Binning(*xRooBinning), YVar(*y, Binning(*yRooBinning)) ) ;
-    relEffTH2_fromHist->SetTitle(relEffTH2->GetTitle()); relEffTH2_fromHist->SetTitleOffset(TH2_offset,"XY");
-    relEffTH2_fromHist->Draw("LEGO");
-    Int_t binDivision = 40;
-    cout <<"Using " <<binDivision <<" binDivision to plot " <<relHistPdf->GetTitle() <<endl;
-    TH2F* effPdf_TH2 = (TH2F*)effPdf[iEff].first->createHistogram("", *x, Binning(binDivision*xBins,xMin,xMax), YVar(*y, Binning(binDivision*yBins,yMin,yMax)) ) ;
-    effPdf_TH2->SetName(TString::Format("%s_TH2",relHistPdf->GetName())); effPdf_TH2->SetTitle(relEffTH2->GetTitle()); effPdf_TH2->SetTitleOffset(TH2_offset,"XY");
-    effPdf_TH2->SetLineColor(kRed);
-    effPdf_TH2->Draw("SURF2"); relEffTH2_fromHist->Draw("LEGO same");
-    //effPdf_TH2->Draw("LEGO2"); relEffTH2_fromHist->Draw("LEGO same");
-    //relEffTH2_fromHist->Draw("LEGO"); effPdf_TH2->Draw("SURF3 same"); //relEffTH2_fromHist->SetMaximum( 1.2*relEffTH2_fromHist->GetMaximum() );
-    //effPdf_TH2->Draw("SURF3"); relEffTH2_fromHist->Draw("LEGO same"); effPdf_TH2->SetMaximum( 1.5*effPdf_TH2->GetMaximum() );
-    TPaveText* fitInfo = new TPaveText(0.78,0.8,0.98,0.88,"NDC");
-    if (chi2N) {
-      fitInfo->AddText(TString::Format("Fit function: pol_{%d}(%s) X pol_{%d}(%s)",xOrder,x->GetTitle(),yOrder,y->GetTitle()));
-      fitInfo->AddText(TString::Format("#chi^{2}/n.d.f. = %.3f",chi2N));
-      fitInfo->SetTextAlign(12); fitInfo->SetShadowColor(0); fitInfo->SetFillColor(0);
-      fitInfo->Draw();
-    }
-    gPad->SaveAs(TString::Format("%s/%s_%s%s",dir.Data(),effPdf_TH2->GetName(),method.Data(),extension.Data()));
-    //return;
-    // Projections
-    TString xName = effHisto_names[iEff].second.second.first; TString yName = effHisto_names[iEff].second.second.second;
-    //TH1D* relEff_proj[] = {relEffTH2->ProjectionX("relEff_"+xName,1,xBins), relEffTH2->ProjectionY("relEff_"+yName,1,xBins)};
-    TH1D* relEff_proj[] = {relEffTH2_fromHist->ProjectionX("relEff_"+xName), relEffTH2_fromHist->ProjectionY("relEff_"+yName)};
-    //(TH1F*)effPdf[iEff].first->createHistogram("effPdf_mKPHist", x, Binning(1*xBins,xMin,xMax) ) ; // not working with message: function value is NAN
-    TString projectionName = TString::Format("%s_",relHistPdf->GetName());
-    TH1D* effPdf_proj[] = {effPdf_TH2->ProjectionX(projectionName+xName),effPdf_TH2->ProjectionY(projectionName+yName)};
-    for (Int_t iProj=0; iProj<2; ++iProj) {
-      relEff_proj[iProj]->SetTitle(TString::Format("Projection of %s",relEffTH2_fromHist->GetTitle()));
-      relEff_proj[iProj]->SetMarkerStyle(20);
-      //relEff_proj[iProj]->SetMinimum(0);
-      relEff_proj[iProj]->Draw();
-      effPdf_proj[iProj]->Scale((1/effPdf_proj[iProj]->Integral())*binDivision*(relEff_proj[iProj]->Integral())); effPdf_proj[iProj]->SetLineColor(kRed); effPdf_proj[iProj]->Draw("same");
-      gPad->SaveAs(TString::Format("%s/%s_%s%s",dir.Data(),relEff_proj[iProj]->GetName(),method.Data(),extension.Data()));
-    }
-    /*
-    x->setVal(4.75); y->setVal(16.);
-    cout <<"\neffPdf->getVal(" <<x->getVal() <<", " <<y->getVal() <<") = " <<effPdf[iEff].first->getVal() <<endl;
-    cout <<"with relHistPdf->haveUnitNorm() = " <<relHistPdf->haveUnitNorm() <<endl;
-    if (relHistPdf->haveUnitNorm()) {
-      relHistPdf->setUnitNorm(kFALSE);
-      cout <<"\neffPdf->getVal(" <<x->getVal() <<"," <<y->getVal() <<") = " <<effPdf[iEff].first->getVal() <<endl;
-      cout <<"with relHistPdf->haveUnitNorm() = " <<relHistPdf->haveUnitNorm() <<endl;
-    } else {
-      relHistPdf->setUnitNorm(kTRUE);
-      cout <<"\neffPdf->getVal(" <<x->.getVal() <<"," <<y->getVal() <<") = " <<effPdf[iEff].first->getVal() <<endl;
-      cout <<"with relHistPdf->haveUnitNorm() = " <<relHistPdf->haveUnitNorm() <<endl;
-    }
-    */
-
-    if (iEff==0) {
-      if (effVars != &massVars) {
-	if (kTRUE) { // insert effVars == (m2(K Pi),cos(theta(K*))) check)
-	  x = (RooRealVar*)(massVars.find(massKPi_name));
-	  y = (RooRealVar*)(massVars.find(massPsiPi_name));
-
-	  effPdf[iEff].first = new sqDalitzToMassesPdf("sqDalitzToMassesPdf","sqDalitzToMassesPdf", *x, *y, effPdf[iEff].first, (RooRealVar*)effVars->find(mass2KPi_name), (RooRealVar*)effVars->find("cosKstar"), massMuMu);
-
-	  TH2F* relEffMassesTH2 = (TH2F*)effFile->Get("RelEff_psi2SPi_vs_KPi_B0constr");
-	  if (!relEffMassesTH2) {
-	    cout <<"WARNING! No TH2F \"RelEff_psi2SPi_vs_KPi_B0constr\" found in TFile \"" <<effFile->GetName() <<"\".\nSkipping masses efficiency correction" <<endl;
-	  } else {
-	    xMin = relEffMassesTH2->GetXaxis()->GetXmin(); xMax = relEffMassesTH2->GetXaxis()->GetXmax(); xBins = relEffMassesTH2->GetNbinsX();
-	    yMin = relEffMassesTH2->GetYaxis()->GetXmin(); yMax = relEffMassesTH2->GetYaxis()->GetXmax(); yBins = relEffMassesTH2->GetNbinsY();
-	    xArray = relEffMassesTH2->GetXaxis()->GetXbins();
-	    yArray = relEffMassesTH2->GetYaxis()->GetXbins();
-	    if (xArray) { xBinning = xArray->GetArray(); xMin = xBinning[0]; xMax = xBinning[xBins]; }
-	    if (yArray) { yBinning = yArray->GetArray(); yMin = yBinning[0]; yMax = yBinning[yBins]; }
-
-	    xRooBinning = new RooBinning(xBins,xMin,xMax);
-	    if (xBinning) { xRooBinning = new RooBinning(xBins,xBinning); }
-	    yRooBinning = new RooBinning(yBins,yMin,yMax); 
-	    if (yBinning) { yRooBinning = new RooBinning(yBins,yBinning); }
-
-	    effPdf_TH2 = (TH2F*)effPdf[iEff].first->createHistogram("", *x, Binning(binDivision*xBins,xMin,xMax), YVar(*y, Binning(binDivision*yBins,yMin,yMax)) ) ;
-	    //TF2* massesEffTF2 = (TF2*)effPdf[iEff].first->asTF( *effVars ); effPdf_TH2 = (TH2F*)massesEffTF2->GetHistogram(); // Moneta's fix
-	    //
-	    effName = "relEffMasses";
-	    effPdf_TH2->SetName(TString::Format("%sPDF_TH2",effName.Data())); effPdf_TH2->SetTitle(relEffMassesTH2->GetTitle()); effPdf_TH2->SetTitleOffset(TH2_offset,"XY");
-	    effPdf_TH2->SetLineColor(kRed);
-	    effPdf_TH2->Draw("SURF2"); relEffMassesTH2->Draw("LEGO same");
-	    //effPdf_TH2->Draw("LEGO2"); relEffTH2_fromHist->Draw("LEGO same");
-	    //relEffTH2_fromHist->Draw("LEGO"); effPdf_TH2->Draw("SURF3 same"); //relEffTH2_fromHist->SetMaximum( 1.2*relEffTH2_fromHist->GetMaximum() );
-	    //effPdf_TH2->Draw("SURF3"); relEffTH2_fromHist->Draw("LEGO same"); effPdf_TH2->SetMaximum( 1.5*effPdf_TH2->GetMaximum() );
-	    gPad->SaveAs(TString::Format("%s/%s_%s%s",dir.Data(),effPdf_TH2->GetName(),method.Data(),extension.Data()));
-	
-	    // Projections
-	    relEff_proj[0] = relEffMassesTH2->ProjectionX("relEff_mKPi",1,xBins); relEff_proj[1] = relEffMassesTH2->ProjectionY("relEff_mPsiPi",1,yBins);
-	    //TH1D* relEff_proj[] = {relEffMassesTH2_fromHist->ProjectionX("relEff_mKPi"), relEffMassesTH2_fromHist->ProjectionY("relEff_mPsiPi")};
-	    //(TH1F*)effPdf[iEff].first->createHistogram("effPdf_mKPHist", x, Binning(1*xBins,xMin,xMax) ) ; // not working with message: function value is NAN
-	    effPdf_proj[0] = effPdf_TH2->ProjectionX(); effPdf_proj[1] = effPdf_TH2->ProjectionY();
-	    for (Int_t iProj=0; iProj<2; ++iProj) {
-	      relEff_proj[iProj]->SetTitle(TString::Format("Projection of %s",relEffTH2_fromHist->GetTitle()));
-	      relEff_proj[iProj]->SetMarkerStyle(20);
-	      relEff_proj[iProj]->Draw();
-	      effPdf_proj[iProj]->Scale((1/effPdf_proj[iProj]->Integral())*binDivision*(relEff_proj[iProj]->Integral())); effPdf_proj[iProj]->SetLineColor(kRed); effPdf_proj[iProj]->Draw("same");
-	      gPad->SaveAs(TString::Format("%s/%s_%s%s",dir.Data(),relEff_proj[iProj]->GetName(),method.Data(),extension.Data()));
-	    }
-	  }	
-	} else { // do the same for effVars == (m2(K Pi),m2(J/psi Pi))
-	}
-      } // if (effVars != &massVars)
-    
-      /*
-      // Creating the efficiency as function of masses from the efficiency as function of squared masses, in order to allow the multiplication with sigPDF 
-      if (DalitzEff) {
-      effMasses* massesEffPdf_fromDalitz = new effMasses(TString::Format("%s_fromDalitz",effPdf[iEff].first->GetName()), effPdf[iEff].first->GetTitle(), massKPi, massPsiPi, &mass2KPi, &mass2PsiPi, effPdf[iEff].first);
-      //TH1F* massesEffPdf_fromDalitz_mKPTH1 = (TH1F*)massesEffPdf_fromDalitz->createHistogram("massesEffPdf_fromDalitz_mKPTH1", massKPi) ; // not working with message: p.d.f normalization integral is zero or negative
-      TH2F* massesEffPdf_fromDalitz_TH2 = (TH2F*)massesEffPdf_fromDalitz->createHistogram("", massKPi, Binning(1*xBins,massKPi_min,massKPi_max), YVar(massPsiPi, Binning(1*yBins,massPsiPi_min,massPsiPi_max)) ) ; massesEffPdf_fromDalitz_TH2->SetName("massesEffPdf_fromDalitz_TH2"); massesEffPdf_fromDalitz_TH2->SetTitleOffset(TH2_offset,"XY");
-      massesEffPdf_fromDalitz_TH2->Draw("LEGO");
-      gPad->SaveAs(TString::Format("%s/%s%s",dir.Data(),massesEffPdf_fromDalitz_TH2->GetName(),extension.Data()));
-      modelWithEff = new RooProdPdf(modelName.Append("__withMassesEff"),TString::Format("(%s)*#epsilon(masses)",model->GetTitle()),RooArgSet(*model,*massesEffPdf_fromDalitz)) ;
-      }
+      // with RooHistPDF
+      RooDataHist* relEffHist = new RooDataHist(relEffTH2->GetName(), relEffTH2->GetTitle(), *effVars, relEffTH2) ;
+      /* // already done in the PROOF macro
+	 for (Int_t iBin=0; iBin<relEffHist->numEntries(); ++iBin) { // remove bins whose center is out of Dalitz border
+	 *effVars = *(relEffHist->get( iBin ));
+	 //cout <<"x = " <<mass2KPi.getVal() <<", y = " <<mass2PsiPi.getVal() <<":\noriginal value = " <<relEffHist->weight(*effVars) <<", corrected value = " <<Dalitz_contour_host(mass2KPi.getVal(), mass2PsiPi.getVal(), kTRUE, psi_nS.Atoi()) * relEffHist->weight(*effVars) <<endl;
+	 if (!Dalitz_contour_host(x->getVal(), y->getVal(), DalitzEff, psi_nS.Atoi()))
+	 relEffHist->set(*effVars, 0, 0);
+	 }
       */
-    } // if (iEff==0)
+      TString effType = effName; effType.ReplaceAll("relEff","");
+      TString first = TString(effType,1); first.ToLower();
+      TString efftype = effType; efftype.Remove(0,1); efftype.Prepend(first);  
+      RooHistPdf* relHistPdf = new RooHistPdf(effName+"PDF","#epsilon_{rel}("+efftype+") pdf", *effVars, *relEffHist, 9) ; //If last argument is zero, the weight for the bin enclosing the coordinates contained in 'bin' is returned. For higher values, the result is interpolated in the real dimensions of the dataset with an order of interpolation equal to the value provided (more than 10 does not work for Dalitz efficiencies, 9 for masses efficiencies, 10 for angles)
+      relHistPdf->setUnitNorm(kTRUE);
 
-    modelWithEff = new RooProdPdf(modelName.Append("__with"+effType+"Eff"),TString::Format("%s * #epsilon("+efftype+")",model->GetTitle()),RooArgSet(*model,*effPdf[iEff].first)) ;
-    model = modelWithEff;
+      /*
+      // with RooNDKeysPDF
+      RooRealVar binContent("binContent","binContent",1,0,99);
+      effVars->add(binContent);
+      RooDataSet* relEffSet = new RooDataSet(relEffTH2->GetName(), relEffTH2->GetTitle(), *effVars, WeightVar("binContent"));
+      //RooDataSet* relEffSet = new RooDataSet(relEffTH2->GetName(), relEffTH2->GetTitle(), *effVars);
+      for (Int_t i=0; i<=xBins+1; ++i)
+      for (Int_t j=0; j<=yBins+1; ++j) {
+      x->setVal( relEffTH2->GetXaxis()->GetBinCenter(i) );
+      y->setVal( relEffTH2->GetYaxis()->GetBinCenter(j) );
+      binContent.setVal( relEffTH2->GetBinContent(i,j) );
+      //cout <<"x = " <<x->getVal() <<", y = " <<y->getVal() <<", w = " <<binContent.getVal() <<endl;
+      relEffSet->add( *effVars );
+      //relEffSet->add( *effVars, binContent.getVal() );
+      }
+      relEffSet->printArgs(cout); cout <<"; "; relEffSet->printValue(cout); cout <<"; relEffSet->isWeighted() = " <<relEffSet->isWeighted() <<" and relEffSet->sumEntries() = " <<relEffSet->sumEntries() <<endl;
+      //TH2F* relEffTH2_fromSet = (TH2F*)relEffSet->createHistogram("relEffTH2_fromSet", *x, Binning(*xRooBinning), YVar(*y, Binning(*yRooBinning)) ) ;
+      TH2F* relEffTH2_fromSet = (TH2F*)relEffSet->createHistogram(*x, *y, xBins, yBins, "", "relEffTH2_fromSet") ;
+      relEffTH2_fromSet->Draw("LEGO");
+      return;
+      RooNDKeysPdf* relHistPdf = new RooNDKeysPdf("relHistPdf","relHistPdf", *effVars, *relEffSet, "amdv");
+      */
 
-  } // for (Int_t iEff=0; iEff < 2; ++iEff)
-  //massKPi.setVal(2.); massPsiPi.setVal(4.);
-  //cout <<"massKPi = " <<massKPi.getVal() <<", mass2KPi = " <<mass2KPi.getVal() <<", massPsiPi = " <<massPsiPi.getVal() <<", mass2PsiPi = " <<mass2PsiPi.getVal() <<endl;
-  //cout <<"effPdf[iEff].first->getVal() = " <<effPdf[iEff].first->getVal() <<", effPdf[iEff].first->getValV() = " <<effPdf[iEff].first->getValV() <<endl;
-  //cout <<"model->getVal() = " <<model->getVal() <<", model->getValV() = " <<model->getValV() <<endl;
-  //cout <<"massKPi = " <<massKPi.getVal() <<", mass2KPi = " <<mass2KPi.getVal() <<", massPsiPi = " <<massPsiPi.getVal() <<", mass2PsiPi = " <<mass2PsiPi.getVal() <<endl;
+      effPdf[iEff].first = relHistPdf; TString method = "interp";
+      Int_t xOrder = effHisto_names[iEff].first.second.second.first;
+      Int_t yOrder = effHisto_names[iEff].first.second.second.second;
+      effPdf[iEff].first = twoDFit(*x, *y, relEffTH2, psi_nS.Atoi(), xOrder, yOrder, effPdf[iEff].second); method = "fit";
+      const Float_t chi2N = effPdf[iEff].second;
+
+      RooAbsPdf* kinematicCheck(0), *effWithKinCheck(0);
+      if (effVars->GetName() == massVars_name  ||  effVars->GetName() == mass2Vars_name)
+	kinematicCheck = new Dalitz_contour("Dalitz_kinCheck","kinematic check for Dalitz", *x, *y, DalitzEff, psi_nS) ;
+      else if (effVars->GetName() == sqDalitz_name)
+	kinematicCheck = new sqDalitz_contour("sqDalitz_kinCheck","kinematic check for square Dalitz", *x, *y, DalitzEff, psi_nS.Atoi()) ;
+      else if (effVars->GetName() == angleVars_name)
+	kinematicCheck = new Angles_contour("angles_kinCheck","kinematic check for angles", *x, *y) ;
+      //
+      if (kinematicCheck) {
+	cout <<"Multiplying " <<relHistPdf->GetTitle() <<" by " <<kinematicCheck->GetTitle() <<endl;
+	effWithKinCheck = new RooProdPdf(TString::Format("%s_withKinCheck",relHistPdf->GetName()),TString::Format("%s with kinematic check",relHistPdf->GetTitle()),RooArgSet(*kinematicCheck,*effPdf[iEff].first)) ;
+	if (effWithKinCheck)
+	  effPdf[iEff].first = effWithKinCheck;
+      }
+
+      TString effErrTH2_name = relEffTH2->GetName(); effErrTH2_name.ReplaceAll("Eff","EffErr");
+      const TH2F* relEffErrTH2 = (TH2F*)effFile->Get( effErrTH2_name ) ;
+      TH2F* chi2N_hist = 0;
+      if (!relEffErrTH2) {
+	cout <<"Histogram \"" <<effErrTH2_name <<"\" not found in TFile \"" <<effFile->GetName() <<"\"\\ Chi2 histogram will not be calculated." <<endl;
+      } else {
+	chi2N_hist = twoD_chiSquare(relEffTH2, relEffErrTH2, effPdf[iEff].first, x, y) ;
+	TCanvas* chi2N_C = new TCanvas("chi2N_C","chi2N canvas",800,600) ;
+	chi2N_hist->Draw("colz"); //chi2N_hist->SetMaximum(1.5);
+	chi2N_C->Update();
+	TPaletteAxis *palette = (TPaletteAxis*)chi2N_hist->GetListOfFunctions()->FindObject("palette");
+	palette->SetX1NDC(0.91); palette->SetX2NDC(0.96);
+	chi2N_C->Modified(); chi2N_C->Update();
+	chi2N_C->SaveAs(TString::Format("%s/%s%s",dir.Data(),chi2N_hist->GetName(),extension.Data()));
+      }
+      //return;
+      //relEffTH2->Draw("LEGO");
+
+      TH2F* relEffTH2_fromHist = (TH2F*)relEffHist->createHistogram(effName+"TH2_fromHist", *x, Binning(*xRooBinning), YVar(*y, Binning(*yRooBinning)) ) ;
+      relEffTH2_fromHist->SetTitle(relEffTH2->GetTitle()); relEffTH2_fromHist->SetTitleOffset(TH2_offset,"XY");
+      relEffTH2_fromHist->Draw("LEGO");
+      Int_t binDivision = 40;
+      cout <<"Using " <<binDivision <<" binDivision to plot " <<relHistPdf->GetTitle() <<endl;
+      TH2F* effPdf_TH2 = (TH2F*)effPdf[iEff].first->createHistogram("", *x, Binning(binDivision*xBins,xMin,xMax), YVar(*y, Binning(binDivision*yBins,yMin,yMax)) ) ;
+      effPdf_TH2->SetName(TString::Format("%s_TH2",relHistPdf->GetName())); effPdf_TH2->SetTitle(relEffTH2->GetTitle()); effPdf_TH2->SetTitleOffset(TH2_offset,"XY");
+      effPdf_TH2->SetLineColor(kRed);
+      effPdf_TH2->Draw("SURF2"); relEffTH2_fromHist->Draw("LEGO same");
+      //effPdf_TH2->Draw("LEGO2"); relEffTH2_fromHist->Draw("LEGO same");
+      //relEffTH2_fromHist->Draw("LEGO"); effPdf_TH2->Draw("SURF3 same"); //relEffTH2_fromHist->SetMaximum( 1.2*relEffTH2_fromHist->GetMaximum() );
+      //effPdf_TH2->Draw("SURF3"); relEffTH2_fromHist->Draw("LEGO same"); effPdf_TH2->SetMaximum( 1.5*effPdf_TH2->GetMaximum() );
+      TPaveText* fitInfo = new TPaveText(0.78,0.8,0.99,0.9,"NDC");
+      if (chi2N) {
+	fitInfo->AddText("Fit function:");
+	fitInfo->AddText(TString::Format("- pol_{%d}[%s] * pol_{%d}[%s]",xOrder,effHisto_names[iEff].second.second.first.second.Data(),yOrder,effHisto_names[iEff].second.second.second.second.Data()));
+	fitInfo->AddText(TString::Format("- #chi^{2}/n.d.f. = %.3f",chi2N));
+	fitInfo->SetTextAlign(12); fitInfo->SetShadowColor(0); fitInfo->SetFillColor(0);
+	fitInfo->Draw();
+      }
+      gPad->SaveAs(TString::Format("%s/%s_%s%s",dir.Data(),effPdf_TH2->GetName(),method.Data(),extension.Data()));
+      //return;
+      // Projections
+      TString xName = effHisto_names[iEff].second.second.first.first; TString yName = effHisto_names[iEff].second.second.second.first;
+      //TH1D* relEff_proj[] = {relEffTH2->ProjectionX("relEff_"+xName,1,xBins), relEffTH2->ProjectionY("relEff_"+yName,1,xBins)};
+      TH1D* relEff_proj[] = {relEffTH2_fromHist->ProjectionX("relEff_"+xName), relEffTH2_fromHist->ProjectionY("relEff_"+yName)};
+      //(TH1F*)effPdf[iEff].first->createHistogram("effPdf_mKPHist", x, Binning(1*xBins,xMin,xMax) ) ; // not working with message: function value is NAN
+      TString projectionName = TString::Format("%s_",relHistPdf->GetName());
+      TH1D* effPdf_proj[] = {effPdf_TH2->ProjectionX(projectionName+xName),effPdf_TH2->ProjectionY(projectionName+yName)};
+      for (Int_t iProj=0; iProj<2; ++iProj) {
+	relEff_proj[iProj]->SetTitle(TString::Format("Projection of %s",relEffTH2_fromHist->GetTitle()));
+	relEff_proj[iProj]->SetMarkerStyle(20);
+	//relEff_proj[iProj]->SetMinimum(0);
+	relEff_proj[iProj]->Draw();
+	effPdf_proj[iProj]->Scale((1/effPdf_proj[iProj]->Integral())*binDivision*(relEff_proj[iProj]->Integral())); effPdf_proj[iProj]->SetLineColor(kRed); effPdf_proj[iProj]->Draw("same");
+	gPad->SaveAs(TString::Format("%s/%s_%s%s",dir.Data(),relEff_proj[iProj]->GetName(),method.Data(),extension.Data()));
+      }
+      /*
+	x->setVal(4.75); y->setVal(16.);
+	cout <<"\neffPdf->getVal(" <<x->getVal() <<", " <<y->getVal() <<") = " <<effPdf[iEff].first->getVal() <<endl;
+	cout <<"with relHistPdf->haveUnitNorm() = " <<relHistPdf->haveUnitNorm() <<endl;
+	if (relHistPdf->haveUnitNorm()) {
+	relHistPdf->setUnitNorm(kFALSE);
+	cout <<"\neffPdf->getVal(" <<x->getVal() <<"," <<y->getVal() <<") = " <<effPdf[iEff].first->getVal() <<endl;
+	cout <<"with relHistPdf->haveUnitNorm() = " <<relHistPdf->haveUnitNorm() <<endl;
+	} else {
+	relHistPdf->setUnitNorm(kTRUE);
+	cout <<"\neffPdf->getVal(" <<x->.getVal() <<"," <<y->getVal() <<") = " <<effPdf[iEff].first->getVal() <<endl;
+	cout <<"with relHistPdf->haveUnitNorm() = " <<relHistPdf->haveUnitNorm() <<endl;
+	}
+      */
+
+      if (iEff==0) {
+	if (effVars != &massVars) {
+	  if (kTRUE) { // insert effVars == (m2(K Pi),cos(theta(K*))) check)
+	    method = "derivedFromFit";
+	    x = (RooRealVar*)(massVars.find(massKPi_name));
+	    y = (RooRealVar*)(massVars.find(massPsiPi_name));
+
+	    effPdf[iEff].first = new sqDalitzToMassesPdf("sqDalitzToMassesPdf","sqDalitzToMassesPdf", *x, *y, effPdf[iEff].first, (RooRealVar*)effVars->find(mass2KPi_name), (RooRealVar*)effVars->find("cosKstar"), massMuMu);
+
+	    TH2F* relEffMassesTH2 = (TH2F*)effFile->Get("RelEff_psi2SPi_vs_KPi_B0constr");
+	    if (!relEffMassesTH2) {
+	      cout <<"WARNING! No TH2F \"RelEff_psi2SPi_vs_KPi_B0constr\" found in TFile \"" <<effFile->GetName() <<"\".\nSkipping masses efficiency correction" <<endl;
+	    } else {
+	      xMin = relEffMassesTH2->GetXaxis()->GetXmin(); xMax = relEffMassesTH2->GetXaxis()->GetXmax(); xBins = relEffMassesTH2->GetNbinsX();
+	      yMin = relEffMassesTH2->GetYaxis()->GetXmin(); yMax = relEffMassesTH2->GetYaxis()->GetXmax(); yBins = relEffMassesTH2->GetNbinsY();
+	      xArray = relEffMassesTH2->GetXaxis()->GetXbins();
+	      yArray = relEffMassesTH2->GetYaxis()->GetXbins();
+	      if (xArray) { xBinning = xArray->GetArray(); xMin = xBinning[0]; xMax = xBinning[xBins]; }
+	      if (yArray) { yBinning = yArray->GetArray(); yMin = yBinning[0]; yMax = yBinning[yBins]; }
+
+	      xRooBinning = new RooBinning(xBins,xMin,xMax);
+	      if (xBinning) { xRooBinning = new RooBinning(xBins,xBinning); }
+	      yRooBinning = new RooBinning(yBins,yMin,yMax); 
+	      if (yBinning) { yRooBinning = new RooBinning(yBins,yBinning); }
+
+	      effPdf_TH2 = (TH2F*)effPdf[iEff].first->createHistogram("", *x, Binning(binDivision*xBins,xMin,xMax), YVar(*y, Binning(binDivision*yBins,yMin,yMax)) ) ;
+	      //TF2* massesEffTF2 = (TF2*)effPdf[iEff].first->asTF( *effVars ); effPdf_TH2 = (TH2F*)massesEffTF2->GetHistogram(); // Moneta's fix
+	      //
+	      effName = "relEffMasses";
+	      effPdf_TH2->SetName(TString::Format("%sPDF_TH2",effName.Data())); effPdf_TH2->SetTitle(relEffMassesTH2->GetTitle()); effPdf_TH2->SetTitleOffset(TH2_offset,"XY");
+	      effPdf_TH2->SetLineColor(kRed);
+	      effPdf_TH2->Draw("SURF2"); relEffMassesTH2->Draw("LEGO same");
+	      //effPdf_TH2->Draw("LEGO2"); relEffTH2_fromHist->Draw("LEGO same");
+	      //relEffTH2_fromHist->Draw("LEGO"); effPdf_TH2->Draw("SURF3 same"); //relEffTH2_fromHist->SetMaximum( 1.2*relEffTH2_fromHist->GetMaximum() );
+	      //effPdf_TH2->Draw("SURF3"); relEffTH2_fromHist->Draw("LEGO same"); effPdf_TH2->SetMaximum( 1.5*effPdf_TH2->GetMaximum() );
+	      gPad->SaveAs(TString::Format("%s/%s_%s%s",dir.Data(),effPdf_TH2->GetName(),method.Data(),extension.Data()));
+	
+	      // Projections
+	      relEff_proj[0] = relEffMassesTH2->ProjectionX("relEff_mKPi",1,xBins); relEff_proj[1] = relEffMassesTH2->ProjectionY("relEff_mPsiPi",1,yBins);
+	      //TH1D* relEff_proj[] = {relEffMassesTH2_fromHist->ProjectionX("relEff_mKPi"), relEffMassesTH2_fromHist->ProjectionY("relEff_mPsiPi")};
+	      //(TH1F*)effPdf[iEff].first->createHistogram("effPdf_mKPHist", x, Binning(1*xBins,xMin,xMax) ) ; // not working with message: function value is NAN
+	      effPdf_proj[0] = effPdf_TH2->ProjectionX(); effPdf_proj[1] = effPdf_TH2->ProjectionY();
+	      for (Int_t iProj=0; iProj<2; ++iProj) {
+		relEff_proj[iProj]->SetTitle(TString::Format("Projection of %s",relEffTH2_fromHist->GetTitle()));
+		relEff_proj[iProj]->SetMarkerStyle(20);
+		relEff_proj[iProj]->Draw();
+		effPdf_proj[iProj]->Scale((1/effPdf_proj[iProj]->Integral())*binDivision*(relEff_proj[iProj]->Integral())); effPdf_proj[iProj]->SetLineColor(kRed); effPdf_proj[iProj]->Draw("same");
+		gPad->SaveAs(TString::Format("%s/%s_%s%s",dir.Data(),relEff_proj[iProj]->GetName(),method.Data(),extension.Data()));
+	      }
+	    }	
+	  } else { // do the same for effVars == (m2(K Pi),m2(J/psi Pi))
+	  }
+	} // if (effVars != &massVars)
+    
+	/*
+	// Creating the efficiency as function of masses from the efficiency as function of squared masses, in order to allow the multiplication with sigPDF 
+	if (DalitzEff) {
+	effMasses* massesEffPdf_fromDalitz = new effMasses(TString::Format("%s_fromDalitz",effPdf[iEff].first->GetName()), effPdf[iEff].first->GetTitle(), massKPi, massPsiPi, &mass2KPi, &mass2PsiPi, effPdf[iEff].first);
+	//TH1F* massesEffPdf_fromDalitz_mKPTH1 = (TH1F*)massesEffPdf_fromDalitz->createHistogram("massesEffPdf_fromDalitz_mKPTH1", massKPi) ; // not working with message: p.d.f normalization integral is zero or negative
+	TH2F* massesEffPdf_fromDalitz_TH2 = (TH2F*)massesEffPdf_fromDalitz->createHistogram("", massKPi, Binning(1*xBins,massKPi_min,massKPi_max), YVar(massPsiPi, Binning(1*yBins,massPsiPi_min,massPsiPi_max)) ) ; massesEffPdf_fromDalitz_TH2->SetName("massesEffPdf_fromDalitz_TH2"); massesEffPdf_fromDalitz_TH2->SetTitleOffset(TH2_offset,"XY");
+	massesEffPdf_fromDalitz_TH2->Draw("LEGO");
+	gPad->SaveAs(TString::Format("%s/%s%s",dir.Data(),massesEffPdf_fromDalitz_TH2->GetName(),extension.Data()));
+	modelWithEff = new RooProdPdf(modelName.Append("__withMassesEff"),TString::Format("(%s)*#epsilon(masses)",model->GetTitle()),RooArgSet(*model,*massesEffPdf_fromDalitz)) ;
+	}
+	*/
+	//massKPi.setVal(2.); massPsiPi.setVal(4.);
+	//cout <<"massKPi = " <<massKPi.getVal() <<", mass2KPi = " <<mass2KPi.getVal() <<", massPsiPi = " <<massPsiPi.getVal() <<", mass2PsiPi = " <<mass2PsiPi.getVal() <<endl;
+	//cout <<"effPdf[iEff].first->getVal() = " <<effPdf[iEff].first->getVal() <<", effPdf[iEff].first->getValV() = " <<effPdf[iEff].first->getValV() <<endl;
+	//cout <<"model->getVal() = " <<model->getVal() <<", model->getValV() = " <<model->getValV() <<endl;
+	//cout <<"massKPi = " <<massKPi.getVal() <<", mass2KPi = " <<mass2KPi.getVal() <<", massPsiPi = " <<massPsiPi.getVal() <<", mass2PsiPi = " <<mass2PsiPi.getVal() <<endl;
+      } // if (iEff==0)
+
+      modelWithEff = new RooProdPdf(modelName.Append("__with"+effType+"Eff"),TString::Format("%s * #epsilon("+efftype+")",model->GetTitle()),RooArgSet(*model,*effPdf[iEff].first)) ;
+      model = modelWithEff;
+
+    } // for (Int_t iEff=0; iEff < 2; ++iEff)
+  else
+    cout <<"WARNING! TFile \"" <<effFile->GetName() <<"\" could not be opened.\nSkipping efficiency correction" <<endl;
+  
   return;
 
 

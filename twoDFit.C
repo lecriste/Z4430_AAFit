@@ -1,4 +1,4 @@
-‰#include "RooAbsReal.h"
+#include "RooAbsReal.h"
 #include "RooDataHist.h"
 #include "RooBernstein.h"
 #include "RooChebychev.h"
@@ -84,7 +84,7 @@ Double_t polXY_times_thresholdXY(Double_t* var, Double_t* par) {
   return thresholdXY(var, &par[0]) * polXY(var, &par[nThrPar]) ;
 }
 
-RooAbsPdf* twoDFit(RooAbsReal& x, RooAbsReal& y, TH2F* hist, const Int_t psi_nS, const Int_t xOrder, const Int_t yOrder, Float_t& chi2N) {
+RooAbsPdf* twoDFit(RooAbsReal& x, RooAbsReal& y, const TH2F* hist, const Int_t psi_nS, const Int_t xOrder, const Int_t yOrder, Float_t& chi2N) {
 
   varOrder[0] = xOrder;
   varOrder[nVars-1] = yOrder;
@@ -102,7 +102,8 @@ RooAbsPdf* twoDFit(RooAbsReal& x, RooAbsReal& y, TH2F* hist, const Int_t psi_nS,
   Float_t xLow(0), xHigh(0);
   Float_t yLow(0), yHigh(0);
 
-  TString effName = hist->GetName();
+  TH2F* hist_nonConst = (TH2F*)hist->Clone();
+  TString effName = hist_nonConst->GetName();
   if (effName.Contains("angle",TString::kIgnoreCase)) {
     if (effName.Contains("helicityAngle_vs_KPiSq",TString::kIgnoreCase)) {
       xLow = TMath::Power(MKaon + MPion,2); xHigh = TMath::Power(MBd - MPsi_nS,2);
@@ -118,8 +119,8 @@ RooAbsPdf* twoDFit(RooAbsReal& x, RooAbsReal& y, TH2F* hist, const Int_t psi_nS,
   }
   cout <<"Fitting in range [" <<xLow <<"," <<xHigh <<"] * [" <<yLow <<"," <<yHigh <<"]" <<endl;
 
-  Float_t xMin = hist->GetXaxis()->GetXmin(); Float_t xMax = hist->GetXaxis()->GetXmax();
-  Float_t yMin = hist->GetYaxis()->GetXmin(); Float_t yMax = hist->GetYaxis()->GetXmax();
+  Float_t xMin = hist_nonConst->GetXaxis()->GetXmin(); Float_t xMax = hist_nonConst->GetXaxis()->GetXmax();
+  Float_t yMin = hist_nonConst->GetYaxis()->GetXmin(); Float_t yMax = hist_nonConst->GetYaxis()->GetXmax();
   
   TF2* finalTF2 = 0;
 
@@ -137,7 +138,7 @@ RooAbsPdf* twoDFit(RooAbsReal& x, RooAbsReal& y, TH2F* hist, const Int_t psi_nS,
   }
   
   funcTF2->SetRange(xLow, yLow, xHigh, yHigh);
-  hist->Fit("funcTF2","WLR"); //V
+  hist_nonConst->Fit("funcTF2","WLR"); //V
   finalTF2 = funcTF2;
 
   // threshold(x,y)
@@ -161,7 +162,7 @@ RooAbsPdf* twoDFit(RooAbsReal& x, RooAbsReal& y, TH2F* hist, const Int_t psi_nS,
   }
   
   thresholdTF2->SetRange(xLow, yLow, xHigh, yHigh);
-  //hist->Fit("thresholdTF2","WLVR"); finalTF2 = thresholdTF2;
+  //hist_nonConst->Fit("thresholdTF2","WLVR"); finalTF2 = thresholdTF2;
   
   
   // pol(x,y) * threshold(x,y)
@@ -177,12 +178,12 @@ RooAbsPdf* twoDFit(RooAbsReal& x, RooAbsReal& y, TH2F* hist, const Int_t psi_nS,
       polTimesThr->SetParName(iPar,funcTF2->GetParName(iPar-nThrPar));
     }
   }
-  //hist->Fit("polXY_times_thresholdXY","WLVR"); finalTF2 = polTimesThr;
+  //hist_nonConst->Fit("polXY_times_thresholdXY","WLVR"); finalTF2 = polTimesThr;
 
   //RooProdPdf* pdf = new RooProdPdf( TString::Format("%s_prod_%s",xPdf->GetTitle(),yPdf->GetTitle()), TString::Format("%s * %s",xPdf->GetTitle(),yPdf->GetTitle()), RooArgSet(*xPdf,*yPdf) ); 
   //pdf->printMetaArgs(cout); pdf->printMultiline(cout,10,kTRUE);
   //cout <<"pdf->getVal() = " <<pdf->getVal() <<endl;
-  //RooFitResult* fitres = pdf->fitTo(*hist, RooFit::SumW2Error(kTRUE), RooFit::Minos(kTRUE), RooFit::Save(kTRUE), RooFit::Verbose(kTRUE), RooFit::PrintLevel(3)); // solution for bug: RooFit::Optimize(1), RooFit::Minimizer("Minuit2")
+  //RooFitResult* fitres = pdf->fitTo(*hist_nonConst, RooFit::SumW2Error(kTRUE), RooFit::Minos(kTRUE), RooFit::Save(kTRUE), RooFit::Verbose(kTRUE), RooFit::PrintLevel(3)); // solution for bug: RooFit::Optimize(1), RooFit::Minimizer("Minuit2")
   //fitres->Print("v");
 
   chi2N = finalTF2->GetChisquare()/finalTF2->GetNDF();
