@@ -3,6 +3,7 @@
 #include "RooBernstein.h"
 #include "RooChebychev.h"
 #include "RooFitResult.h"
+#include "RooChi2Var.h"
 
 #include "sqDalitzToMassesPdf.h"
 
@@ -16,8 +17,63 @@ Double_t varLimit[] = {0,0,0,0}; // {xMin/Max,yMin/Max,xMin/Max,yMin/Max}
 const Int_t nThrPar = sizeof(varLimit)/sizeof(varLimit[0]) ;
 
 
+void setRange(const TString& effName, Float_t& xLow, Float_t& xHigh, Float_t& yLow, Float_t& yHigh, const Double_t MPsi_nS) {
+  if (effName.Contains("angle",TString::kIgnoreCase)) {
+    if (effName.Contains("helicityAngle_vs_",TString::kIgnoreCase) || effName.Contains("helicityAngle_fromMasses_vs_",TString::kIgnoreCase)) {
+      yHigh = +1; yLow = -yHigh;
+      //
+      if (effName.Contains("KPi",TString::kIgnoreCase)) {
+        if (effName.Contains("Sq",TString::kIgnoreCase) || effName.Contains("MassSq",TString::kIgnoreCase)) {
+          xLow = TMath::Power(MKaon + MPion,2); xHigh = TMath::Power(MBd - MPsi_nS,2);
+        } else {
+          xLow = MKaon + MPion; xHigh = MBd - MPsi_nS; 
+        }
+      } else
+      if (effName.Contains("psiPi",TString::kIgnoreCase)) {
+        if (effName.Contains("Sq",TString::kIgnoreCase) || effName.Contains("MassSq",TString::kIgnoreCase)) {
+          xLow = TMath::Power(MPsi_nS + MPion,2); xHigh = TMath::Power(MBd - MKaon,2);
+        } else {
+          xLow = MPsi_nS + MPion; xHigh = MBd - MKaon;
+        }
+      }
+    } else {
+      xHigh = +1; xLow = -xHigh;
+      yHigh = +TMath::Pi();
+      //yHigh = +3.1;
+      yLow = -yHigh;
+    }
+  }
+  else {
+    xLow = MKaon + MPion; xHigh = MBd - MPsi_nS;
+    yLow = MPsi_nS + MPion; yHigh = MBd - MKaon;
+  }  
+}
+
+
+void setup(const TString& effName, Float_t& xLow, Float_t& xHigh, Float_t& yLow, Float_t& yHigh, const Int_t psi_nS, const Int_t xOrder, const Int_t yOrder) {
+  varOrder[0] = xOrder;
+  varOrder[1] = yOrder;
+
+  Double_t MPsi_nS = 0; 
+  if (psi_nS == 1) 
+    MPsi_nS = MJpsi;
+  else if (psi_nS == 2)
+    MPsi_nS = MPsi2S;
+  else {
+    cout <<"psi_nS = " <<psi_nS <<" not allowed at the moment. Aborting" <<endl;
+    abort();
+  }
+
+  setRange(effName, xLow, xHigh, yLow, yHigh, MPsi_nS);
+}
+
+
 // with RooFit
-RooAbsPdf* twoDFit(RooAbsReal& x, RooAbsReal& y, RooDataHist* hist) {
+RooAbsPdf* twoDFit(RooAbsReal& x, RooAbsReal& y, RooDataHist* hist, const Int_t psi_nS, const Int_t xOrder, const Int_t yOrder, Float_t& chi2N) {
+
+  TString effName = hist->GetName();
+  Float_t xLow(0), xHigh(0), yLow(0), yHigh(0);
+  setup(effName, xLow, xHigh, yLow, yHigh, psi_nS, xOrder, yOrder);
 
   RooArgList xCoeff("xCoeff");
   RooArgList yCoeff("yCoeff");
@@ -41,9 +97,14 @@ RooAbsPdf* twoDFit(RooAbsReal& x, RooAbsReal& y, RooDataHist* hist) {
   RooProdPdf* pdf = new RooProdPdf( TString::Format("%s_prod_%s",xPdf->GetTitle(),yPdf->GetTitle()), TString::Format("%s * %s",xPdf->GetTitle(),yPdf->GetTitle()), RooArgSet(*xPdf,*yPdf) ); 
   //pdf->printMetaArgs(cout); pdf->printMultiline(cout,10,kTRUE);
   //cout <<"pdf->getVal() = " <<pdf->getVal() <<endl;
-  ((RooRealVar&)x).setRange("xRange",-1,+1); ((RooRealVar&)y).setRange("yRange",-TMath::Pi(),+TMath::Pi());
-  RooFitResult* fitres = pdf->fitTo(*hist, RooFit::SumW2Error(kTRUE), RooFit::Minos(kTRUE), RooFit::Save(kTRUE), RooFit::Verbose(kTRUE), RooFit::PrintLevel(3), RooFit::Range("xRange","yRange")); // solution for bug: RooFit::Optimize(1), RooFit::Minimizer("Minuit2")
+  ((RooRealVar&)x).setRange("xRange",xLow,xHigh); ((RooRealVar&)y).setRange("yRange",yLow,yHigh);
+  RooFitResult* fitres = pdf->fitTo(*hist, RooFit::SumW2Error(kTRUE), RooFit::Minos(kTRUE), RooFit::Save(kTRUE), RooFit::Verbose(kTRUE), RooFit::PrintLevel(3), RooFit::Range("xRange","yRange"), RooFit::Optimize(1)/*, RooFit::Minimizer("Minuit2")*/); // solution for bug: RooFit::Optimize(1) and maybe RooFit::Minimizer("Minuit2")
   fitres->Print("v");
+
+  // Note that entries with zero bins are _not_ allowed for a proper chi^2 calculation and will give error messages and a 0 return value
+  RooChi2Var chi2N_var("chi2N_var","#chi^{2}/d.o.f.",*pdf,*hist) ;
+  chi2N = chi2N_var.getVal() ;
+  cout <<"\nNormalized chi2 = " <<chi2N <<endl; 
 
   return pdf ;
 }
@@ -86,6 +147,11 @@ Double_t polXY_times_thresholdXY(Double_t* var, Double_t* par) {
 
 RooAbsPdf* twoDFit(RooAbsReal& x, RooAbsReal& y, const TH2F* hist, const Int_t psi_nS, const Int_t xOrder, const Int_t yOrder, Float_t& chi2N) {
 
+  TH2F* hist_nonConst = (TH2F*)hist->Clone();
+  TString effName = hist_nonConst->GetName();
+  Float_t xLow(0), xHigh(0), yLow(0), yHigh(0);
+  setup(effName, xLow, xHigh, yLow, yHigh, psi_nS, xOrder, yOrder);
+  /*
   varOrder[0] = xOrder;
   varOrder[nVars-1] = yOrder;
 
@@ -99,24 +165,9 @@ RooAbsPdf* twoDFit(RooAbsReal& x, RooAbsReal& y, const TH2F* hist, const Int_t p
     abort();
   }
 
-  Float_t xLow(0), xHigh(0);
-  Float_t yLow(0), yHigh(0);
+  setRange(effName, xLow, xHigh, yLow, yHigh, MPsi_nS);
+  */
 
-  TH2F* hist_nonConst = (TH2F*)hist->Clone();
-  TString effName = hist_nonConst->GetName();
-  if (effName.Contains("angle",TString::kIgnoreCase)) {
-    if (effName.Contains("helicityAngle_vs_KPiSq",TString::kIgnoreCase)) {
-      xLow = TMath::Power(MKaon + MPion,2); xHigh = TMath::Power(MBd - MPsi_nS,2);
-      yHigh = +1; yLow = -yHigh;
-    } else {
-      xHigh = +1; xLow = -xHigh;
-      yHigh = +TMath::Pi(); yLow = -yHigh;
-    }
-  }
-  else {
-    xLow = MKaon + MPion; xHigh = MBd - MPsi_nS;
-    yLow = MPsi_nS + MPion; yHigh = MBd - MKaon;
-  }
   cout <<"Fitting in range [" <<xLow <<"," <<xHigh <<"] * [" <<yLow <<"," <<yHigh <<"]" <<endl;
 
   Float_t xMin = hist_nonConst->GetXaxis()->GetXmin(); Float_t xMax = hist_nonConst->GetXaxis()->GetXmax();
