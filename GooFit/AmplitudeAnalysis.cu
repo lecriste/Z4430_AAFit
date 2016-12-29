@@ -926,23 +926,19 @@ int main(int argc, char** argv) {
 
         efficiencyHist = new FlatHistoPdf ("EfficiencyPdf",efficiencyDatasetMasses,obserVariables);
 
-        // efficiencyHist = new InterHistPdf("EfficiencyPdf",efficiencyDatasetMasses,Masses,obserVariables);
-
         efficiencyHist->setData(&dataset);
 
+        for (int j = 0; j < dataset.getNumEvents(); ++j) {
 
+          massKPi->value = dataset.getValue(massKPi,j);
+          massPsiPi->value = dataset.getValue(massPsiPi,j);
+          cosMuMu->value = dataset.getValue(cosMuMu,j);
+          phi->value = dataset.getValue(phi,j);
 
-        // for (int j = 0; j < dataset.getNumEvents(); ++j) {
-        //
-        //   massKPi->value = dataset.getValue(massKPi,j);
-        //   massPsiPi->value = dataset.getValue(massPsiPi,j);
-        //   cosMuMu->value = dataset.getValue(cosMuMu,j);
-        //   phi->value = dataset.getValue(phi,j);
-        //
-        //    std::cout<<"Histo content at massKpi : "<<massKPi->value<<" and massPsiPi : " <<massPsiPi->value<<" is = "<<relEffTH2->GetBinContent(relEffTH2->FindBin(massKPi->value,massPsiPi->value))<<std::endl;
-        //    std::cout<<"Dataset content :"<<efficiencyDatasetMasses->getBinContent(efficiencyDatasetMasses->getBinNumber())<<std::endl;
-        //    std::cout<<"Pdf value :"<<efficiencyHist->getValue()<<std::endl;
-        // }
+          // std::cout<<"Histo content at massKpi : "<<massKPi->value<<" and massPsiPi : " <<massPsiPi->value<<" is = "<<relEffTH2->GetBinContent(relEffTH2->FindBin(massKPi->value,massPsiPi->value))<<std::endl;
+          // std::cout<<"Dataset content :"<<efficiencyDatasetMasses->getBinContent(efficiencyDatasetMasses->getBinNumber())<<std::endl;
+          // std::cout<<"Pdf value :"<<efficiencyHist->getValue()<<std::endl;
+        }
 
         obserVariables[iVar1]->numbins = holdBinVar1;
         obserVariables[iVar2]->numbins = holdBinVar2;
