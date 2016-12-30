@@ -983,14 +983,14 @@ int main(int argc, char** argv) {
 
     int outcounter = 0;
 
-    TFile *effFile = TFile::Open("./effFiles/officialMC_noPtEtaCuts_JPsi_Bd2MuMuKPi_2p0Sig_4p0to6p0SB.root");
-    //TFile *effFile = TFile::Open("./effFiles/TMVApp_MC_withBDTCutAt0p00_JPsi_2p0Sig_6p0to9p0SB.root");
+    //TFile *effFile = TFile::Open("./effFiles/officialMC_noPtEtaCuts_JPsi_Bd2MuMuKPi_2p0Sig_4p0to6p0SB.root");
+    TFile *effFile = TFile::Open("./effFiles/TMVApp_MC_withBDTCutAt0p00_JPsi_2p0Sig_6p0to9p0SB.root");
 
-    // TString relEffNameMass = "RelEff_psi2SPi_vs_KPi_dalitz_BDTCutAt0p00";
-    // TString relEffNameAng = "RelEff_planesAngle_vs_cos_psi2S_helicityAngle_BDTCutAt0p00";
+    TString relEffNameMass = "RelEff_psi2SPi_vs_KPi_B0constr_1B0_BDTCutAt0p00";
+    TString relEffNameAng = "RelEff_planesAngle_vs_cos_psi2S_helicityAngle_BDTCutAt0p00";
 
-    TString relEffNameMass = "RelEff_psi2SPi_vs_KPi_B0constr";
-    TString relEffNameAng = "RelEff_planesAngle_vs_cos_psi2S_helicityAngle";
+    // TString relEffNameMass = "RelEff_psi2SPi_vs_KPi_B0constr";
+    // TString relEffNameAng = "RelEff_planesAngle_vs_cos_psi2S_helicityAngle";
 
     relEffTH2Mass = (TH2F*)effFile->Get(relEffNameMass) ;
     relEffTH2Ang = (TH2F*)effFile->Get(relEffNameAng) ;
