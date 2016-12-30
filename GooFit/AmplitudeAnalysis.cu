@@ -1515,6 +1515,7 @@ int main(int argc, char** argv) {
   //
   if(bkgPhaseSpaceMap && effPdfProd)
   {
+    sumPdf->setData(&plottingGridData);
     sumPdf->getCompProbsAtDataPoints(pdfTotalValues);
   }
   else
