@@ -550,8 +550,8 @@ void Analysis()
       sbPdf[iVars][iSb].first = bkgHistPdf; method = "interp";
       Int_t xOrder = bkgHisto_names[iVars].first.second.second.first;
       Int_t yOrder = bkgHisto_names[iVars].first.second.second.second;
-      cout <<"Fitting " <<sbTH2->GetName() <<endl;
-      sbPdf[iVars][iSb].first = twoDFit(*x, *y, sbTH2, psi_nS.Atoi(), xOrder, yOrder, sbPdf[iVars][iSb].second); method = "ROOTfit"; // ROOT fit
+      // cout <<"Fitting " <<sbTH2->GetName() <<endl;
+      // sbPdf[iVars][iSb].first = twoDFit(*x, *y, sbTH2, psi_nS.Atoi(), xOrder, yOrder, sbPdf[iVars][iSb].second); method = "ROOTfit"; // ROOT fit
       //sbPdf[iVars][iSb].first = twoDFit(*x, *y, bkgHist, psi_nS.Atoi(), xOrder, yOrder, sbPdf[iVars][iSb].second); method = "RooFit"; // RooFit fit
       const Float_t chi2N = sbPdf[iVars][iSb].second;
 
@@ -571,9 +571,9 @@ void Analysis()
       }
 
       TString sbErrTH2_name = sbTH2->GetName(); sbErrTH2_name.Append("_err");
-      chi2N_hist(bkgFile, sbErrTH2_name, sbTH2, sbPdf[iVars][iSb].first, x, y, method, dir+"/bkg", extension);
+      // chi2N_hist(bkgFile, sbErrTH2_name, sbTH2, sbPdf[iVars][iSb].first, x, y, method, dir+"/bkg", extension);
 
-      plotting(bkgHist, bkgName, x, y, xRooBinning, yRooBinning, sbPdf[iVars][iSb].first, pdfTitle, xOrder, bkgHisto_names[iVars].second.second.first.first, bkgHisto_names[iVars].second.second.first.second, yOrder, bkgHisto_names[iVars].second.second.second.first, bkgHisto_names[iVars].second.second.second.second, chi2N, method, dir+"/bkg", extension);
+      // plotting(bkgHist, bkgName, x, y, xRooBinning, yRooBinning, sbPdf[iVars][iSb].first, pdfTitle, xOrder, bkgHisto_names[iVars].second.second.first.first, bkgHisto_names[iVars].second.second.first.second, yOrder, bkgHisto_names[iVars].second.second.second.first, bkgHisto_names[iVars].second.second.second.second, chi2N, method, dir+"/bkg", extension);
 
     } // for (Int_t iSb=0; iSb < 3; ++iSb)
   } // for (Int_t iVars=0; iVars < nVars; ++iVars)
@@ -681,7 +681,7 @@ void Analysis()
       effPdf[iEff].first = relHistPdf; TString method = "interp";
       Int_t xOrder = effHisto_names[iEff].first.second.second.first;
       Int_t yOrder = effHisto_names[iEff].first.second.second.second;
-      effPdf[iEff].first = twoDFit(*x, *y, relEffTH2, psi_nS.Atoi(), xOrder, yOrder, effPdf[iEff].second); method = "ROOTfit";
+      // effPdf[iEff].first = twoDFit(*x, *y, relEffTH2, psi_nS.Atoi(), xOrder, yOrder, effPdf[iEff].second); method = "ROOTfit";
       const Float_t chi2N = effPdf[iEff].second;
 
       RooAbsPdf* kinematicCheck(0), *effWithKinCheck(0);
@@ -700,11 +700,11 @@ void Analysis()
       }
 
       TString effErrTH2_name = relEffTH2->GetName(); effErrTH2_name.ReplaceAll("Eff","EffErr");
-      chi2N_hist(effFile, effErrTH2_name, relEffTH2, effPdf[iEff].first, x, y, method, dir+"/eff", extension);
+      // chi2N_hist(effFile, effErrTH2_name, relEffTH2, effPdf[iEff].first, x, y, method, dir+"/eff", extension);
       //return;
       //relEffTH2->Draw("LEGO");
 
-      plotting(relEffHist, effName, x, y, xRooBinning, yRooBinning, effPdf[iEff].first, pdfTitle, xOrder, effHisto_names[iEff].second.second.first.first, effHisto_names[iEff].second.second.first.second, yOrder, effHisto_names[iEff].second.second.second.first, effHisto_names[iEff].second.second.second.second, chi2N, method, dir+"/eff", extension);
+      // plotting(relEffHist, effName, x, y, xRooBinning, yRooBinning, effPdf[iEff].first, pdfTitle, xOrder, effHisto_names[iEff].second.second.first.first, effHisto_names[iEff].second.second.first.second, yOrder, effHisto_names[iEff].second.second.second.first, effHisto_names[iEff].second.second.second.second, chi2N, method, dir+"/eff", extension);
       /*
       x->setVal(4.75); y->setVal(16.);
       cout <<"\neffPdf[iEff].first->getVal(" <<x->getVal() <<", " <<y->getVal() <<") = " <<effPdf[iEff].first->getVal() <<endl;
@@ -776,7 +776,7 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
   else
     cout <<"WARNING! TFile \"" <<effFileName <<"\" could not be opened.\nSkipping efficiency correction" <<endl;
 
-  return;
+  //return;
 
 
   RooPlot* massKP_frame = massKPi.frame() ; massKP_frame->SetTitle("Projection of "+massKPi_title);
@@ -804,8 +804,9 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
   cout <<"Wallclock time: " << genTime.tv_sec + genTime.tv_usec/1000000.0 << " seconds\n" ;
   cout <<"Total CPU time: " << (genTimeCPU / CLOCKS_PER_SEC) <<" seconds\n" ;
   cout <<"My processes time: " << (genTimeProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
-  if (nEvents.getVal() > 100000)
-    dataGenPDF->write(TString::Format("%s/%s__EvtGen.txt",datasetsPath.Data(),model->GetName()));
+  //if (nEvents.getVal() > 100000)
+  dataGenPDF->write(TString::Format("%s/%s__EvtGen.txt",datasetsPath.Data(),model->GetName()));
+  return;
   //return;
 
   //dataToFit = dataGenPDF;
