@@ -835,8 +835,8 @@ int main(int argc, char** argv) {
   TH1F massPsiPiHisto(massPsiPi_name+"_Histo", massPsiPi_name+";"+massPsiPi_title+" [GeV]", datapoints3, massPsiPi->lowerlimit, massPsiPi->upperlimit); massPsiPiHisto.SetLineColor(kBlack); massPsiPiHisto.SetMarkerColor(kBlack);
   TH1F phiHisto(phi_name+"_Histo", phi_name+";"+phi_title, datapoints4, phi->lowerlimit, phi->upperlimit); phiHisto.SetLineColor(kBlack); phiHisto.SetMarkerColor(kBlack);
 
-
-  TString path = "/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/TMVA/";
+  TString path;
+  path = "/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/TMVA/";
 
   //datasetName = "dataGen_B0"; //datasetName = "dataGen_B0bar";
   //datasetName.Append("_B0massConstraint");
@@ -894,6 +894,7 @@ int main(int argc, char** argv) {
   else {
     //TString dataFileName = "./datafiles/Data_JPsi_2p0Sig_6p0to9p0SB.root";
     //TString dataFileName = "./datafiles/TMVApp_withBDTCutAt0p00_JPsi_2p0Sig_6p0to9p0SB.root";
+    // path = "./datafiles/";
     TString dataFileName = path+"TMVApp_data_withBDTCutAt0p00_JPsi_2p0Sig_6p0to9p0SB.root";
     TFile *inputFile = TFile::Open(dataFileName);
 
@@ -983,7 +984,7 @@ int main(int argc, char** argv) {
 
     //int outCounter = 0;
 
-    //path = "./effFiles/";
+    // path = "./effFiles/";
     //TString effName = "officialMC_noPtEtaCuts_JPsi_Bd2MuMuKPi_2p0Sig_4p0to6p0SB.root";
     TString effName = "TMVApp_MC_withBDTCutAt0p00_JPsi_2p0Sig_6p0to9p0SB.root";
 
@@ -1150,7 +1151,7 @@ int main(int argc, char** argv) {
       int iVar1 = 0, iVar2 = 1, iVar3 = 2, iVar4 = 3;
       int holdBinVar1, holdBinVar2,holdBinVar4,holdBinVar3;
 
-      //path = "./datafiles/";
+      // path = "./datafiles/";
       //TString bkgName = "Data_JPsi_2p0Sig_6p0to9p0SB.root";
       TString bkgName = "TMVApp_data_withBDTCutAt0p00_JPsi_2p0Sig_6p0to9p0SB.root";
       TFile *bkgFile = TFile::Open(path+bkgName);
@@ -1935,10 +1936,10 @@ int main(int argc, char** argv) {
       lastAmplitude+=3;
     }
 
-    std::cout<<" --- "<<kCounter<<std::endl;
-    for (size_t i = 0; i < asPlot.size(); i++) {
-      std::cout<<" - "<<i+1<<" A : "<<asPlot[i]->value<<" B : "<<bsPlot[i]->value<<std::endl;
-    }
+    // std::cout<<" --- "<<kCounter<<std::endl;
+    // for (size_t i = 0; i < asPlot.size(); i++) {
+    //   std::cout<<" - "<<i+1<<" A : "<<asPlot[i]->value<<" B : "<<bsPlot[i]->value<<std::endl;
+    // }
 
     ////////////////////////////////////////////////////////////////////////////////
     // Normalising, integrating and evaluating the single component pdf
@@ -2171,10 +2172,15 @@ int main(int argc, char** argv) {
     bkgCMuMu->Scale(events*bkgFrac);
     bkgPhi->Scale(events*bkgFrac);
 
-    bkgMKPi->Scale(((fptype)(bkgMKPi->GetNbinsX()))/((fptype)datapoints1));
-    bkgMPsiPi->Scale(((fptype)(bkgMPsiPi->GetNbinsX()))/((fptype)datapoints2));
-    bkgCMuMu->Scale(((fptype)(bkgCMuMu->GetNbinsX()))/((fptype)datapoints3));
-    bkgPhi->Scale(((fptype)(bkgPhi->GetNbinsX()))/((fptype)datapoints4));
+    fptype ratioMKPiBkg = ((fptype)(bkgMKPi->GetNbinsX()))/((fptype)datapoints1);
+    fptype ratioCosMuMuBkg = (((fptype)(bkgMPsiPi->GetNbinsX()))/((fptype)datapoints2));
+    fptype ratioMassPsiPiBkg = ((fptype)(bkgCMuMu->GetNbinsX()))/((fptype)datapoints3);
+    fptype ratioPhiBkg = ((fptype)(bkgPhi->GetNbinsX()))/((fptype)datapoints4);
+
+    bkgMKPi->Scale(ratioMKPiBkg);
+    bkgMPsiPi->Scale(ratioCosMuMuBkg);
+    bkgCMuMu->Scale(ratioMassPsiPiBkg);
+    bkgPhi->Scale(ratioPhiBkg);
 
 
   }
