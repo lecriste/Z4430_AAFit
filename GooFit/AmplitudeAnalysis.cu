@@ -873,7 +873,7 @@ int main(int argc, char** argv) {
 	massPsiPi->value = var2;
 	cosMuMu->value = var3;
 	phi->value = var4;
-	
+
 	//std::cout << massKPi->value << " - " <<cosMuMu->value << " - " << massPsiPi->value << " - " << phi->value << " - " << std::endl;
 	if (Dalitz_contour_host(massKPi->value, massPsiPi->value, kFALSE, (Int_t)psi_nS->value) ) {
 	  dataset.addEvent();
@@ -910,7 +910,7 @@ int main(int argc, char** argv) {
       }
 
       Double_t obs1,obs2,obs3,obs4;
-      
+
       dataNTuple->SetBranchAddress("massKPi",&obs1);
       dataNTuple->SetBranchAddress("massMuMuPi",&obs2);
       dataNTuple->SetBranchAddress("cosMuMu",&obs3);
@@ -1146,7 +1146,7 @@ int main(int argc, char** argv) {
   else {
     if (bkgPhaseSpaceMap) {
       std::cout<<"- Background map p.d.f."<<std::endl;
-      
+
       int iVar1 = 0, iVar2 = 1, iVar3 = 2, iVar4 = 3;
       int holdBinVar1, holdBinVar2,holdBinVar4,holdBinVar3;
 
@@ -1194,11 +1194,11 @@ int main(int argc, char** argv) {
       bkgDataset = new BinnedDataSet(obserVariables,"bkg Dataset");
       //INITIALIZE TO ZERO
 
-      for (int j = 0; j < bkgDatasetMasses->getNumBins(); ++j) 
+      for (int j = 0; j < bkgDatasetMasses->getNumBins(); ++j)
         bkgDatasetMasses->setBinContent(j,0.0);
-      for (int j = 0; j < bkgDatasetAngles->getNumBins(); ++j) 
+      for (int j = 0; j < bkgDatasetAngles->getNumBins(); ++j)
         bkgDatasetAngles->setBinContent(j,0.0);
-      for (int j = 0; j < bkgDataset->getNumBins(); ++j) 
+      for (int j = 0; j < bkgDataset->getNumBins(); ++j)
         bkgDataset->setBinContent(j,0.0);
 
 
@@ -2170,6 +2170,13 @@ int main(int argc, char** argv) {
     bkgMPsiPi->Scale(events*bkgFrac);
     bkgCMuMu->Scale(events*bkgFrac);
     bkgPhi->Scale(events*bkgFrac);
+
+    bkgMKPi->Scale(((fptype)(bkgMKPi->GetNbinsX()))/((fptype)datapoints1));
+    bkgMPsiPi->Scale(((fptype)(bkgMPsiPi->GetNbinsX()))/((fptype)datapoints2));
+    bkgCMuMu->Scale(((fptype)(bkgCMuMu->GetNbinsX()))/((fptype)datapoints3));
+    bkgPhi->Scale(((fptype)(bkgPhi->GetNbinsX()))/((fptype)datapoints4));
+
+
   }
 
   legPlot->SetY1( yMax - 0.05*(legPlot->GetNRows()) ) ;
