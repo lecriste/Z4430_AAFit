@@ -191,7 +191,7 @@ void Analysis()
   Kstar_spin.push_back( make_pair("892_1", make_pair(M892,G892) ) ) ;
   //helJ_map["892_1_0"] = make_pair(1.,0.); helJ_map["892_1_p1"] = make_pair(0.844,3.14); helJ_map["892_1_m1"] = make_pair(0.196,-1.7); // from Belle
   helJ_map["892_1_0"] = make_pair(0.775,0.); helJ_map["892_1_p1"] = make_pair(0.159,1.563); helJ_map["892_1_m1"] = make_pair(0.612,2.712); // from EvtGen
-  /*
+  
   cout <<"Adding K*(800)..." <<endl;
   //const Double_t M800 = 0.682; const Double_t G800 = 0.547; // From PDG
   const Double_t M800 = 0.931; const Double_t G800 = 0.578; // From Belle
@@ -213,7 +213,7 @@ void Analysis()
   const Double_t M1430_2 = 1.4324; const Double_t G1430_2 = 0.109; // From PDG neutral only
   Kstar_spin.push_back( make_pair("1430_2", make_pair(M1430_2,G1430_2) ) ) ;
   helJ_map["1430_2_0"] = make_pair(4.66,-0.32); helJ_map["1430_2_p1"] = make_pair(4.65,-3.05); helJ_map["1430_2_m1"] = make_pair(1.26,-1.92);
-
+  /*
   cout <<"Adding K*(1780)_3..." <<endl;
   const Double_t M1780_3 = 1.776; const Double_t G1780_3 = 0.159; // From PDG neutral only
   Kstar_spin.push_back( make_pair("1780_3", make_pair(M1780_3,G1780_3) ) ) ;
@@ -319,7 +319,8 @@ void Analysis()
 
 
   // not accessible on cmssusyX
-  TString path = "/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/";
+  //TString path = "/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/";
+  TString path = "/lustre/home/adrianodif/RootFiles/Z4430/";
   //TString inputFileName = "MC_K892_JPsi_Bd2MuMuKpi_2p0Sig_4p0to6p0SB.root";
   TString inputFileName = "MC_K892_JPsi_Bd2MuMuKpi_B0massConstraint.root";
   TString fullInputFileName = path+inputFileName ;
@@ -474,7 +475,7 @@ void Analysis()
   //RooProdPdf* modelWithKinCheck = new RooProdPdf(modelName,model->GetTitle(),RooArgSet(*kinCheck,*model)) ; model = modelWithKinCheck;
 
 
-  TString dir = "plots/";
+  TString dir = "./plots/";
   if (psi_nS.EqualTo("1"))
     dir.Append("JPsi");
   else if (psi_nS.EqualTo("2"))
@@ -508,9 +509,9 @@ void Analysis()
   bkgHisto_names[0] = make_pair(make_pair("cos_Kstar_helicityAngle_fromMasses_vs_psiPiMassSq",make_pair(&sqDalitz_v2,make_pair(m2PsiPi_order_bkg,cosKstar_order_bkg))), make_pair("bkgSqDalitz_v2",make_pair(make_pair("m2PsiPi",mass2PsiPi_title),make_pair("cosKstar",cosKstar_title)))); DalitzEff = kTRUE;
   bkgHisto_names[0] = make_pair(make_pair("cos_Kstar_helicityAngle_fromMasses_vs_psiPiMass",make_pair(&sqDalitz1_v2,make_pair(mPsiPi_order_bkg,cosKstar_order_bkg))), make_pair("bkgSqDalitz1_v2",make_pair(make_pair("mPsiPi",massPsiPi_title),make_pair("cosKstar",cosKstar_title)))); DalitzEff = kFALSE;
 
-  bkgFile = 0;
+  //bkgFile = 0;
   if (bkgFile)
-  for (Int_t iVars = 0; iVars < 1; ++iVars) {
+  for (Int_t iVars = 0; iVars < 2; ++iVars) {
 
     RooArgSet* bkgVars = bkgHisto_names[iVars].first.second.first ;
     // Set x and y vars
@@ -543,7 +544,9 @@ void Analysis()
       TString bkgtype = bkgType; bkgtype.Remove(0,1); bkgtype.Prepend(first);
 
       TString pdfTitle = "bkg("+bkgtype+") pdf";
-      RooHistPdf* bkgHistPdf = new RooHistPdf(bkgName+"PDF",pdfTitle, *bkgVars, *bkgHist, 9) ; //If last argument is zero, the weight for the bin enclosing the coordinates contained in 'bin' is returned. For higher values, the result is interpolated in the real dimensions of the dataset with an order of interpolation equal to the value provided (more than ? does not work for Dalitz efficiencies, ? for masses efficiencies, ? for angles)
+      //RooHistPdf* bkgHistPdf = new RooHistPdf(bkgName+"PDF",pdfTitle, *bkgVars, *bkgHist, 9) ;
+      RooHistPdf* bkgHistPdf = new RooHistPdf(bkgName+"PDF",pdfTitle, *bkgVars, *bkgHist, 0) ;	
+ //If last argument is zero, the weight for the bin enclosing the coordinates contained in 'bin' is returned. For higher values, the result is interpolated in the real dimensions of the dataset with an order of interpolation equal to the value provided (more than ? does not work for Dalitz efficiencies, ? for masses efficiencies, ? for angles)
       bkgHistPdf->setUnitNorm(kTRUE);
 
       TString method = "";
@@ -573,7 +576,7 @@ void Analysis()
       TString sbErrTH2_name = sbTH2->GetName(); sbErrTH2_name.Append("_err");
       // chi2N_hist(bkgFile, sbErrTH2_name, sbTH2, sbPdf[iVars][iSb].first, x, y, method, dir+"/bkg", extension);
 
-      // plotting(bkgHist, bkgName, x, y, xRooBinning, yRooBinning, sbPdf[iVars][iSb].first, pdfTitle, xOrder, bkgHisto_names[iVars].second.second.first.first, bkgHisto_names[iVars].second.second.first.second, yOrder, bkgHisto_names[iVars].second.second.second.first, bkgHisto_names[iVars].second.second.second.second, chi2N, method, dir+"/bkg", extension);
+      plotting(bkgHist, bkgName, x, y, xRooBinning, yRooBinning, sbPdf[iVars][iSb].first, pdfTitle, xOrder, bkgHisto_names[iVars].second.second.first.first, bkgHisto_names[iVars].second.second.first.second, yOrder, bkgHisto_names[iVars].second.second.second.first, bkgHisto_names[iVars].second.second.second.second, chi2N, method, dir+"/bkg", extension);
 
     } // for (Int_t iSb=0; iSb < 3; ++iSb)
   } // for (Int_t iVars=0; iVars < nVars; ++iVars)
@@ -599,7 +602,8 @@ void Analysis()
 
   if (bkgFile && sbsPdf[0] && sbsPdf[1])
   {
-    modelWithBkgHist = RooAddPdf(modelName.Append("__withHistoBkg"),TString::Format("%s + Histo Bkg ",model->GetTitle()),*model,*sbsModel,fixSig) ;
+    std::cout<<"Adding bkg to pdf"<<std::endl;
+    modelWithBkgHist = new RooAddPdf(modelName.Append("__withHistoBkg"),TString::Format("%s + Histo Bkg ",model->GetTitle()),*model,*sbsModel,fixSig) ;
     model = modelWithBkgHist;
   }
 
@@ -617,8 +621,9 @@ void Analysis()
   effHisto_names[0] = make_pair(make_pair("RelEff_cos_Kstar_helicityAngle_vs_KPiSq_varBins",make_pair(&sqDalitz,make_pair(m2KPi_order_relEff,cosKstar_order_relEff))), make_pair("relEffSqDalitz",make_pair(make_pair("m2KPi",mass2KPi_title),make_pair("cosKstar",cosKstar_title)))); DalitzEff = kTRUE;
 
   pair<RooAbsPdf*, Float_t> effPdf[] = {make_pair(null,0.),make_pair(null,0.)};
+  effFile = 0;	
   if (effFile)
-    for (Int_t iEff=0; iEff < 2; ++iEff) {
+    for (Int_t iEff=0; iEff <1 ; ++iEff) {
       TString effName = effHisto_names[iEff].second.first;
       const TH2F* relEffTH2 = (TH2F*)effFile->Get( effHisto_names[iEff].first.first ) ;
       if (!relEffTH2) {
@@ -720,8 +725,8 @@ void Analysis()
       }
       */
 
-      if (iEff==0) {
-	if (effVars != &massVars) {
+     if (iEff==0) {
+ 	if (effVars != &massVars) {
           method = "derivedFromFit";
 /*
 void deriveMassesPdf(const RooArgSet* massVars, const TString massKPi_name, const TString massPsiPi_name, RooAbsPdf& *pdf, const TString thName, const Int_t xOrder, const TString xName, const TString xTitle, const Int_t yOrder, const TString yName, const TString yTitle, const Float_t chi2N, const TString method, const TString dir, const TString extension) {}
@@ -747,7 +752,9 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
 	      plotting(relEffHist, effName, x, y, xRooBinning, yRooBinning, effPdf[iEff].first, pdfTitle, xOrder, effHisto_names[iEff].second.second.first.first, effHisto_names[iEff].second.second.first.second, yOrder, effHisto_names[iEff].second.second.second.first, effHisto_names[iEff].second.second.second.second, 0, method, dir, extension);
 
 	    }
-	  } else { // do the same for effVars == (m2(K Pi),m2(J/psi Pi))
+	  } else {
+
+	// do the same for effVars == (m2(K Pi),m2(J/psi Pi))
 	  }
 	} // if (effVars != &massVars)
 
@@ -786,7 +793,8 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
   }
 
   Int_t nLegendEntries = 0;
-
+  
+  std::cout<<model->getVal()<<std::endl;
   // Generate toy data from pdf and plot data and p.d.f on frame
   cout <<"\nGenerating " <<nEvents.getVal() <<" events according to " <<model->GetTitle() <<" pdf for " <<model->GetName() <<endl;
   timeval genTime;
