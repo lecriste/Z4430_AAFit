@@ -61,7 +61,7 @@ tms startProc, stopProc;
 const fptype M892 = 0.89581 ; const fptype G892 = 0.0474; // From PDG charged only K*(892)
 const fptype M892e = 0.8961 ; const fptype G892e = 0.0507; // From EvtGen
 const fptype M1410 = 1.414; const fptype G1410 = 0.232; // K*1410
-const fptype M800 = 0.931; const fptype G800 = 0.578; // K*800
+const fptype M800 = 0.682; const fptype G800 = 0.547; //const fptype M800 = 0.931; const fptype G800 = 0.578; // K*800 Belle values: M = 0.946, G = 736
 const fptype M1430_0 = 1.425; const fptype G1430_0 = 0.270; // K*1430_0
 const fptype M1430_2 = 1.4324; const fptype G1430_2 = 0.109; // K*1430_2
 const fptype M1780_3 = 1.776; const fptype G1780_3 = 0.159; // K*1780_3
@@ -121,7 +121,7 @@ void printinstruction() {
 	          << "\t-n <events> \t\t Specify the number of events to use\n"
   	        << "\t-r <path> \t\t Read Generated Events from txt in <path>\n"
             << "\t-algos <algo1algo2...>\t Select the mimimisation algos in the order they should \n \t\t\t\tbe performed (MIGRAD at least once) ["<<m<<" for MIGRAD, "<<h<<" for HESSE, "<<n<<" for MINOS]\n \t\t\t\t (e.g -algo "<<h<<m<<h<<n<<" for HESSE MIGRAD HESSE MINOS - default: MIGRAD only) \n"
-  	        << "\t-b1 <b1> \t\t Select binning for MassKPi (for normalisation & integration, default: 40)\n"
+  	        << "\t-b1 <b1> \t\t Select binning for massKPi (for normalisation & integration, default: 40)\n"
             << "\t-b2 <b2> \t\t Select binning for CosMuMu (for normalisation & integration, default: 40)\n"
             << "\t-b3 <b3> \t\t Select binning for massPsiPi (for normalisation & integration, default: 40)\n"
             << "\t-b4 <b4> \t\t Select binning for Phi (for normalisation & integration, default: 40)\n"
@@ -151,7 +151,7 @@ int main(int argc, char** argv) {
 
   char bufferstring[1024];
 
-  unsigned int events = 10000;
+  unsigned int events = 1000000;
   unsigned int nKstars = 0;
 
   unsigned int bin1 = compBins, bin2 = compBins, bin3 = compBins, bin4 = compBins;
@@ -917,9 +917,14 @@ int main(int argc, char** argv) {
       dataNTuple->SetBranchAddress("cosMuMu",&obs3);
       dataNTuple->SetBranchAddress("phi",&obs4);
 
-      Int_t nentries = dataNTuple->GetEntries();
+      Int_t nEntries = dataNTuple->GetEntries();
+      if (events > nEntries) {
+	cout <<"\nWARNING! The number of events requested is " <<events <<" but " <<dataFileName <<" contains only " <<nEntries <<" events." <<endl;
+	events = nEntries;
+      }
 
-      for (Int_t i=0; i<nentries; i++) {
+      cout <<"\n- Reading " <<events <<" out of " <<nEntries <<" events from " <<dataFileName <<" and filling variables histograms" <<endl;
+      for (Int_t i=0; i<events; i++) {
 	dataNTuple->GetEntry(i);
 
 	//std::cout<<obs1<<" - "<<obs2<<" - "<<obs3<<" - "<<obs4<<std::endl;
@@ -950,11 +955,11 @@ int main(int argc, char** argv) {
     masseKPiDataset.setBinContent(i,massKPiHisto.GetBinContent(i+1));
   }
 
-  std::cout <<"Added " <<dataset.getNumEvents() <<" events within Dalitz border to GooFit dataset" <<std::endl;
   if (dataset.getNumEvents() < 1) {
     cout <<"No events added from "  <<fullDatasetName <<"\nReturning." <<endl;
     return 0;
-  }
+  } else
+    std::cout <<"Added " <<dataset.getNumEvents() <<" events within Dalitz border to GooFit dataset" <<std::endl;
 
   events = dataset.getNumEvents();
 
@@ -1232,9 +1237,9 @@ int main(int argc, char** argv) {
         bkgDataset->setBinContent(j,content);
       }
 
-      int noOfEntries = bkgTH2Mass->GetEntries() + bkgTH2Ang->GetEntries();
-      std::cout<<"Dataset events : " <<bkgDataset->getNumEvents()<<" histograms : " <<noOfEntries <<std::endl;
-      std::cout<<"Mass histo : " <<bkgTH2Mass->GetEntries()<<" Angles histo : " <<bkgTH2Ang->GetEntries() <<std::endl;
+      //int noOfEntries = bkgTH2Mass->GetEntries() + bkgTH2Ang->GetEntries();
+      //std::cout<<"Dataset events : " <<bkgDataset->getNumEvents()<<" histograms : " <<noOfEntries <<std::endl;
+      //std::cout<<"Mass histo : " <<bkgTH2Mass->GetEntries()<<" Angles histo : " <<bkgTH2Ang->GetEntries() <<std::endl;
 
       bkgHistMasses = new FlatHistoPdf ("bkgHistMasses",bkgDatasetMasses,obserVariables);
       bkgHistAngles = new FlatHistoPdf ("bkgHistAngles",bkgDatasetAngles,obserVariables);
@@ -1345,7 +1350,7 @@ int main(int argc, char** argv) {
   fptype period = 2*TMATH_PI;
   for (int i = 0; i < nHelAmps; i++) {
     while (fabs(bs[i]->value) > TMATH_PI)
-      bs[i]->value += bs[i]->value > 0 ? -period : period ;
+      bs[i]->value += bs[i]->value > 0 ? -period : +period ;
   }
   gettimeofday(&startTime, NULL);
   startC = times(&startProc);
@@ -2128,10 +2133,10 @@ int main(int argc, char** argv) {
     //multiGraphMKPi->Add(&signalTotalSigPlotMKPi,"L");
   }
   multiGraphMKPi->Add(&signalTotalPlotMKPi,"L");
-  multiGraphMKPi->Add(pointsMKP,"P");
+  //multiGraphMKPi->Add(pointsMKP,"P");
 
   pointsX[0] = massPsiPi->lowerlimit; pointsX[1] = massPsiPi->upperlimit;
-  pointsY[0] = massPsiPiHisto.GetMinimum();pointsY[1] = massPsiPiHisto.GetMaximum();
+  pointsY[0] = 0.01; pointsY[1] = massPsiPiHisto.GetMaximum();
   TGraph* pointsCKS = new TGraph(2,pointsX,pointsY);
   // if(bkgPhaseSpace)
   // {
@@ -2142,7 +2147,7 @@ int main(int argc, char** argv) {
   multiGraphmassPsiPi->Add(pointsCKS,"P");
 
   pointsX[0] = cosMuMu->lowerlimit; pointsX[1] = cosMuMu->upperlimit;
-  pointsY[0] = cosMuMuHisto.GetMinimum(); pointsY[1] = cosMuMuHisto.GetMaximum();
+  pointsY[0] = 0.01; pointsY[1] = cosMuMuHisto.GetMaximum();
   TGraph* pointsCMM = new TGraph(2,pointsX,pointsY);
   // if(bkgPhaseSpace)
   // {
@@ -2153,7 +2158,7 @@ int main(int argc, char** argv) {
   multiGraphCosMuMu->Add(pointsCMM,"P");
 
   pointsX[0] = phi->lowerlimit; pointsX[1] = phi->upperlimit;
-  pointsY[0] = phiHisto.GetMinimum(); pointsY[1] = phiHisto.GetMaximum();
+  pointsY[0] = 0.01; pointsY[1] = phiHisto.GetMaximum();
   TGraph* pointsPHI = new TGraph(2,pointsX,pointsY);
   // multiGraphPhi->Add(&signalTotalBkgPlotPhi,"L");
   // multiGraphPhi->Add(&signalTotalSigPlotPhi,"L");
@@ -2178,11 +2183,9 @@ int main(int argc, char** argv) {
     fptype ratioPhiBkg = ((fptype)(bkgPhi->GetNbinsX()))/((fptype)datapoints4);
 
     bkgMKPi->Scale(ratioMKPiBkg);
-    bkgMPsiPi->Scale(ratioCosMuMuBkg);
-    bkgCMuMu->Scale(ratioMassPsiPiBkg);
+    bkgMPsiPi->Scale(ratioMassPsiPiBkg);
+    bkgCMuMu->Scale(ratioCosMuMuBkg);
     bkgPhi->Scale(ratioPhiBkg);
-
-
   }
 
   legPlot->SetY1( yMax - 0.05*(legPlot->GetNRows()) ) ;
