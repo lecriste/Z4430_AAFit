@@ -1,6 +1,6 @@
 //
 //  Analysis.C
-//  
+//
 //  A simple AA analysis code.
 //  Created by Ivan Heredia de la Cruz on 4/25/16.
 //  Developed by Leonardo Cristella
@@ -86,7 +86,7 @@ void setBinning(const TH2* hist, Float_t& xMin, Float_t& xMax, Float_t& yMin, Fl
   }
 
   xRooBinning = new RooBinning(xBins,xMin,xMax);
-  if (xBinning) xRooBinning = new RooBinning(xBins,xBinning); 
+  if (xBinning) xRooBinning = new RooBinning(xBins,xBinning);
   yRooBinning = new RooBinning(yBins,yMin,yMax);
   if (yBinning) yRooBinning = new RooBinning(yBins,yBinning);
 }
@@ -120,8 +120,8 @@ void chi2N_hist(TFile* file, const TString errTH2_name, const TH2F* TH2, const R
 void plotting(const RooDataHist* hist, const TString name, const RooRealVar* x, const RooRealVar* y, const RooBinning* xRooBinning, const RooBinning* yRooBinning, const RooAbsPdf* pdf, const TString pdfTitle, const Int_t xOrder, const TString xName, const TString xTitle, const Int_t yOrder, const TString yName, const TString yTitle, const Float_t chi2N, const TString method, const TString dir, const TString extension) {
 
   TString pdfName = name+"PDF";
-  Int_t xBins = xRooBinning->numBins(); Float_t xMin = xRooBinning->binLow(0); Float_t xMax = xRooBinning->binHigh(xBins-1); 
-  Int_t yBins = yRooBinning->numBins(); Float_t yMin = yRooBinning->binLow(0); Float_t yMax = yRooBinning->binHigh(yBins-1); 
+  Int_t xBins = xRooBinning->numBins(); Float_t xMin = xRooBinning->binLow(0); Float_t xMax = xRooBinning->binHigh(xBins-1);
+  Int_t yBins = yRooBinning->numBins(); Float_t yMin = yRooBinning->binLow(0); Float_t yMax = yRooBinning->binHigh(yBins-1);
   TH2F* TH2_fromHist = (TH2F*)hist->createHistogram(name+"TH2_fromHist", *x, Binning(*xRooBinning), YVar(*y, Binning(*yRooBinning)) ) ;
   TH2_fromHist->SetTitle(hist->GetTitle()); TH2_fromHist->SetTitleOffset(TH2_offset,"XY");
   TH2_fromHist->Draw("LEGO");
@@ -134,7 +134,7 @@ void plotting(const RooDataHist* hist, const TString name, const RooRealVar* x, 
   pdf_TH2->SetLineColor(kRed);
   //pdf_TH2->Draw("SURF2"); TH2_fromHist->Draw("LEGO same");
   //pdf_TH2->Draw("LEGO2"); TH2_fromHist->Draw("LEGO same");
-  TH2_fromHist->Draw("LEGO"); pdf_TH2->Draw("SURF2 same"); TH2_fromHist->Draw("LEGO same"); 
+  TH2_fromHist->Draw("LEGO"); pdf_TH2->Draw("SURF2 same"); TH2_fromHist->Draw("LEGO same");
   //TH2_fromHist->Draw("LEGO"); pdf_TH2->Draw("SURF3 same"); //TH2_fromHist->SetMaximum( 1.2*TH2_fromHist->GetMaximum() );
   //pdf_TH2->Draw("SURF3"); TH2_fromHist->Draw("LEGO same"); pdf_TH2->SetMaximum( 1.5*pdf_TH2->GetMaximum() );
   if (method.Contains("fit",TString::kIgnoreCase)) {
@@ -184,7 +184,7 @@ void Analysis()
   //vector< pair<TString, pair< pair<Double_t, Double_t>, pair<Double_t, Double_t> > > > Kstar_spin;
   vector< pair<TString, pair<const Double_t, const Double_t> > > Kstar_spin;
   map< TString, pair<Double_t, Double_t> > helJ_map;
-  // Belle B0->J/psi K+ pi- values    
+  // Belle B0->J/psi K+ pi- values
   cout <<"Adding K*(892)..." <<endl;
   //const Double_t M892 = 0.89581 ; const Double_t G892 = 0.0474; // From PDG neutral only K*(892)
   const Double_t M892 = 0.8961 ; const Double_t G892 = 0.0507; // From EvtGen
@@ -192,28 +192,28 @@ void Analysis()
   //helJ_map["892_1_0"] = make_pair(1.,0.); helJ_map["892_1_p1"] = make_pair(0.844,3.14); helJ_map["892_1_m1"] = make_pair(0.196,-1.7); // from Belle
   helJ_map["892_1_0"] = make_pair(0.775,0.); helJ_map["892_1_p1"] = make_pair(0.159,1.563); helJ_map["892_1_m1"] = make_pair(0.612,2.712); // from EvtGen
   /*
-  cout <<"Adding K*(800)..." <<endl;  
+  cout <<"Adding K*(800)..." <<endl;
   //const Double_t M800 = 0.682; const Double_t G800 = 0.547; // From PDG
   const Double_t M800 = 0.931; const Double_t G800 = 0.578; // From Belle
   Kstar_spin.push_back( make_pair("800_0", make_pair(M800,G800) ) ) ;
   helJ_map["800_0_0"] = make_pair(1.12,2.3);
-  
-  cout <<"Adding K*(1410)..." <<endl; 
+
+  cout <<"Adding K*(1410)..." <<endl;
   const Double_t M1410 = 1.414; const Double_t G1410 = 0.232;
   Kstar_spin.push_back( make_pair("1410_1", make_pair(M1410,G1410) ) ) ;
   helJ_map["1410_1_0"] = make_pair(0.119,0.81); helJ_map["1410_1_p1"] = make_pair(0.123,-1.04); helJ_map["1410_1_m1"] = make_pair(0.036,0.67);
-  
-  cout <<"Adding K*(1430)_0..." <<endl; 
+
+  cout <<"Adding K*(1430)_0..." <<endl;
   const Double_t M1430_0 = 1.425; const Double_t G1430_0 = 0.270;
   Kstar_spin.push_back( make_pair("1430_0", make_pair(M1430_0,G1430_0) ) ) ;
   helJ_map["1430_0_0"] = make_pair(0.89,-2.17);
   //helJ_map["1430_0_0"] = make_pair(1.,0.);
-  
+
   cout <<"Adding K*(1430)_2..." <<endl;
   const Double_t M1430_2 = 1.4324; const Double_t G1430_2 = 0.109; // From PDG neutral only
   Kstar_spin.push_back( make_pair("1430_2", make_pair(M1430_2,G1430_2) ) ) ;
   helJ_map["1430_2_0"] = make_pair(4.66,-0.32); helJ_map["1430_2_p1"] = make_pair(4.65,-3.05); helJ_map["1430_2_m1"] = make_pair(1.26,-1.92);
-  
+
   cout <<"Adding K*(1780)_3..." <<endl;
   const Double_t M1780_3 = 1.776; const Double_t G1780_3 = 0.159; // From PDG neutral only
   Kstar_spin.push_back( make_pair("1780_3", make_pair(M1780_3,G1780_3) ) ) ;
@@ -226,9 +226,9 @@ void Analysis()
   */
   TString Hel = ""; //Hel = "_hel0"; //Hel = "_noHel0";
   if (Hel.Contains("_hel0"))
-    cout <<"with helicity=0 amplitude only\n" <<endl; 
+    cout <<"with helicity=0 amplitude only\n" <<endl;
   else if (Hel.Contains("_noHel0"))
-    cout <<"without helicity=0 amplitude\n" <<endl; 
+    cout <<"without helicity=0 amplitude\n" <<endl;
 
   vector< RooRealVar* > amplitudeRooRealVar;
   vector< TString > varNames;
@@ -249,10 +249,10 @@ void Analysis()
       TString name = Kstar_spin[iKstar_S].first + "_" + helJ[iHelJ] ;
       if (helJ_map.find(name) != helJ_map.end()) {
 
-	if (Hel.Contains("_hel0") && !helJ[iHelJ].EqualTo("0")) 
-	  helJ_map.find(name)->second.first = 0.; // switching off any amplitude with helicity != 0 
+	if (Hel.Contains("_hel0") && !helJ[iHelJ].EqualTo("0"))
+	  helJ_map.find(name)->second.first = 0.; // switching off any amplitude with helicity != 0
 	else if (Hel.Contains("_noHel0") && helJ[iHelJ].EqualTo("0"))
-	  helJ_map.find(name)->second.first = 0.; // switching off the amplitude with helicity == 0 
+	  helJ_map.find(name)->second.first = 0.; // switching off the amplitude with helicity == 0
 
 	pair<Double_t, Double_t> a_b = helJ_map.find(name)->second ;
 	TString aName = "a"+name; TString bName = "b"+name;
@@ -265,7 +265,7 @@ void Analysis()
 	return ;
       }
     }
-  
+
   Int_t NAmpl = amplitudeRooRealVar.size();
   if (NAmpl > 0)
     for (Int_t iVar=0; iVar<NAmpl; ++iVar) {
@@ -278,25 +278,25 @@ void Analysis()
 
 
   // B^0 -> psi(nS) K* -> mu+ mu- K- pi+
-  TString massKPi_name = "massKPi"; TString mass2KPi_name = massKPi_name; mass2KPi_name.ReplaceAll("mass","mass2"); 
+  TString massKPi_name = "massKPi"; TString mass2KPi_name = massKPi_name; mass2KPi_name.ReplaceAll("mass","mass2");
   TString massKPi_title = "m(K^{-}#pi^{+})";
-  Float_t massKPi_min = 0.6, massKPi_max = 2.2; 
+  Float_t massKPi_min = 0.6, massKPi_max = 2.2;
   RooRealVar massKPi(massKPi_name, massKPi_title+" [GeV]", TMath::Sqrt(0.7),massKPi_min,massKPi_max);
   //RooRealVar massKPi(massKPi_name,"m(K^{-}#pi^{+}) [GeV]",TMath::Sqrt(0.7),0.,9.2);
   TString mass2KPi_title = massKPi_title; mass2KPi_title.ReplaceAll("m(","m^{2}(");
   RooFormulaVar mass2KPiFor(mass2KPi_name+"For",mass2KPi_title+" [GeV^{2}]","pow(massKPi,2)",massKPi);
   RooRealVar mass2KPi(mass2KPi_name,mass2KPiFor.getTitle(),TMath::Power(massKPi.getVal(),2),TMath::Power(massKPi.getMin(),2),TMath::Power(massKPi.getMax(),2));
 
-  TString massPsiPi_name = "massMuMuPi"; TString mass2PsiPi_name = massPsiPi_name; mass2PsiPi_name.ReplaceAll("mass","mass2"); 
+  TString massPsiPi_name = "massMuMuPi"; TString mass2PsiPi_name = massPsiPi_name; mass2PsiPi_name.ReplaceAll("mass","mass2");
   TString massPsiPi_title = "m(#psi#pi^{+})";
-  Float_t massPsiPi_min = 3.2, massPsiPi_max = 4.9; 
+  Float_t massPsiPi_min = 3.2, massPsiPi_max = 4.9;
   RooRealVar massPsiPi(massPsiPi_name,massPsiPi_title+" [GeV]",TMath::Sqrt(23),massPsiPi_min,massPsiPi_max);
   //RooRealVar massPsiPi(massPsiPi_name,massPsiPi_title+" [GeV]",TMath::Sqrt(23),0.,99.9);
   TString mass2PsiPi_title = massPsiPi_title; mass2PsiPi_title.ReplaceAll("m(","m^{2}(");
   RooFormulaVar mass2PsiPiFor(mass2PsiPi_name+"For",mass2PsiPi_title+" [GeV^{2}]","pow(massMuMuPi,2)",massPsiPi);
   RooRealVar mass2PsiPi(mass2PsiPi_name,mass2PsiPiFor.getTitle(),TMath::Power(massPsiPi.getVal(),2),TMath::Power(massPsiPi.getMin(),2),TMath::Power(massPsiPi.getMax(),2));
 
-  TString massVars_name = "massVars"; RooArgSet massVars(massKPi, massPsiPi, massVars_name); 
+  TString massVars_name = "massVars"; RooArgSet massVars(massKPi, massPsiPi, massVars_name);
   RooArgSet mass2Fors(mass2KPiFor, mass2PsiPiFor);
   TString mass2Vars_name = "mass2Vars"; RooArgSet mass2Vars(mass2KPi, mass2PsiPi, mass2Vars_name);
 
@@ -317,7 +317,7 @@ void Analysis()
   TString sqDalitz_v2_name = "sqDalitz_v2"; RooArgSet sqDalitz_v2(mass2PsiPi, cosKstar, sqDalitz_v2_name);
   TString sqDalitz1_v2_name = "sqDalitz1_v2"; RooArgSet sqDalitz1_v2(massPsiPi, cosKstar, sqDalitz1_v2_name);
 
-  
+
   // not accessible on cmssusyX
   TString path = "/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/";
   //TString inputFileName = "MC_K892_JPsi_Bd2MuMuKpi_2p0Sig_4p0to6p0SB.root";
@@ -331,7 +331,7 @@ void Analysis()
   if (!inputFile) {
     cout <<"Warning: unable to open file \"" <<fullInputFileName <<"\"" <<endl;
   } else {
-    //TTree *BkgTree = (TTree*)f->Get("BkgTree"); 
+    //TTree *BkgTree = (TTree*)f->Get("BkgTree");
     TNtupleD* dataNTuple = (TNtupleD*)inputFile->Get("AAVars");
     //dataNTuple->Print() ;
     RooDataSet *dataGen = new RooDataSet("dataGen","Generated data", dataNTuple, kinematicVars);
@@ -347,13 +347,13 @@ void Analysis()
     RooDataSet *dataGen_B0bar = new RooDataSet("dataGen_B0bar_B0massConstraint","Generated B0bar data", dataNTuple, kinematicVars_withBeauty, "B0beauty < 0");
     cout <<"\nImported TTree with " <<dataGen_B0bar->numEntries() <<" B0bar" <<endl ;
     dataGen_B0bar->write(TString::Format("%s/%s.txt",datasetsPath.Data(),dataGen_B0bar->GetName()));
-    //RooPlot* phi_frame = phi.frame(Name(massKPi.getTitle()+"_frame"),Title("Projection of "+massKPi.getTitle())) ; 
+    //RooPlot* phi_frame = phi.frame(Name(massKPi.getTitle()+"_frame"),Title("Projection of "+massKPi.getTitle())) ;
     //dataGen_B0->plotOn(phi_frame); dataGen_B0bar->plotOn(phi_frame, LineColor(kRed)); phi_frame->Draw() ; return;
 
     dataToFit = dataGen_B0;
   }
   //return ;
-  
+
   const Double_t dRadB0 = 5.0; const Double_t dRadKs = 1.5;
 
   myPDF* sigPDF = 0;
@@ -362,7 +362,7 @@ void Analysis()
                      a892m1, b892m1, a892z, b892z, a892p1, b892p1) ;
   */
   TString psi_nS = "1"; //psi_nS = "2";
-  
+
   TString sigName = "Kstar_", sigTitle = "K*s signal";
   if (nKstars == 1) {
     sigName.Append(Kstar_spin.front().first);
@@ -386,15 +386,15 @@ void Analysis()
   }
   //cout <<"\nsigPDF->getVal() =\n" <<sigPDF->getVal() <<endl; return;
 
-  
-  RooConstVar mBd("mBd", "m(B^{0})", MBd) ; 
-  RooConstVar m2Bd("m2Bd", "m^{2}(B^{0})", MBd2) ; 
-  RooConstVar mKaon("mKaon", "m(K^{-})", MKaon) ; 
-  RooConstVar m2Kaon("m2Kaon", "m^{2}(K^{-})", MKaon2) ; 
+
+  RooConstVar mBd("mBd", "m(B^{0})", MBd) ;
+  RooConstVar m2Bd("m2Bd", "m^{2}(B^{0})", MBd2) ;
+  RooConstVar mKaon("mKaon", "m(K^{-})", MKaon) ;
+  RooConstVar m2Kaon("m2Kaon", "m^{2}(K^{-})", MKaon2) ;
   RooConstVar mPion("mPion", "m(#pi^{+})", MPion) ;
   RooConstVar m2Pion("m2Pion", "m^{2}(#pi^{+})", MPion2) ;
 
-  Double_t massMuMu = 0. ; 
+  Double_t massMuMu = 0. ;
   if (psi_nS.EqualTo("1")) {
     massMuMu = MJpsi ;
     //massPsiPi.setMax(4.8);
@@ -411,9 +411,9 @@ void Analysis()
     cout <<"psi_nS is neither 1 nor 2, please check it." <<endl;
     return ;
   }
-  RooConstVar mPsi("mPsi", "m(#mu^{+}#mu^{-})", massMuMu); 
-  RooConstVar m2Psi("m2Psi", "m^{2}(#mu^{+}#mu^{-})", TMath::Power(massMuMu,2)); 
-  const Double_t smearing = 0. ; 
+  RooConstVar mPsi("mPsi", "m(#mu^{+}#mu^{-})", massMuMu);
+  RooConstVar m2Psi("m2Psi", "m^{2}(#mu^{+}#mu^{-})", TMath::Power(massMuMu,2));
+  const Double_t smearing = 0. ;
   RooConstVar smear("smear", "smear", smearing) ;
 
   // B^{0} -> psi(nS) #pi^{+} K^{-}
@@ -450,7 +450,7 @@ void Analysis()
       model = (RooAbsPdf*) new RooAddPdf("","",RooArgList(*sigPDF,*bkgPDF),RooArgList(nSig,nBkg)) ;
       model->SetName( TString::Format("%s__plus__%s",sigPDF->GetName(),bkgPDF->GetName()) );
       model->SetTitle( TString::Format("%s + %s",model->GetTitle(),bkgPDF->GetTitle()) );
-    } 
+    }
   } else if (bkgPDF) {
     cout <<"Building " <<bkgPDF->GetTitle() <<endl;
     nBkg.setVal( totEvents );
@@ -461,7 +461,7 @@ void Analysis()
     return;
   }
   modelName = model->GetName();
-  
+
   RooRealVar nEvents("nEvents","nEvents",nSig.getVal() + nBkg.getVal()) ; nEvents.setConstant(kTRUE);
   RooFormulaVar sigFrac("sigFraction",TString::Format("%s fraction",nSig.GetTitle()),"nSig/nEvents",RooArgSet(nSig,nEvents));
   RooFormulaVar bkgFrac("bkgFraction",TString::Format("%s fraction",nBkg.GetTitle()),"nBkg/nEvents",RooArgSet(nBkg,nEvents));
@@ -499,7 +499,7 @@ void Analysis()
   const Int_t m2KPi_order_bkg = 6, m2PsiPi_order_bkg = 4;
   const Int_t cosMuMu_order_bkg = 6, phi_order_bkg = 6;
   const Int_t mKPi_order_bkg = 5, mPsiPi_order_bkg = 4, cosKstar_order_bkg = 7;
-  
+
   pair< pair<TString, pair<RooArgSet*,pair<Int_t,Int_t> > >, pair<TString,pair< pair<TString,TString>,pair<TString,TString> > > > bkgHisto_names[] = {make_pair( make_pair("psi2SPi_vs_KPi_dalitz",make_pair(&mass2Vars,make_pair(m2KPi_order_bkg,m2PsiPi_order_bkg))), make_pair("bkgDalitz",make_pair(make_pair("m2KPi",mass2KPi_title),make_pair("m2PsiPi",mass2PsiPi_title)))), make_pair(make_pair(anglesScatt_name,make_pair(&angleVars,make_pair(cosMuMu_order_bkg,phi_order_bkg))), make_pair("bkgAngles",make_pair(make_pair("cosMuMu",cosMuMu_title),make_pair("phi",phi_title))))};
   // if you use &mass2Fors you get "ERROR:InputArguments -- RooAbsDataStore::initialize(RelEff_psi2SPi_vs_KPi_B0constr): Data set cannot contain non-fundamental types"
   bkgHisto_names[0] = make_pair(make_pair("cos_Kstar_helicityAngle_fromMasses_vs_KPiMassSq",make_pair(&sqDalitz,make_pair(m2KPi_order_bkg,cosKstar_order_bkg))), make_pair("bkgSqDalitz",make_pair(make_pair("m2KPi",mass2KPi_title),make_pair("cosKstar",cosKstar_title)))); DalitzEff = kTRUE;
@@ -540,9 +540,9 @@ void Analysis()
       TString bkgType = bkgName; bkgType.ReplaceAll("bkg","");
       TString first = TString(bkgType,1);
       if (!bkgType.EqualTo("Dalitz")) first.ToLower();
-      TString bkgtype = bkgType; bkgtype.Remove(0,1); bkgtype.Prepend(first);  
-      
-      TString pdfTitle = "bkg("+bkgtype+") pdf"; 
+      TString bkgtype = bkgType; bkgtype.Remove(0,1); bkgtype.Prepend(first);
+
+      TString pdfTitle = "bkg("+bkgtype+") pdf";
       RooHistPdf* bkgHistPdf = new RooHistPdf(bkgName+"PDF",pdfTitle, *bkgVars, *bkgHist, 9) ; //If last argument is zero, the weight for the bin enclosing the coordinates contained in 'bin' is returned. For higher values, the result is interpolated in the real dimensions of the dataset with an order of interpolation equal to the value provided (more than ? does not work for Dalitz efficiencies, ? for masses efficiencies, ? for angles)
       bkgHistPdf->setUnitNorm(kTRUE);
 
@@ -550,8 +550,8 @@ void Analysis()
       sbPdf[iVars][iSb].first = bkgHistPdf; method = "interp";
       Int_t xOrder = bkgHisto_names[iVars].first.second.second.first;
       Int_t yOrder = bkgHisto_names[iVars].first.second.second.second;
-      cout <<"Fitting " <<sbTH2->GetName() <<endl;
-      sbPdf[iVars][iSb].first = twoDFit(*x, *y, sbTH2, psi_nS.Atoi(), xOrder, yOrder, sbPdf[iVars][iSb].second); method = "ROOTfit"; // ROOT fit
+      // cout <<"Fitting " <<sbTH2->GetName() <<endl;
+      // sbPdf[iVars][iSb].first = twoDFit(*x, *y, sbTH2, psi_nS.Atoi(), xOrder, yOrder, sbPdf[iVars][iSb].second); method = "ROOTfit"; // ROOT fit
       //sbPdf[iVars][iSb].first = twoDFit(*x, *y, bkgHist, psi_nS.Atoi(), xOrder, yOrder, sbPdf[iVars][iSb].second); method = "RooFit"; // RooFit fit
       const Float_t chi2N = sbPdf[iVars][iSb].second;
 
@@ -571,9 +571,9 @@ void Analysis()
       }
 
       TString sbErrTH2_name = sbTH2->GetName(); sbErrTH2_name.Append("_err");
-      chi2N_hist(bkgFile, sbErrTH2_name, sbTH2, sbPdf[iVars][iSb].first, x, y, method, dir+"/bkg", extension);
+      // chi2N_hist(bkgFile, sbErrTH2_name, sbTH2, sbPdf[iVars][iSb].first, x, y, method, dir+"/bkg", extension);
 
-      plotting(bkgHist, bkgName, x, y, xRooBinning, yRooBinning, sbPdf[iVars][iSb].first, pdfTitle, xOrder, bkgHisto_names[iVars].second.second.first.first, bkgHisto_names[iVars].second.second.first.second, yOrder, bkgHisto_names[iVars].second.second.second.first, bkgHisto_names[iVars].second.second.second.second, chi2N, method, dir+"/bkg", extension);
+      // plotting(bkgHist, bkgName, x, y, xRooBinning, yRooBinning, sbPdf[iVars][iSb].first, pdfTitle, xOrder, bkgHisto_names[iVars].second.second.first.first, bkgHisto_names[iVars].second.second.first.second, yOrder, bkgHisto_names[iVars].second.second.second.first, bkgHisto_names[iVars].second.second.second.second, chi2N, method, dir+"/bkg", extension);
 
     } // for (Int_t iSb=0; iSb < 3; ++iSb)
   } // for (Int_t iVars=0; iVars < nVars; ++iVars)
@@ -584,15 +584,24 @@ void Analysis()
   RooAbsPdf* sbsPdf[] = {sbPdf[0][0].first, sbPdf[1][0].first};
   TString sbsName[] = {"Masses","Angles"};
   RooConstVar half = RooConstVar("half", "half", 0.5);
+  RooConstVar fixSig = RooConstVar("half", "half", 0.7);
   /*
-  for (Int_t iVar=0; iVar<2; ++iVar) // this to use leftSb + rightSb instead of totalSbs pdf 
+  for (Int_t iVar=0; iVar<2; ++iVar) // this to use leftSb + rightSb instead of totalSbs pdf
     if (sbPdf[iVar][1].first && sbPdf[iVar][2].first)
       sbsPdf[iVar] = new RooAddPdf("sbs"+sbsName[iVar]+"Pdf","sidebands "+sbsName[iVar]+" p.d.f.",*sbPdf[iVar][1].first,*sbPdf[iVar][2].first,half) ;
   */
-  RooAddPdf* sbsModel = 0;
+  RooProdPdf* sbsModel = 0;
   if (sbsPdf[0] && sbsPdf[1])
-    sbsModel = new RooAddPdf("allSbsPdf","all sidebands p.d.f.",*sbsPdf[0],*sbsPdf[1],half) ;
+      sbsModel = new RooProdPdf("allSbsPdf","all sidebands p.d.f.",RooArgSet(*sbsPdf[0],*sbsPdf[1]));
   //return;
+
+  RooAddPdf* modelWithBkgHist = 0;
+
+  if (bkgFile && sbsPdf[0] && sbsPdf[1])
+  {
+    modelWithBkgHist = RooAddPdf(modelName.Append("__withHistoBkg"),TString::Format("%s + Histo Bkg ",model->GetTitle()),*model,*sbsModel,fixSig) ;
+    model = modelWithBkgHist;
+  }
 
   // Masses and angles efficiencies
   //TString effFileName = path+"officialMC_noPtEtaCuts_JPsi_Bd2MuMuKPi_2p0Sig_4p0to6p0SB.root";
@@ -606,7 +615,7 @@ void Analysis()
   // if you use &mass2Fors you get "ERROR:InputArguments -- RooAbsDataStore::initialize(RelEff_psi2SPi_vs_KPi_B0constr): Data set cannot contain non-fundamental types"
   effHisto_names[0] = make_pair(make_pair("RelEff_psi2SPi_vs_KPi_B0constr",make_pair(&massVars,make_pair(mKPi_order_relEff,mPsiPi_order_relEff))), make_pair("relEffMasses",make_pair(make_pair("mKPi",massKPi_title),make_pair("mPsiPi",massPsiPi_title)))); DalitzEff = kFALSE;
   effHisto_names[0] = make_pair(make_pair("RelEff_cos_Kstar_helicityAngle_vs_KPiSq_varBins",make_pair(&sqDalitz,make_pair(m2KPi_order_relEff,cosKstar_order_relEff))), make_pair("relEffSqDalitz",make_pair(make_pair("m2KPi",mass2KPi_title),make_pair("cosKstar",cosKstar_title)))); DalitzEff = kTRUE;
-  
+
   pair<RooAbsPdf*, Float_t> effPdf[] = {make_pair(null,0.),make_pair(null,0.)};
   if (effFile)
     for (Int_t iEff=0; iEff < 2; ++iEff) {
@@ -642,7 +651,7 @@ void Analysis()
       TString effType = effName; effType.ReplaceAll("relEff","");
       TString first = TString(effType,1); first.ToLower();
       TString efftype = effType; efftype.Remove(0,1); efftype.Prepend(first);
-      TString pdfTitle = "#epsilon_{rel}("+efftype+") pdf"; 
+      TString pdfTitle = "#epsilon_{rel}("+efftype+") pdf";
       RooHistPdf* relHistPdf = new RooHistPdf(effName+"PDF",pdfTitle, *effVars, *relEffHist, 9) ; //If last argument is zero, the weight for the bin enclosing the coordinates contained in 'bin' is returned. For higher values, the result is interpolated in the real dimensions of the dataset with an order of interpolation equal to the value provided (more than 10 does not work for Dalitz efficiencies, 9 for masses efficiencies, 10 for angles)
       relHistPdf->setUnitNorm(kTRUE);
 
@@ -672,7 +681,7 @@ void Analysis()
       effPdf[iEff].first = relHistPdf; TString method = "interp";
       Int_t xOrder = effHisto_names[iEff].first.second.second.first;
       Int_t yOrder = effHisto_names[iEff].first.second.second.second;
-      effPdf[iEff].first = twoDFit(*x, *y, relEffTH2, psi_nS.Atoi(), xOrder, yOrder, effPdf[iEff].second); method = "ROOTfit";
+      // effPdf[iEff].first = twoDFit(*x, *y, relEffTH2, psi_nS.Atoi(), xOrder, yOrder, effPdf[iEff].second); method = "ROOTfit";
       const Float_t chi2N = effPdf[iEff].second;
 
       RooAbsPdf* kinematicCheck(0), *effWithKinCheck(0);
@@ -691,11 +700,11 @@ void Analysis()
       }
 
       TString effErrTH2_name = relEffTH2->GetName(); effErrTH2_name.ReplaceAll("Eff","EffErr");
-      chi2N_hist(effFile, effErrTH2_name, relEffTH2, effPdf[iEff].first, x, y, method, dir+"/eff", extension);
+      // chi2N_hist(effFile, effErrTH2_name, relEffTH2, effPdf[iEff].first, x, y, method, dir+"/eff", extension);
       //return;
       //relEffTH2->Draw("LEGO");
 
-      plotting(relEffHist, effName, x, y, xRooBinning, yRooBinning, effPdf[iEff].first, pdfTitle, xOrder, effHisto_names[iEff].second.second.first.first, effHisto_names[iEff].second.second.first.second, yOrder, effHisto_names[iEff].second.second.second.first, effHisto_names[iEff].second.second.second.second, chi2N, method, dir+"/eff", extension);
+      // plotting(relEffHist, effName, x, y, xRooBinning, yRooBinning, effPdf[iEff].first, pdfTitle, xOrder, effHisto_names[iEff].second.second.first.first, effHisto_names[iEff].second.second.first.second, yOrder, effHisto_names[iEff].second.second.second.first, effHisto_names[iEff].second.second.second.second, chi2N, method, dir+"/eff", extension);
       /*
       x->setVal(4.75); y->setVal(16.);
       cout <<"\neffPdf[iEff].first->getVal(" <<x->getVal() <<", " <<y->getVal() <<") = " <<effPdf[iEff].first->getVal() <<endl;
@@ -710,8 +719,8 @@ void Analysis()
 	cout <<"with relHistPdf->haveUnitNorm() = " <<relHistPdf->haveUnitNorm() <<endl;
       }
       */
-      
-      if (iEff==0) { 
+
+      if (iEff==0) {
 	if (effVars != &massVars) {
           method = "derivedFromFit";
 /*
@@ -736,14 +745,14 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
 	      effName = "relEffMasses";
 	      relEffHist = new RooDataHist(relEffMassesTH2->GetName(), relEffMassesTH2->GetTitle(), massVars, relEffMassesTH2) ;
 	      plotting(relEffHist, effName, x, y, xRooBinning, yRooBinning, effPdf[iEff].first, pdfTitle, xOrder, effHisto_names[iEff].second.second.first.first, effHisto_names[iEff].second.second.first.second, yOrder, effHisto_names[iEff].second.second.second.first, effHisto_names[iEff].second.second.second.second, 0, method, dir, extension);
-	      
-	    }	
+
+	    }
 	  } else { // do the same for effVars == (m2(K Pi),m2(J/psi Pi))
 	  }
 	} // if (effVars != &massVars)
-	
+
 	/*
-	// Creating the efficiency as function of masses from the efficiency as function of squared masses, in order to allow the multiplication with sigPDF 
+	// Creating the efficiency as function of masses from the efficiency as function of squared masses, in order to allow the multiplication with sigPDF
 	if (DalitzEff) {
 	effMasses* massesEffPdf_fromDalitz = new effMasses(TString::Format("%s_fromDalitz",effPdf[iEff].first->GetName()), effPdf[iEff].first->GetTitle(), massKPi, massPsiPi, &mass2KPi, &mass2PsiPi, effPdf[iEff].first);
 	//TH1F* massesEffPdf_fromDalitz_mKPTH1 = (TH1F*)massesEffPdf_fromDalitz->createHistogram("massesEffPdf_fromDalitz_mKPTH1", massKPi) ; // not working with message: p.d.f normalization integral is zero or negative
@@ -766,8 +775,8 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
     } // for (Int_t iEff=0; iEff < 2; ++iEff)
   else
     cout <<"WARNING! TFile \"" <<effFileName <<"\" could not be opened.\nSkipping efficiency correction" <<endl;
-  
-  return;
+
+  //return;
 
 
   RooPlot* massKP_frame = massKPi.frame() ; massKP_frame->SetTitle("Projection of "+massKPi_title);
@@ -795,8 +804,9 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
   cout <<"Wallclock time: " << genTime.tv_sec + genTime.tv_usec/1000000.0 << " seconds\n" ;
   cout <<"Total CPU time: " << (genTimeCPU / CLOCKS_PER_SEC) <<" seconds\n" ;
   cout <<"My processes time: " << (genTimeProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
-  if (nEvents.getVal() > 100000)
-    dataGenPDF->write(TString::Format("%s/%s__EvtGen.txt",datasetsPath.Data(),model->GetName()));
+  //if (nEvents.getVal() > 100000)
+  dataGenPDF->write(TString::Format("%s/%s__EvtGen.txt",datasetsPath.Data(),model->GetName()));
+  return;
   //return;
 
   //dataToFit = dataGenPDF;
@@ -804,12 +814,12 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
   // Create corresponding m2 dataset + K* helicity angle if absent
   if ( !kinematicVars_m2.contains(cosKstar) )
     kinematicVars_m2.add(cosKstar);
-  RooDataSet* dataGenPDF_withCos = (RooDataSet*)dataGenPDF->emptyClone(); 	
+  RooDataSet* dataGenPDF_withCos = (RooDataSet*)dataGenPDF->emptyClone();
   dataGenPDF_withCos->addColumn(cosKstar);
 
   RooDataSet* dataGenPDF_m2 = new RooDataSet(dataGenPDF->GetName(), dataGenPDF->GetTitle(), kinematicVars_m2 ) ;
   for (Int_t iEvent=0; iEvent<dataGenPDF->numEntries(); ++iEvent) {
-    kinematicVars = *(dataGenPDF->get(iEvent)) ; // this line will propagate the RooRealVars values of the event to all the corresponding RooRealVars in kinematicVars  
+    kinematicVars = *(dataGenPDF->get(iEvent)) ; // this line will propagate the RooRealVars values of the event to all the corresponding RooRealVars in kinematicVars
     //kinematicVars.Print("extras") ; cout <<endl; kinematicVars_m2.Print("extras") ;
     //cout <<"massesEffPdf->printValue(cout) = "; massesEffPdf->printValue(cout); cout <<endl;
     TIterator *massVarsIter = massVars.createIterator() ;
@@ -819,7 +829,7 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
     RooRealVar* temp = 0;
     while ( (temp = (RooRealVar*)massVarsIter->Next()) ) {
       TString temp_m2Name = temp->GetName(); temp_m2Name.ReplaceAll("mass","mass2"); //cout <<"temp_m2Name = " <<temp_m2Name <<endl; mass2Fors.Print("extras") ;
-      RooFormulaVar* temp_m2For = (RooFormulaVar*)mass2Fors.find( temp_m2Name+"For" ) ;    
+      RooFormulaVar* temp_m2For = (RooFormulaVar*)mass2Fors.find( temp_m2Name+"For" ) ;
       if (!temp_m2For) {
 	cout <<"temp_m2For = " <<temp_m2For <<"! Please check" <<endl; return;
       } else if ( temp_m2For->dependsOn( *temp ) ) {
@@ -830,12 +840,12 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
     }
     //kinematicVars_m2.Print("extras") ; cout <<endl;
     //cout <<"\nmassesEffPdf->printValue(cout) = "; massesEffPdf->printValue(cout); cout <<endl;
-    
+
     // set K* helicity angle value
     cosKstar.setVal( cosTheta_FromMasses_host(mass2KPiFor.getVal(), mass2PsiPiFor.getVal(), TMath::Power(massMuMu,2), MBd2, MKaon2, MPion2) );
-    
+
     dataGenPDF_m2->add( kinematicVars_m2 ) ;
-    dataGenPDF_withCos->add( RooArgSet(kinematicVars,cosKstar) );     
+    dataGenPDF_withCos->add( RooArgSet(kinematicVars,cosKstar) );
   }
   if (dataGenPDF->numEntries() != dataGenPDF_m2->numEntries()) {
     cout <<"dataGenPDF->numEntries() (" <<dataGenPDF->numEntries() <<") != dataGenPDF_m2->numEntries() (" <<dataGenPDF_m2->numEntries() <<")! Please check" <<endl; return;
@@ -844,7 +854,7 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
     cout <<"dataGenPDF->numEntries() (" <<dataGenPDF->numEntries() <<") != dataGenPDF_withCos->numEntries() (" <<dataGenPDF_withCos->numEntries() <<")! Please check" <<endl; return;
   }
   //return;
-       
+
   cout <<"\nPlotting data..." <<endl;
   TString plotName = model->GetName();
 
@@ -862,7 +872,7 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
   Int_t phi_bins = 2*phi_limit/phi_margin;
   TH2F* scatter = (TH2F*)dataGenPDF_m2->createHistogram("Angles_scatter_plot", cosMuMu, Binning(cos_bins,-cos_limit,cos_limit), YVar(phi, Binning(phi_bins,-phi_limit,phi_limit)) ) ; scatter->SetTitle( TString::Format("Angles scatter plot;%s;%s",cosMuMu.GetTitle(),phi.GetTitle()) ) ;
   gStyle->SetOptStat( 10 ) ;
-  scatter->Draw("COLZ"); 	
+  scatter->Draw("COLZ");
   scatter_C->SaveAs(TString::Format("%s/%s_%s%s",dir.Data(),scatter_C->GetName(),plotName.Data(),extension.Data()));
 
   cout <<"\nPlotting Dalitz..." <<endl;
@@ -873,8 +883,8 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
   if ( totEvents < 20000 ) {KPiMass2_bins = 50; MuMuPiMass2_bins = 64;}
   TH2F* dalitz = (TH2F*)dataGenPDF_m2->createHistogram("Dalitz", mass2KPi, Binning(KPiMass2_bins,KPiMass2_low,KPiMass2_high), YVar(mass2PsiPi, Binning(MuMuPiMass2_bins,MuMuPiMass2_low,MuMuPiMass2_high)) ) ; dalitz->SetTitle( TString::Format("Dalitz;%s;%s",mass2KPi.GetTitle(),mass2PsiPi.GetTitle()) ) ;
   gStyle->SetOptStat( 10 ) ;
-  dalitz->Draw("COLZ"); 	
-  //dalitz->Draw("LEGO"); 	
+  dalitz->Draw("COLZ");
+  //dalitz->Draw("LEGO");
   dalitz_C->SaveAs(TString::Format("%s/%s_%s%s",dir.Data(),dalitz_C->GetTitle(),plotName.Data(),extension.Data()));
   //return;
   cout <<"\nPlotting rectangular Dalitz..." <<endl;
@@ -882,9 +892,9 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
   dalitzRect_C->cd();
   TH2F* dalitz_rect = (TH2F*)dataGenPDF_withCos->createHistogram("DalitzRect", massKPi, YVar(cosKstar, Binning(cos_bins,-cos_limit,cos_limit)) ) ; dalitz_rect->SetTitle( TString::Format("Rectangular Dalitz;%s;%s",massKPi.GetTitle(),cosKstar.GetTitle()) ) ;
   gStyle->SetOptStat( 10 ) ;
-  dalitz_rect->Draw("COLZ"); 	
+  dalitz_rect->Draw("COLZ");
   dalitzRect_C->SaveAs(TString::Format("%s/%s_%s%s",dir.Data(),dalitzRect_C->GetTitle(),plotName.Data(),extension.Data()));
- 
+
   cout <<"\nPlotting m(psiPi)..." <<endl;
   dataGenPDF->plotOn( var_frame[2] ) ;
   TCanvas* massPsiP_C = new TCanvas( TString::Format("%s_C",massPsiPi.GetName()), massPsiPi.GetName(), 800,600) ;
@@ -895,7 +905,7 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
   Int_t fullModelColor = 2; // 2 = kRed
   Int_t bkgColor = fullModelColor;
   TString modelEntry = "Full model";
-  
+
   cout <<"\nPlotting m(KPi)..." <<endl;
   dataGenPDF->plotOn(var_frame[0]) ; nLegendEntries++;
   //
@@ -946,7 +956,7 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
       leg->AddEntry(var_frame[0]->findObject(modelEntry),model->GetTitle(),"l");
   }
 
-  // Fitting 
+  // Fitting
   RooFitResult* fitres = 0;
   if (fitting) {
     cout <<"\nFitting ..." <<endl ;
@@ -969,7 +979,7 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
     }
     RooAddition nllp("nllp","nllp",toMinimize);
     RooMinuit m(nllp); m.setVerbose();
-    
+
     timeval fitModelTime;
     gettimeofday(&start, NULL);
     startCPU = times(&startProc);
@@ -977,7 +987,7 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
     fitres = model->fitTo(*dataGenPDF, Hesse(kFALSE), Minos(kFALSE), Save(kTRUE), NumCPU(nCPU), Verbose(kTRUE), PrintLevel(3)) ;
     // 75' with 2k events, 8 Lambda*, 1 NumCPU; 80' with 2k events, 1 K*, 4 NumCPU;
     // with cos(theta_K*) formula in the wrong place:
-    // 15h with 2k events, K*(892), 24 CPUs  
+    // 15h with 2k events, K*(892), 24 CPUs
     //
     //
     //
@@ -989,9 +999,9 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
     // 1k
     // - 43' for ??  calls (?+?)   with Hesse and 1k events, 2/4 K*(892) parameters free, 24 CPUs, a constrained
     // 2k
-    // - 35' for 63  calls (40+12[4]+11[3]) without Hesse and 2k events, 2/4 K*(892) parameters free, 24 CPUs, a constrained  
-    // - 48' for 94  calls (94+0)  without Hesse and 2k events, 2/4 K*(892) parameters free, 24 CPUs, a and b constrained  
-    // - 45' for 83  calls (?+?)   with Hesse and 2k events, 2/4 K*(892) parameters free, 24 CPUs, a constrained  
+    // - 35' for 63  calls (40+12[4]+11[3]) without Hesse and 2k events, 2/4 K*(892) parameters free, 24 CPUs, a constrained
+    // - 48' for 94  calls (94+0)  without Hesse and 2k events, 2/4 K*(892) parameters free, 24 CPUs, a and b constrained
+    // - 45' for 83  calls (?+?)   with Hesse and 2k events, 2/4 K*(892) parameters free, 24 CPUs, a constrained
     // - 1h  for 118 calls (?+?)   with Hesse and 2k events, 2/4 K*(892) parameters free, 24 CPUs, a and b constrained
     // - 51' for 96  calls (80+16) with Hesse and 2k events, 2/4 K*(892) parameters free, 24 CPUs
     // - 130' for 231 calls (?+?) with Hesse and 2k events, 4/4 K*(892) parameters free, 24 CPUs, a constrained
@@ -1025,7 +1035,7 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
     // [3] MIGRAD FAILS TO FIND IMPROVEMENT. MIGRAD TERMINATED WITHOUT CONVERGENCE.
     // [4] COVARIANCE MATRIX CALCULATION and ERR MATRIX NOT POS-DEF
     /*
-    m.migrad() ; 
+    m.migrad() ;
     m.hesse() ;
     //m.minos() ;
     */
@@ -1045,13 +1055,13 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
     model->plotOn(var_frame[0], LineColor(fullModelColor), Name("4D fit projection")) ;
     leg->AddEntry(var_frame[0]->findObject("4D fit projection"),"4D fit projection","l");
     plotName += "_fit";
-    //return;  
+    //return;
   }
 
   //massKPr_frame->SetAxisRange(0,140,"Y") ;
 
   //Here you can also project other variables.
-  
+
   if (sigPDF && plotSingleKstars) {
     cout <<"\nIntegrating " <<sigPDF->GetName() <<" over " <<massKPi.GetName() <<"..." <<endl;
 
@@ -1085,7 +1095,7 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
 
       for (Int_t iKstar_S=0; iKstar_S<nKstars; ++iKstar_S) {
 	TString Kstar_name = Kstar_spin[iKstar_S].first;
-      
+
 	for (Int_t iVar=0; iVar<(Int_t)varNames.size(); ++iVar) {
 	  TString abName = varNames[iVar](1, varNames[iVar].Length());
 	  if (helJ_map.find(abName) != helJ_map.end())
@@ -1102,7 +1112,7 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
 	  else
 	    cout <<"Element \"" <<abName <<"\" not found in map helJ_map. Please check map filling." <<endl;
 	}
-      
+
 	TString legName = TString::Format("K*_{%s}(%s)", &Kstar_name(Kstar_name.Length() -1), (TString(Kstar_name(0, Kstar_name.Length() -2))).Data());
 	cout <<"\n\nIntegrating with " <<legName <<" only..." <<endl;
 	// negligible
@@ -1127,7 +1137,7 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
 	cout <<"Integral with " <<legName <<" only is: " <<Kstar_integral[iKstar_S] <<endl;
 	Double_t fraction = (Kstar_integral[iKstar_S] / full_signal_integral)*(sigFrac.getVal());
 	cout <<legName <<" fraction is: " <<fraction*100 <<"%" <<endl;
-	cout <<"\nPlotting " <<legName <<" only..." <<endl;    
+	cout <<"\nPlotting " <<legName <<" only..." <<endl;
 
 	gettimeofday(&start, NULL);
 	startCPU = times(&startProc);
@@ -1147,12 +1157,12 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
       }
     } // if (nKstars > 1)
   } // if (sigPDF)
-  
+
   TCanvas* massKP_C = new TCanvas( TString::Format("%s_C",massKPi.GetName()), massKPi.GetName(), 800,600) ;
   massKP_C->cd();
   var_frame[0]->Draw() ;
   leg->Draw();
-  
+
   massKP_C->SaveAs(TString::Format("%s/%s%s",dir.Data(),plotName.Data(),extension.Data()));
   gPad->SetLogy();
   massKP_C->SaveAs(TString::Format("%s/%s_logy%s",dir.Data(),plotName.Data(),extension.Data()));
