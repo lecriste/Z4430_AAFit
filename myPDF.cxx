@@ -19,44 +19,12 @@
 ClassImp(myPDF) 
 
  myPDF::myPDF(const char *name, const char *title, 
-	      /*
-		RooAbsReal& _mKP,
-		RooAbsReal& _cLb,
-		RooAbsReal& _cJ,
-		RooAbsReal& _cLs,
-		RooAbsReal& _phiMu,
-		RooAbsReal& _phiK,
-		RooAbsReal& _a1600L0S1,
-		RooAbsReal& _b1600L0S1,
-		RooAbsReal& _a1600L1S1,
-		RooAbsReal& _b1600L1S1,
-		RooAbsReal& _a1600L1S3,
-		RooAbsReal& _b1600L1S3,
-		RooAbsReal& _a1600L2S3,
-		RooAbsReal& _b1600L2S3,
-		RooAbsReal& _a1670L0S1,
-		RooAbsReal& _b1670L0S1,
-		RooAbsReal& _a1670L1S1,
-		RooAbsReal& _b1670L1S1,
-		RooAbsReal& _a1670L1S3,
-		RooAbsReal& _b1670L1S3,
-		RooAbsReal& _a1670L2S3,
-		RooAbsReal& _b1670L2S3
-	      */
 	      // B^0 -> psi(nS) K* -> mu+ mu- K- pi+
 	      RooAbsReal& _mKP,
 	      RooAbsReal& _cJ,
 	      RooAbsReal& _mPsiP,
 	      RooAbsReal& _phi,
-	      /*
-	      // K*(892)    
-	      RooAbsReal& _a892m1,
-	      RooAbsReal& _b892m1,
-	      RooAbsReal& _a892z,
-	      RooAbsReal& _b892z,
-	      RooAbsReal& _a892p1,
-	      RooAbsReal& _b892p1
-	      */
+	      RooAbsReal& _B0beauty,
 	      //const vector< pair<TString, pair< pair<Double_t, Double_t>, pair<Double_t, Double_t> > > >& _Kstar_spin,
 	      const vector< pair<TString, pair<const Double_t, const Double_t> > >& _Kstar_spin,
 	      const vector< TString >& _varNames,
@@ -65,52 +33,21 @@ ClassImp(myPDF)
 	      const Double_t& _dRadB0, const Double_t& _dRadKs
           ) :
    RooAbsPdf(name,title),
-   /*
-   mKP("mKP","mKP",this,_mKP),
-   cLb("cLb","cLb",this,_cLb),
-   cJ("cJ","cJ",this,_cJ),
-   cLs("cLs","cLs",this,_cLs),
-   phiMu("phiMu","phiMu",this,_phiMu),
-   phiK("phiK","phiK",this,_phiK),
-   a1600L0S1("a1600L0S1","a1600L0S1",this,_a1600L0S1),
-   b1600L0S1("b1600L0S1","b1600L0S1",this,_b1600L0S1),
-   a1600L1S1("a1600L1S1","a1600L1S1",this,_a1600L1S1),
-   b1600L1S1("b1600L1S1","b1600L1S1",this,_b1600L1S1),
-   a1600L1S3("a1600L1S3","a1600L1S3",this,_a1600L1S3),
-   b1600L1S3("b1600L1S3","b1600L1S3",this,_b1600L1S3),
-   a1600L2S3("a1600L2S3","a1600L2S3",this,_a1600L2S3),
-   b1600L2S3("b1600L2S3","b1600L2S3",this,_b1600L2S3),
-   a1670L0S1("a1670L0S1","a1670L0S1",this,_a1670L0S1),
-   b1670L0S1("b1670L0S1","b1670L0S1",this,_b1670L0S1),
-   a1670L1S1("a1670L1S1","a1670L1S1",this,_a1670L1S1),
-   b1670L1S1("b1670L1S1","b1670L1S1",this,_b1670L1S1),
-   a1670L1S3("a1670L1S3","a1670L1S3",this,_a1670L1S3),
-   b1670L1S3("b1670L1S3","b1670L1S3",this,_b1670L1S3),
-   a1670L2S3("a1670L2S3","a1670L2S3",this,_a1670L2S3),
-   b1670L2S3("b1670L2S3","b1670L2S3",this,_b1670L2S3)
-   */
-   
+  
    // B^0 -> psi(nS) K* -> mu+ mu- K- pi+
    mKP("mKP","mKP",this,_mKP),
    cJ("cJ","cJ",this,_cJ),
    mPsiP("mPsiP","mPsiP",this,_mPsiP),
    phi("phi","phi",this,_phi),
-   /*
-   // K*(892)    
-   a892m1("a892m1","a892m1",this,_a892m1),
-   b892m1("b892m1","b892m1",this,_b892m1),
-   a892z("a892z","a892z",this,_a892z),
-   b892z("b892z","b892z",this,_b892z),
-   a892p1("a892p1","a892p1",this,_a892p1),
-   b892p1("b892p1","b892p1",this,_b892p1)
-   */
+   B0beauty("B0beauty","B0beauty",this,_B0beauty),
+   //
    Kstar_spin(_Kstar_spin),
    varNames(_varNames),
    amplitudeVars(_amplitudeVars),
    psi_nS(_psi_nS),
    dRadB0(_dRadB0), dRadKs(_dRadKs)
 { 
-  // Remember to add any global variable you use in this constructor in the "other" constructor as variable(other.variable)
+  // Remember to add any global variable you use in this constructor in the "other" constructor as variable(other.variable) because the evaluate method is called on a copy of the class!
 
   for (Int_t iAmplitudevar=0; iAmplitudevar<amplitudeVars.getSize(); ++iAmplitudevar) {
     TString varName = varNames[iAmplitudevar];
@@ -131,52 +68,21 @@ ClassImp(myPDF)
 
 myPDF::myPDF(const myPDF& other, const char* name) :  
    RooAbsPdf(other,name), 
-   /*
-   mKP("mKP",this,other.mKP),
-   cLb("cLb",this,other.cLb),
-   cJ("cJ",this,other.cJ),
-   cLs("cLs",this,other.cLs),
-   phiMu("phiMu",this,other.phiMu),
-   phiK("phiK",this,other.phiK),
-a1600L0S1("a1600L0S1",this,other.a1600L0S1),
-b1600L0S1("b1600L0S1",this,other.b1600L0S1),
-a1600L1S1("a1600L1S1",this,other.a1600L1S1),
-b1600L1S1("b1600L1S1",this,other.b1600L1S1),
-a1600L1S3("a1600L1S3",this,other.a1600L1S3),
-b1600L1S3("b1600L1S3",this,other.b1600L1S3),
-a1600L2S3("a1600L2S3",this,other.a1600L2S3),
-b1600L2S3("b1600L2S3",this,other.b1600L2S3),
-a1670L0S1("a1670L0S1",this,other.a1670L0S1),
-b1670L0S1("b1670L0S1",this,other.b1670L0S1),
-a1670L1S1("a1670L1S1",this,other.a1670L1S1),
-b1670L1S1("b1670L1S1",this,other.b1670L1S1),
-a1670L1S3("a1670L1S3",this,other.a1670L1S3),
-b1670L1S3("b1670L1S3",this,other.b1670L1S3),
-a1670L2S3("a1670L2S3",this,other.a1670L2S3),
-b1670L2S3("b1670L2S3",this,other.b1670L2S3)
-   */
    // B^0 -> psi(nS) K* -> mu+ mu- K- pi+
    mKP("mKP",this,other.mKP),
    cJ("cJ",this,other.cJ),
    mPsiP("mPsiP",this,other.mPsiP),
    phi("phi",this,other.phi),
-   /*
-// K*(892)    
-a892m1("a892m1",this,other.a892m1),
-b892m1("b892m1",this,other.b892m1),
-a892z("a892z",this,other.a892z),
-b892z("b892z",this,other.b892z),
-a892p1("a892p1",this,other.a892p1),
-b892p1("b892p1",this,other.b892p1)
-   */
-MPsi_nS(other.MPsi_nS),
+   B0beauty("B0beauty",this,other.B0beauty),
+   //
+   MPsi_nS(other.MPsi_nS),
    //cKs(other.cKs),
-Kstar_spin(other.Kstar_spin),
-varNames(other.varNames),
-amplitudeVars(other.amplitudeVars),
-amplitudeVarProxy_map(other.amplitudeVarProxy_map),
-psi_nS(other.psi_nS),
-dRadB0(other.dRadB0), dRadKs(other.dRadKs)
+   Kstar_spin(other.Kstar_spin),
+   varNames(other.varNames),
+   amplitudeVars(other.amplitudeVars),
+   amplitudeVarProxy_map(other.amplitudeVarProxy_map),
+   psi_nS(other.psi_nS),
+   dRadB0(other.dRadB0), dRadKs(other.dRadKs)
  {
  }
 
@@ -194,15 +100,19 @@ dRadB0(other.dRadB0), dRadKs(other.dRadKs)
    Double_t mKP2 = mKP*mKP;
    Double_t mPsiP2 = mPsiP*mPsiP;
    Double_t MPsi_nS2 = MPsi_nS*MPsi_nS;
-   Double_t cKs = cosTheta_FromMasses_host(mKP2, mPsiP2, MPsi_nS2, MBd2, MKaon2, MPion2);
-   //cout <<"cKs = " <<cKs <<" for mKP2 = " <<mKP2 <<" and mPsiP2 = " <<mPsiP2 <<endl;
+   Double_t _cKs = cosTheta_FromMasses_host(mKP2, mPsiP2, MPsi_nS2, MBd2, MKaon2, MPion2);
+   //cout <<"_cKs = " <<_cKs <<" for mKP2 = " <<mKP2 <<" and mPsiP2 = " <<mPsiP2 <<endl;
    
-   if (fabs(cKs) > 1) {
-     //cout <<"cKs = " <<cKs <<" for mKP2 = " <<mKP2 <<" and mPsiP2 = " <<mPsiP2 <<endl;
+   if (fabs(_cKs) > 1) {
+     //cout <<"_cKs = " <<_cKs <<" for mKP2 = " <<mKP2 <<" and mPsiP2 = " <<mPsiP2 <<endl;
      return 0.;
    }
-   
-   return PDF(cKs);
+ 
+   Double_t _phiTrue = phi; 
+   if (B0beauty < 0)
+     _phiTrue *= -1;
+
+   return PDF(_cKs,_phiTrue);
  }
 
  Int_t myPDF::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* ) const //rangeName
@@ -526,11 +436,11 @@ Double_t myPDF::Wignerd_R(Double_t cKs, TString spinR, string helJ) const
 }
 
 //TComplex myPDF::AngularTerm(string R, string spinR, string helJ, string helDmu) const
-TComplex myPDF::AngularTerm(Double_t cKs, TString R, TString spinR, string helJ, string helDmu) const
+TComplex myPDF::AngularTerm(Double_t cKs, TString R, TString spinR, string helJ, string helDmu, Double_t phiTrue) const
 {
   //cout <<"\nAngularTerm for K* " <<R <<" and helDmu = " <<helDmu <<" and helJ = " <<helJ <<" is made of Wignerd_R(spinR, helJ) * cWignerD_J(helJ, helDmu, phi) = " <<Wignerd_R(spinR, helJ) <<" * " <<cWignerD_J( WignerD_J(helJ, helDmu, phi) ) <<endl;
   //cout <<"It is multiplied by H(R,helJ) = H(" <<R <<"," <<helJ <<") = " <<H(R,helJ) <<endl;
-  return H(R,helJ) * Wignerd_R(cKs, spinR, helJ) * cWignerD_J( WignerD_J(helJ, helDmu, phi) ) ;
+  return H(R,helJ) * Wignerd_R(cKs, spinR, helJ) * cWignerD_J( WignerD_J(helJ, helDmu, phiTrue) ) ;
 
 }
 /*
@@ -549,7 +459,7 @@ TComplex myPDF::ME(string helLb, string help, string helDmu) const
     
 }
 */
-TComplex myPDF::ME( Double_t cKs, string helDmu ) const
+TComplex myPDF::ME( Double_t cKs, string helDmu, Double_t phiTrue ) const
 {
   /*
   // K+ and pi- have 0 spin -> second last argument of K* RFunction is = spin(K*)
@@ -570,10 +480,10 @@ TComplex myPDF::ME( Double_t cKs, string helDmu ) const
     TComplex matrixElement_R = 0.;
     if (spin.EqualTo("0")) { // for spin0 K*, fourth last argument = spin(psi_nS) = spin.Atoi() + 1 = 1
       matrixElement_R = RFunction(Kstar_spin[iKstar_S].second.first, Kstar_spin[iKstar_S].second.second, MBd, spin.Atoi()+1, spin.Atoi(), dRadB0, dRadKs) *
-	                AngularTerm(cKs, R, spin, "0", helDmu) ;
+	                AngularTerm(cKs, R, spin, "0", helDmu, phiTrue) ;
     } else { // for non-0 spin K*, fourth last argument = spin(K*) - spin(psi_nS) = spin.Atoi() - 1
       matrixElement_R = RFunction(Kstar_spin[iKstar_S].second.first, Kstar_spin[iKstar_S].second.second, MBd, spin.Atoi()-1, spin.Atoi(), dRadB0, dRadKs) *
-	                ( AngularTerm(cKs, R, spin, "m1", helDmu) + AngularTerm(cKs, R, spin, "0", helDmu) + AngularTerm(cKs, R, spin, "p1", helDmu) ) ;
+	                ( AngularTerm(cKs, R, spin, "m1", helDmu, phiTrue) + AngularTerm(cKs, R, spin, "0", helDmu, phiTrue) + AngularTerm(cKs, R, spin, "p1", helDmu, phiTrue) ) ;
     }
     //cout <<"\nAngularTerm.Rho() for " <<R <<" = " <<(AngularTerm(R, spin, "0", helDmu)).Rho() <<endl;
     //cout <<"matrixElement for (R,helDmu) = (" <<R <<"," <<helDmu <<") = H(R,helJ) * RFunction * AngularTerm = " <<matrixElement_R <<endl;
@@ -626,18 +536,19 @@ TComplex myPDF::ME2() const
     ;
 }
 */
-Double_t myPDF::ME2(Double_t cKs) const
+Double_t myPDF::ME2(Double_t cKs, Double_t phiTrue) const
 {
-  //cout <<"\nME(\"m1\") + ME(\"p1\") = " <<ME("m1") <<" + " <<ME("p1") <<endl;
-  //cout <<"ME(\"m1\").Rho2() + ME(\"p1\").Rho2() = " <<ME("m1").Rho2() <<" + " <<ME("p1").Rho2() <<endl;
-  return ME(cKs,"m1").Rho2() + ME(cKs,"p1").Rho2() ;
+  //cout <<"\nME(cKs,\"m1\",phiTrue) + ME(cKs,\"p1\",phiTrue) = " <<ME(cKs,"p1",phiTrue) <<" + " <<ME(cKs,"p1",phiTrue) <<endl;
+  //cout <<"ME(cKs,\"m1\",phiTrue).Rho2() + ME(cKs,\"p1\",phiTrue).Rho2() = " <<ME(cKs,"m1",phiTrue).Rho2() <<" + " <<ME(cKs,"p1",phiTrue).Rho2() <<endl;
+  return ME(cKs,"m1",phiTrue).Rho2() + ME(cKs,"p1",phiTrue).Rho2() ;
 }
 
 //TComplex myPDF::PDF() const
-Double_t myPDF::PDF(Double_t cKs) const
+//Double_t myPDF::PDF(Double_t cKs) const
+Double_t myPDF::PDF(Double_t cKs, Double_t phiTrue) const
 {
-  //cout <<"\nME2() = " <<ME2() <<endl;
-  return ME2(cKs) * PhiPHSP(mKP);
+  //cout <<"\nME2(cKs, phiTrue) = " <<ME2(cKs, phiTrue) <<endl;
+  return ME2(cKs, phiTrue) * PhiPHSP(mKP);
   //return ME2() ; // missing PHSP
 }
 

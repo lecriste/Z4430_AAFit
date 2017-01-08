@@ -57,7 +57,7 @@
 timeval startTime, stopTime, totalTime;
 clock_t startC, stopC;
 tms startProc, stopProc;
-
+/*
 const fptype M892 = 0.89581 ; const fptype G892 = 0.0474; // From PDG charged only K*(892)
 const fptype M892e = 0.8961 ; const fptype G892e = 0.0507; // From EvtGen
 const fptype M1410 = 1.414; const fptype G1410 = 0.232; // K*1410
@@ -65,7 +65,8 @@ const fptype M800 = 0.682; const fptype G800 = 0.547; //const fptype M800 = 0.93
 const fptype M1430_0 = 1.425; const fptype G1430_0 = 0.270; // K*1430_0
 const fptype M1430_2 = 1.4324; const fptype G1430_2 = 0.109; // K*1430_2
 const fptype M1780_3 = 1.776; const fptype G1780_3 = 0.159; // K*1780_3
-
+*/
+const fptype M892e = 0.8961 ; const fptype G892e = 0.0507; // From EvtGen
 const fptype TMATH_PI = TMath::Pi();
 
 std::string migrad("MIGRAD"); std::string m("M");
@@ -902,7 +903,7 @@ int main(int argc, char** argv) {
       cout <<"Warning: unable to open data file \"" <<dataFileName <<"\"" <<endl;
     } else {
 
-      TString dataTreeName = "AAVars";
+      TString dataTreeName = "AA_vars";
       TNtupleD* dataNTuple = (TNtupleD*)inputFile->Get(dataTreeName);
 
       if(!(dataNTuple)){

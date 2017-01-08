@@ -16,6 +16,7 @@
 #include "RooAbsCategory.h"
 #include "TComplex.h"
 
+/*
 const Double_t MLb = 5.61951;
 const Double_t MBd = 5.27961;
 const Double_t MPsi2S = 3.686109;
@@ -32,6 +33,17 @@ const Double_t MPsi2S2 = MPsi2S*MPsi2S;
 const Double_t MPsi2S4 = MPsi2S2*MPsi2S2;
 const Double_t MJpsi2 = MJpsi*MJpsi;
 const Double_t MJpsi4 = MJpsi2*MJpsi2;
+const Double_t MProton2 = MProton*MProton;
+const Double_t MProton4 = MProton2*MProton2;
+const Double_t MKaon2 = MKaon*MKaon;
+const Double_t MKaon4 = MKaon2*MKaon2;
+const Double_t MPion2 = MPion*MPion;
+const Double_t MPion4 = MPion2*MPion2;
+*/
+#include "constants.h"
+#include "utilities.h"
+//#include "Dalitz_contour.h"
+
 const Double_t MJpsi4mTwoMJpsi2MLb2pMLb4 = MJpsi4 - 2.*MJpsi2*MLb2 + MLb4;
 const Double_t MPsi2S4mTwoMPsi2S2MBd2pMBd4 = MPsi2S4 - 2.*MPsi2S2*MBd2 + MBd4;
 const Double_t MJpsi4mTwoMJpsi2MBd2pMBd4 = MJpsi4 - 2.*MJpsi2*MBd2 + MBd4;
@@ -41,19 +53,10 @@ const Double_t TwoMJpsi2pTwoMBd2 = 2.*(MJpsi2 + MBd2);
 const Double_t InvTwoMLb = 1./(2.*MLb);
 const Double_t InvTwoMBd = 1./(2.*MBd);
 
-const Double_t MProton2 = MProton*MProton;
-const Double_t MProton4 = MProton2*MProton2;
-const Double_t MKaon2 = MKaon*MKaon;
-const Double_t MKaon4 = MKaon2*MKaon2;
-const Double_t MPion2 = MPion*MPion;
-const Double_t MPion4 = MPion2*MPion2;
 const Double_t MKaon4mTwoMKaon2MProton2pMProton4 = MKaon4 - 2.*MKaon2*MProton2 + MProton4;
 const Double_t MKaon4mTwoMKaon2MPion2pMPion4 = MKaon4 - 2.*MKaon2*MPion2 + MPion4;
 const Double_t TwoMKaon2pTwoMProton2 = 2.*(MKaon2 + MProton2);
 const Double_t TwoMKaon2pTwoMPion2 = 2.*(MKaon2 + MPion2);
-
-#include "utilities.h"
-//#include "Dalitz_contour.h"
 
 // Lambda*
 const Double_t M1600 = 1.600 ;
@@ -76,47 +79,12 @@ class myPDF : public RooAbsPdf {
 public:
   myPDF() {} ;
   myPDF(const char *name, const char *title,
-	/*
-	// Lambda_b -> J/psi Lambda* -> mu+ mu- K- p
-	RooAbsReal& _mKP,
-	RooAbsReal& _cLb,
-	RooAbsReal& _cJ,
-	RooAbsReal& _cLs,
-	RooAbsReal& _phiMu,
-	RooAbsReal& _phiK,
-	   // Lambda*(1600)    
-           RooAbsReal& _a1600L0S1,
-           RooAbsReal& _b1600L0S1,
-           RooAbsReal& _a1600L1S1,
-           RooAbsReal& _b1600L1S1,
-           RooAbsReal& _a1600L1S3,
-           RooAbsReal& _b1600L1S3,
-           RooAbsReal& _a1600L2S3,
-           RooAbsReal& _b1600L2S3,
-	   // Lambda*(1670)    
-           RooAbsReal& _a1670L0S1,
-           RooAbsReal& _b1670L0S1,
-           RooAbsReal& _a1670L1S1,
-           RooAbsReal& _b1670L1S1,
-           RooAbsReal& _a1670L1S3,
-           RooAbsReal& _b1670L1S3,
-           RooAbsReal& _a1670L2S3,
-           RooAbsReal& _b1670L2S3
-	*/
 	// B^0 -> psi(nS) K* -> mu+ mu- K- pi+
 	RooAbsReal& _mKP,
 	RooAbsReal& _cJ,
 	RooAbsReal& _mPsiP,
 	RooAbsReal& _phi,
-	/*
-	   // K*(892)    
-           RooAbsReal& _a892m1,
-           RooAbsReal& _b892m1,
-           RooAbsReal& _a892z,
-           RooAbsReal& _b892z,
-           RooAbsReal& _a892p1,
-           RooAbsReal& _b892p1
-	*/
+	RooAbsReal& _B0beauty,
 	//const vector< pair<TString, pair< pair<Double_t, Double_t>, pair<Double_t, Double_t> > > >& _Kstar_spin,
 	const vector< pair<TString, pair<const Double_t, const Double_t> > >& _Kstar_spin,
 	const vector< TString >& _varNames,
@@ -166,59 +134,21 @@ public:
     TComplex ME(string helLb, string help, string helDmu) const ;
     */
     //
-    //TComplex AngularTerm(string R, string spinR, string helJ, string helDmu) const ;
-    TComplex AngularTerm(Double_t cKs, TString R, TString spinR, string helJ, string helDmu) const ;
-    TComplex ME(Double_t cKs, string helDmu) const ;
+    TComplex AngularTerm(Double_t cKs, TString R, TString spinR, string helJ, string helDmu, Double_t phiTrue) const ;
+    TComplex ME(Double_t cKs, string helDmu, Double_t phiTrue) const ;
     //
-    //TComplex ME2() const ;
-    //TComplex PDF() const ;
-    Double_t ME2(Double_t cKs) const ;
-    Double_t PDF(Double_t cKs) const ;
+    Double_t ME2(Double_t cKs, Double_t phiTrue) const ;
+    Double_t PDF(Double_t cKs, Double_t phiTrue) const ;
     
 
 protected:
 
-  /*
-  // Lambda_b -> J/psi Lambda* -> mu+ mu- K- p
-  RooRealProxy mKP ;
-  RooRealProxy cLb ;
-  RooRealProxy cJ ;
-  RooRealProxy cLs ;
-  RooRealProxy phiMu ;
-  RooRealProxy phiK ;
-    // Lambda*(1600)    
-    RooRealProxy a1600L0S1 ;
-    RooRealProxy b1600L0S1 ;
-    RooRealProxy a1600L1S1 ;
-    RooRealProxy b1600L1S1 ;
-    RooRealProxy a1600L1S3 ;
-    RooRealProxy b1600L1S3 ;
-    RooRealProxy a1600L2S3 ;
-    RooRealProxy b1600L2S3 ;
-    // Lambda*(1670)    
-    RooRealProxy a1670L0S1 ;
-    RooRealProxy b1670L0S1 ;
-    RooRealProxy a1670L1S1 ;
-    RooRealProxy b1670L1S1 ;
-    RooRealProxy a1670L1S3 ;
-    RooRealProxy b1670L1S3 ;
-    RooRealProxy a1670L2S3 ;
-    RooRealProxy b1670L2S3 ;
-  */
   // B^0 -> psi(nS) K* -> mu+ mu- K- pi+
   RooRealProxy mKP ;
   RooRealProxy cJ ;
   RooRealProxy mPsiP ;
   RooRealProxy phi ;
-  /*
-    // K*(892)    
-    RooRealProxy a892m1 ;
-    RooRealProxy b892m1 ;
-    RooRealProxy a892z ;
-    RooRealProxy b892z ;
-    RooRealProxy a892p1 ;
-    RooRealProxy b892p1;
-  */
+  RooRealProxy B0beauty ;
   //map< TString,RooRealProxy* > amplitudeVarProxy_map;
   //vector< pair<TString, pair< pair<Double_t, Double_t>, pair<Double_t, Double_t> > > > Kstar_spin;
   //vector< TString > varNames;

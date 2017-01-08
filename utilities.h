@@ -1,3 +1,5 @@
+#include "TMath.h"
+
 Double_t denom2_for_cosTheta_FromMasses(const Double_t sameSideM2, const Double_t psi_nSM2, const Double_t motherM2, const Double_t refM2, const Double_t otherM2) {
   return ((1./4.)*pow(motherM2 - psi_nSM2 + sameSideM2,2) - sameSideM2*motherM2) * ((1./4.)*pow(sameSideM2 - otherM2 + refM2,2) - sameSideM2*refM2) ;
 }
@@ -65,3 +67,4 @@ Bool_t Dalitz_contour_host(const Double_t mKP, const Double_t mPsiP, const Bool_
   return kTRUE ;
 
 }
+
