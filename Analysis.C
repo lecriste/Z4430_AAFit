@@ -189,7 +189,7 @@ void Analysis()
   Kstar_spin.push_back( make_pair("892_1", make_pair(M892,G892) ) ) ;
   helJ_map["892_1_0"] = make_pair(1.,0.); helJ_map["892_1_p1"] = make_pair(0.844,3.14); helJ_map["892_1_m1"] = make_pair(0.196,-1.7); // from Belle
   //helJ_map["892_1_0"] = make_pair(0.775,0.); helJ_map["892_1_p1"] = make_pair(0.159,1.563); helJ_map["892_1_m1"] = make_pair(0.612,2.712); // from EvtGen
-  
+
   cout <<"Adding K*(800)..." <<endl;
   Kstar_spin.push_back( make_pair("800_0", make_pair(M800,G800) ) ) ;
   helJ_map["800_0_0"] = make_pair(1.12,2.3);
@@ -553,7 +553,7 @@ void Analysis()
 
       TString pdfTitle = "bkg("+bkgtype+") pdf";
       //RooHistPdf* bkgHistPdf = new RooHistPdf(bkgName+"PDF",pdfTitle, *bkgVars, *bkgHist, 9) ;
-      RooHistPdf* bkgHistPdf = new RooHistPdf(bkgName+"PDF",pdfTitle, *bkgVars, *bkgHist, 0) ;	
+      RooHistPdf* bkgHistPdf = new RooHistPdf(bkgName+"PDF",pdfTitle, *bkgVars, *bkgHist, 0) ;
  //If last argument is zero, the weight for the bin enclosing the coordinates contained in 'bin' is returned. For higher values, the result is interpolated in the real dimensions of the dataset with an order of interpolation equal to the value provided (more than ? does not work for Dalitz efficiencies, ? for masses efficiencies, ? for angles)
       bkgHistPdf->setUnitNorm(kTRUE);
 
@@ -631,7 +631,7 @@ void Analysis()
   //effHisto_names[0] = make_pair(make_pair("RelEff_cos_Kstar_helicityAngle_vs_KPiSq_varBins",make_pair(&sqDalitz,make_pair(m2KPi_order_relEff,cosKstar_order_relEff))), make_pair("relEffSqDalitz",make_pair(make_pair("m2KPi",mass2KPi_title),make_pair("cosKstar",cosKstar_title)))); DalitzEff = kTRUE;
 
   pair<RooAbsPdf*, Float_t> effPdf[] = {make_pair(null,0.),make_pair(null,0.)};
-  //effFile = 0;	
+  //effFile = 0;
   if (effFile)
     for (Int_t iEff=0; iEff <1 ; ++iEff) {
       TString effName = effHisto_names[iEff].second.first;
@@ -802,7 +802,7 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
 
 
   Int_t nLegendEntries = 0;
-  
+
   std::cout<<model->getVal()<<std::endl;
   // Generate toy data from pdf and plot data and p.d.f on frame
   cout <<"\nGenerating " <<nEvents.getVal() <<" events according to " <<model->GetTitle() <<" pdf for " <<model->GetName() <<endl;
