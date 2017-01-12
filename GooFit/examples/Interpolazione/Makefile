@@ -50,7 +50,7 @@ WRKDIR = $(GOOFITDIR)/wrkdir/
 THRUSTO         = $(WRKDIR)/Variable.o $(WRKDIR)/FitManager.o $(WRKDIR)/GooPdfCUDA.o $(WRKDIR)/Faddeeva.o $(WRKDIR)/FitControl.o $(WRKDIR)/PdfBase.o $(WRKDIR)/DataSet.o $(WRKDIR)/BinnedDataSet.o $(WRKDIR)/UnbinnedDataSet.o $(WRKDIR)/FunctorWriter.o
 ROOTRIPDIR      = $(GOOFITDIR)/rootstuff/
 ROOTUTILLIB     = $(ROOTRIPDIR)/libRootUtils.so
-PROGRAMS        = AmplitudeAnalysis
+PROGRAMS        = Interpolation
 
 .SUFFIXES:
 
@@ -59,7 +59,7 @@ all:    $(PROGRAMS)
 %.o:	%.cu
 	$(CXX) $(INCLUDES) $(ROOT_INCLUDES) $(DEFINEFLAGS) $(CXXFLAGS) -c -o $@ $<
 
-AmplitudeAnalysis:	AmplitudeAnalysis.o
+Interpolation:	Interpolation.o
 			$(LD) $(LDFLAGS) $^ $(THRUSTO) $(LIBS) $(ROOT_LIBS) $(OutPutOpt) $@
 			@echo "$@ done"
 

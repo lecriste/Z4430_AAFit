@@ -983,6 +983,7 @@ int main(int argc, char** argv) {
   //BinnedDataSet effDatasetAngles(obserVariables,"efficiency Dataset Angles");
   std::cout<<"Initialising pdfs " <<std::endl;
   std::cout<<"- Matrix p.d.f. " <<std::endl;
+
   if (effPdfProd) {
 
     int iVar1 = 0, iVar2 = 1, iVar3 = 2, iVar4 = 3;
@@ -1030,9 +1031,11 @@ int main(int argc, char** argv) {
     // massVars.push_back(obserVariables[iVar1]);
     // massVars.push_back(obserVariables[iVar2]);
 
+
     effDatasetMasses = new BinnedDataSet(obserVariables,"efficiency Dataset Masses");
     effDatasetAngles = new BinnedDataSet(obserVariables,"efficiency Dataset Angles");
     effDataset = new BinnedDataSet(obserVariables,"efficiency Dataset Angles");
+
 
     //INITIALIZE TO ZERO
 
@@ -1087,10 +1090,18 @@ int main(int argc, char** argv) {
 
     }
 
-
-    efficiencyHistMasses = new FlatHistoPdf ("EfficiencyMassPdf",effDatasetMasses,obserVariables);
-    efficiencyHistAngles = new FlatHistoPdf ("EfficiencyAnglesPdf",effDatasetAngles,obserVariables);
-    effHist = new FlatHistoPdf ("EfficienciesPdf",effDataset,obserVariables);
+    if(effProdFlat)
+    {
+      efficiencyHistMasses = new FlatHistoPdf ("EfficiencyMassPdf",effDatasetMasses,obserVariables);
+      efficiencyHistAngles = new FlatHistoPdf ("EfficiencyAnglesPdf",effDatasetAngles,obserVariables);
+      effHist = new FlatHistoPdf ("EfficienciesPdf",effDataset,obserVariables);
+    }
+    else if(effProdInter)
+    {
+      //efficiencyHistMasses = new FlatHistoPdf ("EfficiencyMassPdf",effDatasetMasses,obserVariables);
+      //efficiencyHistAngles = new FlatHistoPdf ("EfficiencyAnglesPdf",effDatasetAngles,obserVariables);
+      effHist = new FlatHistoPdf ("EfficienciesPdf",effDataset,obserVariables);
+    }
     //efficiencyHistMasses = new BiDimHistoPdf ("EfficiencyPdf",effDatasetMasses,massVars,1);
     // UnbinnedDataSet plottingGridMasses(massVars);
     //
