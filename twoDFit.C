@@ -149,6 +149,7 @@ RooAbsPdf* twoDFit(RooAbsReal& x, RooAbsReal& y, const TH2F* hist, const Int_t p
 
   TH2F* hist_nonConst = (TH2F*)hist->Clone();
   TString effName = hist_nonConst->GetName();
+  cout <<"Fitting " <<effName <<endl;
   Float_t xLow(0), xHigh(0), yLow(0), yHigh(0);
   setup(effName, xLow, xHigh, yLow, yHigh, psi_nS, xOrder, yOrder);
   /*
