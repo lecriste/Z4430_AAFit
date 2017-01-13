@@ -432,21 +432,22 @@ void Analysis()
   // B^{0} -> psi(nS) #pi^{+} K^{-}
   //RooAbsPdf* BdToPsiPiK_PHSP = new RooGenericPdf("BdToPsiPiK_PHSP","3-body PHSP","sqrt( pow(massKPi,4) + pow(mPion,4) + pow(mKaon,4) - 2*pow(massKPi,2)*pow(mPion,2) - 2*pow(massKPi,2)*pow(mKaon,2) - 2*pow(mPion,2)*pow(mKaon,2) ) * sqrt( pow(mBd,4) + pow(massKPi,4) + pow(mPsi,4) - 2*pow(mBd,2)*pow(massKPi,2) - 2*pow(mBd,2)*pow(mPsi,2) - 2*pow(massKPi,2)*pow(mPsi,2) ) / (massKPi)", RooArgSet(massKPi,mPion,mKaon,mBd,mPsi)); // variables name used in the formula must be = name of the RooVariables in the list
   //cout <<"\nBdToPsiPiK_PHSP.getVal() =\n" <<BdToPsiPiK_PHSP->getVal() <<endl; return;
-  RooAbsPdf* BdToPsiPiK_PHSP = new RooGenericPdf("BdToPsiPiK_PHSP","3-body PHSP","sqrt( pow(mass2KPiFor,2) + pow(m2Pion,2) + pow(m2Kaon,2) - 2*mass2KPiFor*m2Pion - 2*mass2KPiFor*m2Kaon - 2*m2Pion*m2Kaon ) * sqrt( pow(m2Bd,2) + pow(mass2KPiFor,2) + pow(m2Psi,2) - 2*m2Bd*mass2KPiFor - 2*m2Bd*m2Psi - 2*mass2KPiFor*m2Psi ) / sqrt(mass2KPiFor)", RooArgSet(mass2KPiFor,m2Pion,m2Kaon,m2Bd,m2Psi)); // variables name used in the formula must be = name of the RooVariables in the list
+  RooAbsPdf* BdToPsiPiK_PHSP = new RooGenericPdf("BdToPsiPiK_PHSP","3-body PHSP","sqrt( pow(mass2KPiFor,2) + pow(m2Pion,2) + pow(m2Kaon,2) - 2*mass2KPiFor*m2Pion - 2*mass2KPiFor*m2Kaon - 2*m2Pion*m2Kaon ) * sqrt( pow(m2Bd,2) + pow(mass2KPiFor,2) + pow(m2Psi,2) - 2*m2Bd*mass2KPiFor - 2*m2Bd*m2Psi - 2*mass2KPiFor*m2Psi ) / sqrt(mass2KPiFor)", RooArgSet(mass2KPiFor,m2Pion,m2Kaon,m2Bd,m2Psi)); // variables name used in the formula must be = RooVariables name in the RooArgSet
   //cout <<"\nBdToPsiPiK_PHSP.getVal() =\n" <<BdToPsiPiK_PHSP->getVal() <<endl; return;
 
-  RooAbsPdf* bkgPDF = BdToPsiPiK_PHSP; bkgPDF = 0;
+  RooAbsPdf* bkgPDF = BdToPsiPiK_PHSP; //bkgPDF = 0;
 
   Double_t totEvents = 2000;
   //totEvents *= 2.5;
-  totEvents *= 5;
+  //totEvents *= 5;
   //totEvents *= 10;
   //totEvents *= 10; totEvents *= 5;
   //totEvents *= 10; totEvents *= 3;
   //totEvents /= 2;
   RooRealVar nSig("nSig", "n_{SIG}", 0, 0, 1E6);
   //nSig.setVal( 10*nSig.getVal() ); // Does not work on the fly
-  RooRealVar nBkg("nBkg", "n_{BKG}", 0, 0, 1E6);
+  Float_t purity = 0.75;
+  RooRealVar nBkg("nBkg", "n_{BKG}", nSig.getVal() * (1-purity), 0, 1E6);
   //RooExtendPdf *extendedBkgPDF = new RooExtendPdf("extendedBkgPDF", "Signal 0 PDF", *bkgPDF, nBkg) ;
   //RooPlot* test_frame = massKPi.frame() ; test_frame->SetTitle( "Projection of "+massKPi.getTitle() ); extendedBkgPDF->plotOn(test_frame) ; test_frame->Draw() ; return;
 
@@ -458,11 +459,11 @@ void Analysis()
     nSig.setVal( totEvents );
     model = (RooAbsPdf*)sigPDF;
     if (bkgPDF) {
-      cout <<"Adding " <<bkgPDF->GetTitle() <<endl;
+      cout <<"\nAdding " <<bkgPDF->GetTitle() <<endl;
       nSig.setVal( totEvents/2 ); nBkg.setVal( totEvents/2 );
       model = (RooAbsPdf*) new RooAddPdf("","",RooArgList(*sigPDF,*bkgPDF),RooArgList(nSig,nBkg)) ;
       model->SetName( TString::Format("%s__plus__%s",sigPDF->GetName(),bkgPDF->GetName()) );
-      model->SetTitle( TString::Format("%s + %s",model->GetTitle(),bkgPDF->GetTitle()) );
+      model->SetTitle( TString::Format("%s + %s",sigPDF->GetTitle(),bkgPDF->GetTitle()) );
     }
   } else if (bkgPDF) {
     cout <<"Building " <<bkgPDF->GetTitle() <<endl;
@@ -626,7 +627,7 @@ void Analysis()
   //TString effFileName = path+"officialMC_noPtEtaCuts_JPsi_Bd2MuMuKPi_2p0Sig_4p0to6p0SB.root";
   //TString effFileName = path+"officialMC_noPtEtaCuts_JPsi_Bd2MuMuKPi_2p0Sig_5p0to9p0SB.root";
   TString effFileName = path+"officialMC_noPtEtaCuts_JPsi_Bd2MuMuKPi_2p0Sig_6p0to9p0SB.root";
-  effFileName = "TMVApp_MC_withBDTCutAt0p00_JPsi_2p0Sig_6p0to9p0SB.root";
+  effFileName = path+"TMVApp_MC_withBDTCutAt0p00_JPsi_2p0Sig_6p0to9p0SB.root";
   cout <<"\nOpening \"" <<effFileName <<endl;
   TFile *effFile = TFile::Open(effFileName);
   RooProdPdf* modelWithEff = 0;
@@ -634,13 +635,15 @@ void Analysis()
   const Int_t mKPi_order_relEff = 4, mPsiPi_order_relEff = 4, cosKstar_order_relEff = 4;
   pair< pair<TString, pair<RooArgSet*,pair<Int_t,Int_t> > >, pair<TString,pair< pair<TString,TString>,pair<TString,TString> > > > effHisto_names[] = {make_pair( make_pair("RelEff_psi2SPi_vs_KPi_B0constr_Dalitz",make_pair(&mass2Vars,make_pair(m2KPi_order_relEff,m2PsiPi_order_relEff))), make_pair("relEffDalitz",make_pair(make_pair("m2KPi",mass2KPi_title),make_pair("m2PsiPi",mass2PsiPi_title)))), make_pair(make_pair("RelEff_"+anglesScatt_name,make_pair(&angleVars,make_pair(cosMuMu_order_relEff,phi_order_relEff))), make_pair("relEffAngles",make_pair(make_pair("cosMuMu",cosMuMu_title),make_pair("phi",phi_title))))}; DalitzEff = kTRUE;
   // if you use &mass2Fors you get "ERROR:InputArguments -- RooAbsDataStore::initialize(RelEff_psi2SPi_vs_KPi_B0constr): Data set cannot contain non-fundamental types"
-  effHisto_names[0] = make_pair(make_pair("RelEff_psi2SPi_vs_KPi_B0constr",make_pair(&massVars,make_pair(mKPi_order_relEff,mPsiPi_order_relEff))), make_pair("relEffMasses",make_pair(make_pair("mKPi",massKPi_title),make_pair("mPsiPi",massPsiPi_title)))); DalitzEff = kFALSE;
+  //effHisto_names[0] = make_pair(make_pair("RelEff_psi2SPi_vs_KPi_B0constr",make_pair(&massVars,make_pair(mKPi_order_relEff,mPsiPi_order_relEff))), make_pair("relEffMasses",make_pair(make_pair("mKPi",massKPi_title),make_pair("mPsiPi",massPsiPi_title)))); DalitzEff = kFALSE;
+  effHisto_names[0] = make_pair(make_pair("RelEff_psi2SPi_vs_KPi_B0constr_1B0_BDTCutAt0p00",make_pair(&massVars,make_pair(mKPi_order_relEff,mPsiPi_order_relEff))), make_pair("relEffMasses",make_pair(make_pair("mKPi",massKPi_title),make_pair("mPsiPi",massPsiPi_title)))); DalitzEff = kFALSE;
   //effHisto_names[0] = make_pair(make_pair("RelEff_cos_Kstar_helicityAngle_vs_KPiSq_varBins",make_pair(&sqDalitz,make_pair(m2KPi_order_relEff,cosKstar_order_relEff))), make_pair("relEffSqDalitz",make_pair(make_pair("m2KPi",mass2KPi_title),make_pair("cosKstar",cosKstar_title)))); DalitzEff = kTRUE;
-
+  effHisto_names[1] = make_pair(make_pair("RelEffErr_planesAngle_vs_cos_psi2S_helicityAngle_BDTCutAt0p00",make_pair(&angleVars,make_pair(cosMuMu_order_relEff,phi_order_relEff))), make_pair("relEffAngles",make_pair(make_pair("cosMuMu",cosMuMu_title),make_pair("phi",phi_title))));
   pair<RooAbsPdf*, Float_t> effPdf[] = {make_pair(null,0.),make_pair(null,0.)};
+
   //effFile = 0;
   if (effFile)
-    for (Int_t iEff=0; iEff <1 ; ++iEff) {
+    for (Int_t iEff=0; iEff <2 ; ++iEff) {
       TString effName = effHisto_names[iEff].second.first;
       const TH2F* relEffTH2 = (TH2F*)effFile->Get( effHisto_names[iEff].first.first ) ;
       if (!relEffTH2) {
@@ -803,21 +806,17 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
   //return;
 
 
-  vector <RooPlot*> var_frame;
-  for (Int_t iVar=0; iVar<kinematicVars.getSize(); ++iVar)
-    var_frame.push_back( ((RooRealVar&)kinematicVars[sigPDF_varNameTitle[iVar].first]).frame(Title("Projection of "+sigPDF_varNameTitle[iVar].second)) );
-
-
   Int_t nLegendEntries = 0;
-
-  std::cout<<model->getVal()<<std::endl;
+  
+  //std::cout<<model->getVal() <<std::endl;
   // Generate toy data from pdf and plot data and p.d.f on frame
   cout <<"\nGenerating " <<nEvents.getVal() <<" events according to " <<model->GetTitle() <<" pdf for " <<model->GetName() <<endl;
   timeval genTime;
   gettimeofday(&start, NULL);
   startCPU = times(&startProc);
   //
-  RooDataSet* dataGenPDF = model->generate(kinematicVars, nEvents.getVal(), Verbose(kTRUE), Name("Generated_data_from_PDF")) ; dataGenPDF->SetTitle("Generated data from PDF");
+  TString dataGenName = "Generated_data_from_PDF"; TString dataGen_Name = dataGenName;
+  RooDataSet* dataGenPDF = model->generate(kinematicVars, nEvents.getVal(), Verbose(kTRUE), Name(dataGenName)) ; dataGenPDF->SetTitle(dataGenName.ReplaceAll("_"," "));
   //
   stopCPU = times(&stopProc);
   gettimeofday(&stop, NULL);
@@ -918,12 +917,19 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
   dalitz_rect->Draw("COLZ");
   dalitzRect_C->SaveAs(TString::Format("%s/%s_%s%s",dir.Data(),dalitzRect_C->GetTitle(),plotName.Data(),extension.Data()));
 
-  cout <<"\nPlotting m(psiPi)..." <<endl;
-  dataGenPDF->plotOn( var_frame[2] ) ;
-  TCanvas* massPsiP_C = new TCanvas( TString::Format("%s_C",massPsiPi.GetName()), massPsiPi.GetName(), 800,600) ;
-  massPsiP_C->cd();
-  var_frame[2]->Draw() ;
-  massPsiP_C->SaveAs(TString::Format("%s/%s__MuMuPi%s",dir.Data(),plotName.Data(),extension.Data()));
+  vector <RooPlot*> var_frame;
+  for (Int_t iVar=0; iVar<kinematicVars.getSize(); ++iVar) {
+    RooRealVar var = (RooRealVar&)kinematicVars[sigPDF_varNameTitle[iVar].first];
+    var_frame.push_back( var.frame(Title("Projection of "+sigPDF_varNameTitle[iVar].second)) );
+    //
+    cout <<"\nPlotting " <<var.GetName() <<" ..." <<endl;
+    dataGenPDF->plotOn( var_frame[iVar] ) ;
+    TString shortName = var.GetName(); shortName.ReplaceAll("mass","m"); shortName.ReplaceAll("cos","c");
+    TCanvas* var_C = new TCanvas( TString::Format("%s_C",var.GetName()), var.GetTitle(), 800,600) ;
+    var_C->cd();
+    var_frame[iVar]->Draw() ;
+    var_C->SaveAs(TString::Format("%s/%s__%s%s",dir.Data(),plotName.Data(),shortName.Data(),extension.Data()));
+  }
   return;
   Int_t fullModelColor = 2; // 2 = kRed
   Int_t bkgColor = fullModelColor;

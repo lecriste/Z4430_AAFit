@@ -75,7 +75,8 @@ std::string minos("MINOS");   std::string n("N");
 
 fptype phaseSpaceFunction(fptype x,fptype mP,fptype m1,fptype m2,fptype m3)
 {
-  fptype function = isnan(sqrt(pow(x,4) + pow(m1,4) + pow(m2,4) - 2*pow(x,2)*pow(m1,2) - 2*pow(x,2)*pow(m2,2) - 2*pow(m1,2)*pow(m2,2)) * sqrt(pow(mP,4) + pow(x,4) + pow(m3,4) - 2*pow(mP,2)*pow(x,2) - 2*pow(mP,2)*pow(m3,2) - 2*pow(x,2)*pow(m3,2) ) / (x)) ? 0 : (sqrt(pow(x,4) + pow(m1,4) + pow(m2,4) - 2*pow(x,2)*pow(m1,2) - 2*pow(x,2)*pow(m2,2) - 2*pow(m1,2)*pow(m2,2)) * sqrt(pow(mP,4) + pow(x,4) + pow(m3,4) - 2*pow(mP,2)*pow(x,2) - 2*pow(mP,2)*pow(m3,2) - 2*pow(x,2)*pow(m3,2) ) / (x));
+  fptype value = sqrt(pow(x,4) + pow(m1,4) + pow(m2,4) - 2*pow(x,2)*pow(m1,2) - 2*pow(x,2)*pow(m2,2) - 2*pow(m1,2)*pow(m2,2)) * sqrt(pow(mP,4) + pow(x,4) + pow(m3,4) - 2*pow(mP,2)*pow(x,2) - 2*pow(mP,2)*pow(m3,2) - 2*pow(x,2)*pow(m3,2) ) / (x) ;
+  fptype function = isnan(value) ? 0 : value;
 
   return function;
 }
@@ -682,6 +683,8 @@ int main(int argc, char** argv) {
   // angle between decay planes
   Variable* phi = new Variable(phi_name.Data(),0.25,-TMATH_PI,TMATH_PI); phi->numbins = bin4;
 
+  Variable* B0beauty = new Variable("B0beauty",0.,-2,+2);
+
   //fptype ratio = ((fptype)(plottingfine))/((fptype)massKPi->numbins);
   fptype ratioMKPi = ((fptype)(plottingfine1))/((fptype)datapoints1);
   fptype ratioCosMuMu = ((fptype)(plottingfine2))/((fptype)datapoints2);
@@ -864,16 +867,17 @@ int main(int argc, char** argv) {
       }
 
       fptype var1, var2, var3, var4;
-
+      Int_t B0_beauty = 0;
       Int_t evt=0;
       cout <<"\n- Reading " <<events <<" out of " <<totEvents <<" events from " <<datasetName <<" and filling variables histograms" <<endl;
       dataTxt.clear(); dataTxt.seekg (0, ios::beg);
-      while( (evt < events)  &&  (dataTxt >> var1 >> var2 >> var3 >> var4) ) {
+      while ( (evt < events)  &&  (dataTxt >> var1 >> var2 >> var3 >> var4 >> B0_beauty) ) {
 	evt++;
 	massKPi->value = var1;
 	massPsiPi->value = var2;
 	cosMuMu->value = var3;
 	phi->value = var4;
+	B0beauty->value = B0_beauty;
 
 	//std::cout << massKPi->value << " - " <<cosMuMu->value << " - " << massPsiPi->value << " - " << phi->value << " - " << std::endl;
 	if (Dalitz_contour_host(massKPi->value, massPsiPi->value, kFALSE, (Int_t)psi_nS->value) ) {
@@ -911,7 +915,7 @@ int main(int argc, char** argv) {
 	return -1;
       }
 
-      Double_t obs1,obs2,obs3,obs4;
+      Double_t obs1, obs2, obs3, obs4;
 
       dataNTuple->SetBranchAddress("massKPi",&obs1);
       dataNTuple->SetBranchAddress("massMuMuPi",&obs2);
@@ -1137,7 +1141,7 @@ int main(int argc, char** argv) {
   Variable* sFrac = new Variable("sFrac",0.7);
   //Variable* halfFrac = new Variable("halfFrac",0.25);
 
-  GooPdf* matrix = new MatrixPdf("Kstars_signal", massKPi, cosMuMu, massPsiPi, phi,Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
+  GooPdf* matrix = new MatrixPdf("Kstars_signal", massKPi, cosMuMu, massPsiPi, phi, B0beauty, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
   GooPdf* background;
   GooPdf* sumPdf;
 
@@ -1304,7 +1308,7 @@ int main(int argc, char** argv) {
         totalPdf = sumPdf;
     } // if (bkgPhaseSpaceMap)
     else {
-      if(effPdfProd) {
+      if (effPdfProd) {
 	pdfComponents.push_back(matrix);
 	pdfComponents.push_back(efficiencyHistMasses);
 
@@ -1513,8 +1517,7 @@ int main(int argc, char** argv) {
   gettimeofday(&startTime, NULL);
   startC = times(&startProc);
   //
-  if(bkgPhaseSpaceMap && effPdfProd)
-  {
+  if (bkgPhaseSpaceMap && effPdfProd) {
     sumPdf->setData(&plottingGridData);
     sumPdf->getCompProbsAtDataPoints(pdfTotalValues);
   }
@@ -1962,7 +1965,7 @@ int main(int argc, char** argv) {
     // Normalising, integrating and evaluating the single component pdf
 
     sprintf(bufferstring,"Kstars_signal_plot_%d",kCounter);
-    GooPdf* matrixPlot = new MatrixPdf(bufferstring, massKPi, cosMuMu, massPsiPi, phi,MassesPlot,GammasPlot,SpinsPlot,asPlot,bsPlot,psi_nS,dRadB0,dRadKs);
+    GooPdf* matrixPlot = new MatrixPdf(bufferstring, massKPi, cosMuMu, massPsiPi, phi, B0beauty, MassesPlot,GammasPlot,SpinsPlot,asPlot,bsPlot,psi_nS,dRadB0,dRadKs);
     matrixPlot->setData(&plottingGridData);
 
     matrixPlot->copyParams();
@@ -2139,8 +2142,7 @@ int main(int argc, char** argv) {
   pointsX[0] = massKPi->lowerlimit; pointsX[1] = massKPi->upperlimit;
   pointsY[0] = 0.01; pointsY[1] = massKPiHisto.GetMaximum();
   TGraph* pointsMKP = new TGraph(2,pointsX,pointsY);
-  if(bkgPhaseSpace && !effPdfProd)
-  {
+  if (bkgPhaseSpace && !effPdfProd) {
     multiGraphMKPi->Add(&signalTotalBkgPlotMKPi,"L");
     //multiGraphMKPi->Add(&signalTotalSigPlotMKPi,"L");
   }
@@ -2205,7 +2207,7 @@ int main(int argc, char** argv) {
   //Mass K Pi
   multiGraphMKPi->Draw("AL");
   massKPiHisto.Draw("Esame");
-  bkgMKPi->Draw("same");
+  if (bkgMKPi) bkgMKPi->Draw("same");
   legPlot->Draw(); fitStat->Draw();
 
   // first Logy(1) and after Logy(0), viceversa does not work
@@ -2219,7 +2221,7 @@ int main(int argc, char** argv) {
   //CosMuMu
   multiGraphCosMuMu->Draw("AL");
   cosMuMuHisto.Draw("Esame");
-  bkgCMuMu->Draw("same");
+  if (bkgCMuMu) bkgCMuMu->Draw("same");
   // it's enough on the m(KPi) plot
   //legPlot->Draw(); //fitStat->Draw();
 
@@ -2233,7 +2235,7 @@ int main(int argc, char** argv) {
   //massPsiPi
   multiGraphmassPsiPi->Draw("AL");
   massPsiPiHisto.Draw("Esame");
-  bkgMPsiPi->Draw("same");
+  if (bkgMPsiPi) bkgMPsiPi->Draw("same");
   // it's enough on the m(KPi) plot
   //legPlot->Draw(); //fitStat->Draw();
 
@@ -2247,7 +2249,7 @@ int main(int argc, char** argv) {
   //Phi
   multiGraphPhi->Draw("AL");
   phiHisto.Draw("Esame");
-  bkgPhi->Draw("same");
+  if (bkgPhi) bkgPhi->Draw("same");
   // it's enough on the m(KPi) plot
   //legPlot->Draw(); //fitStat->Draw();
 
