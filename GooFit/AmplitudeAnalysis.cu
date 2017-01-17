@@ -57,34 +57,35 @@
 timeval startTime, stopTime, totalTime;
 clock_t startC, stopC;
 tms startProc, stopProc;
-/*
-const fptype M892 = 0.89581 ; const fptype G892 = 0.0474; // From PDG charged only K*(892)
-const fptype M892e = 0.8961 ; const fptype G892e = 0.0507; // From EvtGen
-const fptype M1410 = 1.414; const fptype G1410 = 0.232; // K*1410
-const fptype M800 = 0.682; const fptype G800 = 0.547; //const fptype M800 = 0.931; const fptype G800 = 0.578; // K*800 Belle values: M = 0.946, G = 736
-const fptype M1430_0 = 1.425; const fptype G1430_0 = 0.270; // K*1430_0
-const fptype M1430_2 = 1.4324; const fptype G1430_2 = 0.109; // K*1430_2
-const fptype M1780_3 = 1.776; const fptype G1780_3 = 0.159; // K*1780_3
-*/
-const fptype M892e = 0.8961 ; const fptype G892e = 0.0507; // From EvtGen
+
+// const fptype M892 = 0.89581 ; const fptype G892 = 0.0474; // From PDG charged only K*(892)
+   const fptype M892e = 0.8961 ; const fptype G892e = 0.0507; // From EvtGen
+// const fptype M1410 = 1.414; const fptype G1410 = 0.232; // K*1410
+// const fptype M800 = 0.931; const fptype G800 = 0.578; // K*800
+// const fptype M1430_0 = 1.425; const fptype G1430_0 = 0.270; // K*1430_0
+// const fptype M1430_2 = 1.4324; const fptype G1430_2 = 0.109; // K*1430_2
+// const fptype M1780_3 = 1.776; const fptype G1780_3 = 0.159; // K*1780_3
+
 const fptype TMATH_PI = TMath::Pi();
 
 std::string migrad("MIGRAD"); std::string m("M");
 std::string hesse("HESSE");   std::string h("H");
 std::string minos("MINOS");   std::string n("N");
 
+bool debugging = false;
+
 fptype phaseSpaceFunction(fptype x,fptype mP,fptype m1,fptype m2,fptype m3)
 {
-  fptype value = sqrt(pow(x,4) + pow(m1,4) + pow(m2,4) - 2*pow(x,2)*pow(m1,2) - 2*pow(x,2)*pow(m2,2) - 2*pow(m1,2)*pow(m2,2)) * sqrt(pow(mP,4) + pow(x,4) + pow(m3,4) - 2*pow(mP,2)*pow(x,2) - 2*pow(mP,2)*pow(m3,2) - 2*pow(x,2)*pow(m3,2) ) / (x) ;
-  fptype function = isnan(value) ? 0 : value;
+   fptype value = sqrt(pow(x,4) + pow(m1,4) + pow(m2,4) - 2*pow(x,2)*pow(m1,2) - 2*pow(x,2)*pow(m2,2) - 2*pow(m1,2)*pow(m2,2)) * sqrt(pow(mP,4) + pow(x,4) + pow(m3,4) - 2*pow(mP,2)*pow(x,2) - 2*pow(mP,2)*pow(m3,2) - 2*pow(x,2)*pow(m3,2) ) / (x) ;
 
-  return function;
+   fptype function = isnan(value) ? 0 : value;
+
+   return function;
 }
 
 void debug(int line) {
-  #ifdef CUDADEBUGGING
+  if(debugging)
   std::cout <<"Debugging on line " <<line <<std::endl;
-  #endif
 }
 
 int parDotSpin (fptype dotSpin) {
@@ -118,12 +119,18 @@ void printinstruction() {
   std::cerr << "======= Instructions \n"
   	        << "\t-h,--help \t\t Show this help message\n"
             << "\t-evtGen \t\t Select EvtGen dataset and p.d.f. parameters\n"
-            << "\t-effH <4-dig-code> \t Perform the product of the pdf by the efficiency histogram ()\n"
-            << "\t\t\t\t\t\t - code1 ()\n"
+            << "\t-effH \t\t\t Perform the product of the pdf by the efficiency histogram \n"
+            << "\t-effHInt \t\t\t Perform the product of the pdf by the efficiency histogram interpolation \n"
+            << "\t-BkgMap \t\t Add Phase Space Background Map \n"
+            << "\t-BkgMapInt \t\t Add Phase Space Background Interpolation Map \n"
+            << "\t-Bkg \t\t\t Add Phase Space Background to p.d.f.\n"
+            //<< "\t-effH <4-dig-code> \t Perform the product of the pdf by the efficiency histogram ()\n"
+            //<< "\t\t\t\t\t\t - code1 ()\n"
 	          << "\t-n <events> \t\t Specify the number of events to use\n"
   	        << "\t-r <path> \t\t Read Generated Events from txt in <path>\n"
+            << "\t-o <path> \t\t Write estimated parameters in \" parameters.txt \" file in <path> (default . )\n"
             << "\t-algos <algo1algo2...>\t Select the mimimisation algos in the order they should \n \t\t\t\tbe performed (MIGRAD at least once) ["<<m<<" for MIGRAD, "<<h<<" for HESSE, "<<n<<" for MINOS]\n \t\t\t\t (e.g -algo "<<h<<m<<h<<n<<" for HESSE MIGRAD HESSE MINOS - default: MIGRAD only) \n"
-  	        << "\t-b1 <b1> \t\t Select binning for massKPi (for normalisation & integration, default: 40)\n"
+  	        << "\t-b1 <b1> \t\t Select binning for MassKPi (for normalisation & integration, default: 40)\n"
             << "\t-b2 <b2> \t\t Select binning for CosMuMu (for normalisation & integration, default: 40)\n"
             << "\t-b3 <b3> \t\t Select binning for massPsiPi (for normalisation & integration, default: 40)\n"
             << "\t-b4 <b4> \t\t Select binning for Phi (for normalisation & integration, default: 40)\n"
@@ -142,8 +149,8 @@ void printinstruction() {
             << "\t-k1430_0 \t\t Add K*_0(1430) to p.d.f.\n"
             << "\t-k1430_2 \t\t Add K*_2(1430) to p.d.f.\n"
             << "\t-k1780 \t\t\t Add K*_3(1780) to p.d.f.\n"
-            << "\t-BkgMap \t\t Add Phase Space Background Map \n"
-            << "\t-Bkg \t\t\t Add Phase Space Background to p.d.f.\n"
+            << "\t-b0Var \t\t\t Add B0 - B0Bar flag as variable \n"
+            << "\t-b0Flag \t\t\t Add B0 - B0Bar flag multplying phi \n"
             << std::endl;
 }
 
@@ -153,7 +160,7 @@ int main(int argc, char** argv) {
 
   char bufferstring[1024];
 
-  unsigned int events = 1000000;
+  unsigned int events = 100000;
   unsigned int nKstars = 0;
 
   unsigned int bin1 = compBins, bin2 = compBins, bin3 = compBins, bin4 = compBins;
@@ -170,25 +177,41 @@ int main(int argc, char** argv) {
   bool k1430Star2 = false;
   bool k1780Star = false;
 
+  bool b0Var = false;
+  bool b0Flag = false;
+
   bool bkgPhaseSpace = false;
-  bool bkgPhaseSpaceMap = false;
+
+  bool bkgHistMap = false;
+  bool bkgHistMapHis = false;
+  bool bkgHistMapInt = false;
+  bool bkgHistPlotting = false;
+
   bool effPdfProd = false;
+  bool effPdfInter = false;
+  bool effPdfFlat = false;
 
   bool evtGen = false;
 
   bool txtfile = false;
+  bool outParams = false;
+
+  bool ghostRead = false;
   //bool hesse = false;
 
   std::vector<std::string> algos;
   algos.push_back(migrad);
+
+  std::string oPath;
+  std::string iPath;
 
   TString datasetName = "Kstars";
   std::string underscores = "__";
   TString plotsDir = "./plots";
   std::vector< std::string> kStarNames;
 
-  TH2F* relEffTH2Mass = 0;
-  TH2F* relEffTH2Ang = 0;
+  TH2F* relEffTH2Mass = 0 , *relEffTH2Ang = 0;
+  TH2F relEffTH2[2], bkgTH2[2];
   TH2F* bkgTH2Mass = 0, *bkgTH2Ang = 0;
 
   TH1D* bkgMKPi=0, *bkgMPsiPi=0, *bkgPhi=0, *bkgCMuMu = 0;
@@ -372,16 +395,27 @@ int main(int argc, char** argv) {
     else if (arg == "-Bkg")
     {
       bkgPhaseSpace = true;
-      bkgPhaseSpaceMap = false;
+      bkgHistMap = false;
     }
     else if (arg == "-BkgMap")
     {
-      bkgPhaseSpaceMap = true;
-      bkgPhaseSpace = false;
+      bkgHistMapHis = true;
+      bkgHistMap = true;
+    }
+    else if (arg == "-BkgMapInt")
+    {
+      bkgHistMapInt = true;
+      bkgHistMap = true;
     }
     else if (arg == "-effH")
     {
       effPdfProd = true;
+      effPdfFlat = true;
+    }
+    else if (arg == "-effHInt")
+    {
+      effPdfProd = true;
+      effPdfInter = true;
     }
     else if (arg == "-txt")
     {
@@ -439,6 +473,36 @@ int main(int argc, char** argv) {
   		}
   	    }
   	}
+        else if (arg == "-o")
+    {
+      outParams = true;
+
+      if (i + 1 < argc) // Make sure we aren't at the end of argv!
+        {
+          i++;
+
+          oPath = argv[i];
+
+      }
+    }
+    else if (arg == "-local")
+    {
+      ghostRead = true;
+
+    }
+    else if (arg == "-b0Var")
+    {
+      b0Var = true;
+
+    }
+    else if (arg == "-debug")
+    {
+      debugging = true;
+    }
+    else if (arg == "-b0Flag")
+    {
+      b0Flag = true;
+    }
     //     else if (arg == "-H")
   	// {
   	//   hesse = true;
@@ -542,13 +606,13 @@ int main(int argc, char** argv) {
       cout <<"  - Three Bodies Phase-space background" <<endl;
       datasetName.Append("__plus__BdToPsiPiK_PHSP"); plotsName.Append("_PHSP");
     }
-    if (bkgPhaseSpaceMap) {
+    if (bkgHistMap) {
       cout <<"  - Combinatorial background" <<endl;
-      datasetName.Append("__plus__BdToPsiPiK_combinatorial"); plotsName.Append("__combinatorialBkg");
+      datasetName.Append("__withHistoBkg"); plotsName.Append("__withHistoBkg");
     }
-    if (effPdfProd) {
+    if (effPdfProd ) {
       cout <<"  - With efficiency multiplication" <<endl;
-      plotsName.Append("__effCorr");
+      plotsName.Append("__withMassesEff");datasetName.Append("__withMassesEff");
     }
   }
 
@@ -558,7 +622,7 @@ int main(int argc, char** argv) {
   debug(__LINE__);
 
   //CANVAS
-  TCanvas* canvas = new TCanvas("","",2000,1200);
+  TCanvas* canvas = new TCanvas("Canvas","Canvas",2000,1200);
 
   Variable* dRadB0  = new Variable("dRadB0",5.0);
   Variable* dRadKs  = new Variable("dRadKs",1.5);
@@ -682,8 +746,9 @@ int main(int argc, char** argv) {
   //Variable* massPsiPi = new Variable(massPsiPi_name.Data(),0.,-1,1); massPsiPi->numbins = bin3;
   // angle between decay planes
   Variable* phi = new Variable(phi_name.Data(),0.25,-TMATH_PI,TMATH_PI); phi->numbins = bin4;
-
-  Variable* B0beauty = new Variable("B0beauty",0.,-2,+2);
+  Variable* b0Beauty;
+  if(b0Var)
+    b0Beauty = new Variable("B0beauty",0.,-2,+2);
 
   //fptype ratio = ((fptype)(plottingfine))/((fptype)massKPi->numbins);
   fptype ratioMKPi = ((fptype)(plottingfine1))/((fptype)datapoints1);
@@ -696,6 +761,9 @@ int main(int argc, char** argv) {
   obserVariables.push_back(massPsiPi);
   obserVariables.push_back(cosMuMu);
   obserVariables.push_back(phi);
+
+  if(b0Var)
+    obserVariables.push_back(b0Beauty);
 
   std::vector<Variable*> massVariable;
   massVariable.push_back(massKPi);
@@ -840,7 +908,11 @@ int main(int argc, char** argv) {
   TH1F phiHisto(phi_name+"_Histo", phi_name+";"+phi_title, datapoints4, phi->lowerlimit, phi->upperlimit); phiHisto.SetLineColor(kBlack); phiHisto.SetMarkerColor(kBlack);
 
   TString path;
-  path = "/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/TMVA/";
+
+  if(ghostRead)
+    path = "/lustre/home/adrianodif/RootFiles/Z4430/";
+  else
+    path = "/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/TMVA/";
 
   //datasetName = "dataGen_B0"; //datasetName = "dataGen_B0bar";
   //datasetName.Append("_B0massConstraint");
@@ -849,7 +921,7 @@ int main(int argc, char** argv) {
 
   if(evtGen) datasetName.Append("__EvtGen");
   //datasetName.Append("_mPhi");
-  if (txtfile) datasetName.Append(".txt");
+  if (txtfile || outParams) datasetName.Append(".txt");
   TString fullDatasetName = "./datasets/"+datasetName;
   fullDatasetName = "../datasets/"+datasetName;
 
@@ -866,32 +938,36 @@ int main(int argc, char** argv) {
 	events = totEvents;
       }
 
-      fptype var1, var2, var3, var4;
-      Int_t B0_beauty = 0;
+      fptype var1, var2, var3, var4, var5;
+
       Int_t evt=0;
+
       cout <<"\n- Reading " <<events <<" out of " <<totEvents <<" events from " <<datasetName <<" and filling variables histograms" <<endl;
       dataTxt.clear(); dataTxt.seekg (0, ios::beg);
-      while ( (evt < events)  &&  (dataTxt >> var1 >> var2 >> var3 >> var4 >> B0_beauty) ) {
-	evt++;
-	massKPi->value = var1;
-	massPsiPi->value = var2;
-	cosMuMu->value = var3;
-	phi->value = var4;
-	B0beauty->value = B0_beauty;
+      while( (evt < events)  &&  (dataTxt >> var1 >> var2 >> var3 >> var4 >> var5) ) {
+	       evt++;
+	        massKPi->value = var1;
+	        massPsiPi->value = var2;
+	        cosMuMu->value = var3;
+	        phi->value = var4;
+          if(b0Var)
+            b0Beauty->value = var5;
+          else if(var5 < 0.0 && b0Flag)
+            phi->value *= -1.0;
 
-	//std::cout << massKPi->value << " - " <<cosMuMu->value << " - " << massPsiPi->value << " - " << phi->value << " - " << std::endl;
-	if (Dalitz_contour_host(massKPi->value, massPsiPi->value, kFALSE, (Int_t)psi_nS->value) ) {
-	  dataset.addEvent();
-	  masseKPiDatasetUn.addEvent();
-	  massesDataset.addEvent();
-	  //if(massesDataset.getNumEvents()==0) massesDataset.addEvent();
-	  massKPiHisto.Fill(massKPi->value);
-	  cosMuMuHisto.Fill(cosMuMu->value);
-	  massPsiPiHisto.Fill(massPsiPi->value);
-	  phiHisto.Fill(phi->value);
-	}
+	        //std::cout << massKPi->value << " - " <<cosMuMu->value << " - " << massPsiPi->value << " - " << phi->value << " - " << std::endl;
+        	if (Dalitz_contour_host(massKPi->value, massPsiPi->value, kFALSE, (Int_t)psi_nS->value) ) {
+        	  dataset.addEvent();
+        	  masseKPiDatasetUn.addEvent();
+        	  massesDataset.addEvent();
+        	  //if(massesDataset.getNumEvents()==0) massesDataset.addEvent();
+        	  massKPiHisto.Fill(massKPi->value);
+        	  cosMuMuHisto.Fill(cosMuMu->value);
+        	  massPsiPiHisto.Fill(massPsiPi->value);
+        	  phiHisto.Fill(phi->value);
+        	}
 
-	dataTxt.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+	        dataTxt.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
       }
     }
     dataTxt.close();
@@ -899,8 +975,8 @@ int main(int argc, char** argv) {
   else {
     //TString dataFileName = "./datafiles/Data_JPsi_2p0Sig_6p0to9p0SB.root";
     //TString dataFileName = "./datafiles/TMVApp_withBDTCutAt0p00_JPsi_2p0Sig_6p0to9p0SB.root";
-    // path = "./datafiles/";
     TString dataFileName = path+"TMVApp_data_withBDTCutAt0p00_JPsi_2p0Sig_6p0to9p0SB.root";
+
     TFile *inputFile = TFile::Open(dataFileName);
 
     if (!inputFile) {
@@ -911,11 +987,11 @@ int main(int argc, char** argv) {
       TNtupleD* dataNTuple = (TNtupleD*)inputFile->Get(dataTreeName);
 
       if(!(dataNTuple)){
-	std::cout<<"Data NTuple named \'"<<dataTreeName<<"\' not found in TFile \'" <<inputFile->GetName() <<"\'.\nReturning."<<std::endl;
-	return -1;
+      	std::cout<<"Data NTuple named \'"<<dataTreeName<<"\' not found in TFile \'" <<inputFile->GetName() <<"\'.\nReturning."<<std::endl;
+      	return -1;
       }
 
-      Double_t obs1, obs2, obs3, obs4;
+      Double_t obs1,obs2,obs3,obs4;
 
       dataNTuple->SetBranchAddress("massKPi",&obs1);
       dataNTuple->SetBranchAddress("massMuMuPi",&obs2);
@@ -923,37 +999,54 @@ int main(int argc, char** argv) {
       dataNTuple->SetBranchAddress("phi",&obs4);
 
       Int_t nEntries = dataNTuple->GetEntries();
+
       if (events > nEntries) {
-	cout <<"\nWARNING! The number of events requested is " <<events <<" but " <<dataFileName <<" contains only " <<nEntries <<" events." <<endl;
-	events = nEntries;
+      	cout <<"\nWARNING! The number of events requested is " <<events <<" but " <<dataFileName <<" contains only " <<nEntries <<" events." <<endl;
+      	events = nEntries;
       }
 
       cout <<"\n- Reading " <<events <<" out of " <<nEntries <<" events from " <<dataFileName <<" and filling variables histograms" <<endl;
       for (Int_t i=0; i<events; i++) {
-	dataNTuple->GetEntry(i);
+        	dataNTuple->GetEntry(i);
 
-	//std::cout<<obs1<<" - "<<obs2<<" - "<<obs3<<" - "<<obs4<<std::endl;
-	massKPi->value = obs1;
-	massPsiPi->value = obs2;
-	cosMuMu->value = obs3;
-	phi->value = obs4;
+        	//std::cout<<obs1<<" - "<<obs2<<" - "<<obs3<<" - "<<obs4<<std::endl;
+        	massKPi->value = obs1;
+        	massPsiPi->value = obs2;
+        	cosMuMu->value = obs3;
+        	phi->value = obs4;
 
-	if (Dalitz_contour_host(massKPi->value, massPsiPi->value, kFALSE, (Int_t)psi_nS->value) )
-	  {
-	    dataset.addEvent();
-	    masseKPiDatasetUn.addEvent();
-	    massesDataset.addEvent();
-	    //if(massesDataset.getNumEvents()==0) massesDataset.addEvent();
-	    massKPiHisto.Fill(massKPi->value);
-	    cosMuMuHisto.Fill(cosMuMu->value);
-	    massPsiPiHisto.Fill(massPsiPi->value);
-	    phiHisto.Fill(phi->value);
-	  }
+        	if (Dalitz_contour_host(massKPi->value, massPsiPi->value, kFALSE, (Int_t)psi_nS->value) )
+        	  {
+              debug(__LINE__);
+        	    dataset.addEvent();
+        	    masseKPiDatasetUn.addEvent();
+        	    massesDataset.addEvent();
+        	    //if(massesDataset.getNumEvents()==0) massesDataset.addEvent();
+        	    massKPiHisto.Fill(massKPi->value);
+        	    cosMuMuHisto.Fill(cosMuMu->value);
+        	    massPsiPiHisto.Fill(massPsiPi->value);
+        	    phiHisto.Fill(phi->value);
+        	  }
       }
 
     }
   } // if (!txtfile)
 
+  //OUTPUT PARAMETERS TXT
+
+  std::ofstream outParamsFile;
+
+  if(outParams)
+  {
+    std::string outPutPath = oPath+"outParams_"+datasetName.Data();
+    outParamsFile.open(outPutPath.data(),std::ofstream::out);
+    if ( !(outParamsFile.good()) ) {
+      std::cout <<"No path for output parameters txt : " <<outPutPath <<" provided.\nReturning." <<std::endl;
+      return 1;
+    }
+  }//if(outParams)
+
+  ////////////////////////
 
   for (size_t i = 0; i < massKPi->numbins; i++) {
     //masseKPiDataset.setBinContent(i,1000 - (500*i/massKPi->numbins));
@@ -974,12 +1067,17 @@ int main(int argc, char** argv) {
   GooPdf* efficiencyHistMasses;
   GooPdf* efficiencyHistAngles;
   GooPdf* effHist;
+  GooPdf* effHistPlot;
+
   BinnedDataSet* effDataset, *effDatasetMasses, *effDatasetAngles;
 
   ////////////////////////////////////
   //Backgrounds
   GooPdf* bkgHistMasses;
   GooPdf* bkgHistAngles;
+  GooPdf* bkgHistPdf;
+  GooPdf* bkgHistPdfPlot;
+
   BinnedDataSet* bkgDatasetMasses;
   BinnedDataSet* bkgDatasetAngles;
   BinnedDataSet* bkgDataset;
@@ -987,11 +1085,10 @@ int main(int argc, char** argv) {
   //BinnedDataSet effDatasetAngles(obserVariables,"efficiency Dataset Angles");
   std::cout<<"Initialising pdfs " <<std::endl;
   std::cout<<"- Matrix p.d.f. " <<std::endl;
-
   if (effPdfProd) {
 
-    int iVar1 = 0, iVar2 = 1, iVar3 = 2, iVar4 = 3;
-    int holdBinVar1, holdBinVar2,holdBinVar4,holdBinVar3;
+    int holdBinVar[4];
+    fptype lowerL[4], upperL[4];
 
     //int outCounter = 0;
 
@@ -1018,28 +1115,43 @@ int main(int argc, char** argv) {
       return -1;
     }
 
+    relEffTH2[0] = *relEffTH2Mass;
+    relEffTH2[1] = *relEffTH2Ang;
+
     std::cout<<"Masses efficiency TH2 read with bin massKPi = " <<relEffTH2Mass->GetNbinsX() <<" and bin massPsiPi = " <<relEffTH2Mass->GetNbinsY() <<std::endl;
     std::cout<<"Angles efficiency TH2 read with bin x = " <<relEffTH2Ang->GetNbinsX() <<" and bin y = " <<relEffTH2Ang->GetNbinsY() <<std::endl;
 
-    holdBinVar1 = obserVariables[iVar1]->numbins;
-    holdBinVar2 = obserVariables[iVar2]->numbins;
-    holdBinVar3 = obserVariables[iVar3]->numbins;
-    holdBinVar4 = obserVariables[iVar4]->numbins;
+    for(int y=0; y<4;y+=2){
 
-    obserVariables[iVar1]->numbins = relEffTH2Mass->GetNbinsX();
-    obserVariables[iVar2]->numbins = relEffTH2Mass->GetNbinsY();
-    obserVariables[iVar3]->numbins = relEffTH2Ang->GetNbinsX();
-    obserVariables[iVar4]->numbins = relEffTH2Ang->GetNbinsY();
+      std::cout<<"Vars "<<y<<" - "<<y+1<<"histo index"<<y/2<<std::endl;
+
+      holdBinVar[y] = obserVariables[y]->numbins;
+      obserVariables[y]->numbins = relEffTH2[y/2].GetNbinsX();
+
+      holdBinVar[y+1] = obserVariables[y+1]->numbins;
+      obserVariables[y+1]->numbins = relEffTH2[y/2].GetNbinsY();
+
+      lowerL[y] = obserVariables[y]->lowerlimit;
+      obserVariables[y]->lowerlimit = relEffTH2[y/2].GetXaxis()->GetBinLowEdge(1);
+
+      lowerL[y+1] = obserVariables[y+1]->lowerlimit;
+      obserVariables[y+1]->lowerlimit = relEffTH2[y/2].GetYaxis()->GetBinLowEdge(1);
+
+      upperL[y] = obserVariables[y]->upperlimit;
+      obserVariables[y]->upperlimit = relEffTH2[y/2].GetXaxis()->GetBinUpEdge(relEffTH2[y/2].GetNbinsX());
+
+      upperL[y+1] = obserVariables[y+1]->upperlimit;
+      obserVariables[y+1]->upperlimit = relEffTH2[y/2].GetYaxis()->GetBinUpEdge(relEffTH2[y/2].GetNbinsX());
+
+    }
 
     // std::vector< Variable*> massVars;
     // massVars.push_back(obserVariables[iVar1]);
     // massVars.push_back(obserVariables[iVar2]);
 
-
     effDatasetMasses = new BinnedDataSet(obserVariables,"efficiency Dataset Masses");
     effDatasetAngles = new BinnedDataSet(obserVariables,"efficiency Dataset Angles");
     effDataset = new BinnedDataSet(obserVariables,"efficiency Dataset Angles");
-
 
     //INITIALIZE TO ZERO
 
@@ -1078,6 +1190,8 @@ int main(int argc, char** argv) {
       massPsiPi->value = effDataset->getBinCenter(massPsiPi,j);
       phi->value = effDataset->getBinCenter(phi,j);
       cosMuMu->value = effDataset->getBinCenter(cosMuMu,j);
+      if(b0Var)
+        b0Beauty->value = 1.0;
 
       fptype anglEff = effDatasetAngles->getBinContent(effDatasetAngles->getBinNumber());
       fptype massEff = effDatasetMasses->getBinContent(effDatasetMasses->getBinNumber());
@@ -1094,17 +1208,20 @@ int main(int argc, char** argv) {
 
     }
 
-    if(effProdFlat)
+
+    if(effPdfFlat)
     {
       efficiencyHistMasses = new FlatHistoPdf ("EfficiencyMassPdf",effDatasetMasses,obserVariables);
       efficiencyHistAngles = new FlatHistoPdf ("EfficiencyAnglesPdf",effDatasetAngles,obserVariables);
       effHist = new FlatHistoPdf ("EfficienciesPdf",effDataset,obserVariables);
+      effHistPlot = new FlatHistoPdf ("EfficienciesPdf",effDataset,obserVariables);
     }
-    else if(effProdInter)
+    else if(effPdfInter)
     {
       //efficiencyHistMasses = new FlatHistoPdf ("EfficiencyMassPdf",effDatasetMasses,obserVariables);
       //efficiencyHistAngles = new FlatHistoPdf ("EfficiencyAnglesPdf",effDatasetAngles,obserVariables);
-      effHist = new FlatHistoPdf ("EfficienciesPdf",effDataset,obserVariables);
+      effHist = new BiDimHistoPdf ("InterEfficienciesPdf",effDataset,obserVariables);
+      effHistPlot = new BiDimHistoPdf ("InterEfficienciesPdf",effDataset,obserVariables);
     }
     //efficiencyHistMasses = new BiDimHistoPdf ("EfficiencyPdf",effDatasetMasses,massVars,1);
     // UnbinnedDataSet plottingGridMasses(massVars);
@@ -1121,16 +1238,22 @@ int main(int argc, char** argv) {
     //     }
     // }
 
-    obserVariables[iVar1]->numbins = holdBinVar1;
-    obserVariables[iVar2]->numbins = holdBinVar2;
-    obserVariables[iVar1]->numbins = holdBinVar3;
-    obserVariables[iVar2]->numbins = holdBinVar4;
+    for(int y=0; y<4;++y){
+
+      obserVariables[y]->numbins = holdBinVar[y];
+      obserVariables[y]->lowerlimit = lowerL[y];
+      obserVariables[y]->upperlimit = upperL[y];
+
+    }
     //return 0;
   }
 
 
   //PDFs
   GooPdf* totalPdf;
+  GooPdf* matrix;
+  GooPdf* background;
+  GooPdf* sumPdf;
 
   vector<PdfBase*> pdfComponents;
   vector<Variable*> pdfYield;
@@ -1141,10 +1264,10 @@ int main(int argc, char** argv) {
   Variable* sFrac = new Variable("sFrac",0.7);
   //Variable* halfFrac = new Variable("halfFrac",0.25);
 
-  GooPdf* matrix = new MatrixPdf("Kstars_signal", massKPi, cosMuMu, massPsiPi, phi, B0beauty, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
-  GooPdf* background;
-  GooPdf* sumPdf;
-
+  if(b0Var)
+    matrix = new MatrixPdf("Kstars_signal", massKPi, cosMuMu, massPsiPi, phi, b0Beauty, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
+  else
+    matrix = new MatrixPdf("Kstars_signal", massKPi, cosMuMu, massPsiPi, phi,Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
 
   std::cout<<"Initliasing p.d.f.s components"<<std::endl;
   if (bkgPhaseSpace)
@@ -1166,11 +1289,11 @@ int main(int argc, char** argv) {
       totalPdf = sumPdf;
   }
   else {
-    if (bkgPhaseSpaceMap) {
+    if (bkgHistMap) {
       std::cout<<"- Background map p.d.f."<<std::endl;
 
-      int iVar1 = 0, iVar2 = 1, iVar3 = 2, iVar4 = 3;
-      int holdBinVar1, holdBinVar2,holdBinVar4,holdBinVar3;
+      int holdBinVar[4];
+      fptype lowerL[4], upperL[4];
 
       // path = "./datafiles/";
       //TString bkgName = "Data_JPsi_2p0Sig_6p0to9p0SB.root";
@@ -1192,6 +1315,9 @@ int main(int argc, char** argv) {
         return -1;
       }
 
+      bkgTH2[0] = *bkgTH2Mass;
+      bkgTH2[1] = *bkgTH2Ang;
+
       bkgTH2Mass->Scale(1/bkgTH2Mass->GetEntries());
       bkgTH2Ang->Scale(1/bkgTH2Ang->GetEntries());
 
@@ -1201,15 +1327,36 @@ int main(int argc, char** argv) {
       std::cout<<"Masses Sidebands TH2 read with bin massKPi = " <<bkgTH2Mass->GetNbinsX() <<" and bin massPsiPi = " <<bkgTH2Mass->GetNbinsY() <<std::endl;
       std::cout<<"Angles Sidebands TH2 read with bin cosMuMu = " <<bkgTH2Ang->GetNbinsX() <<" and bin phi = " <<bkgTH2Ang->GetNbinsY() <<std::endl;
 
-      holdBinVar1 = obserVariables[iVar1]->numbins;
-      holdBinVar2 = obserVariables[iVar2]->numbins;
-      holdBinVar3 = obserVariables[iVar3]->numbins;
-      holdBinVar4 = obserVariables[iVar4]->numbins;
+      for(int y=0; y<4;y+=2){
 
-      obserVariables[iVar1]->numbins = bkgTH2Mass->GetNbinsX();
-      obserVariables[iVar2]->numbins = bkgTH2Mass->GetNbinsY();
-      obserVariables[iVar3]->numbins = bkgTH2Ang->GetNbinsX();
-      obserVariables[iVar4]->numbins = bkgTH2Ang->GetNbinsY();
+        // std::cout<<"Vars "<<y<<" - "<<y+1<<"histo index"<<y/2<<std::endl;
+
+        // std::cout<<"Name : "<<obserVariables[y]->name<<" "<<obserVariables[y]->numbins<<" "<<obserVariables[y]->lowerlimit<<" "<<obserVariables[y]->upperlimit<<std::endl;
+        // std::cout<<"Name : "<<obserVariables[y+1]->name<<" "<<obserVariables[y+1]->numbins<<" "<<obserVariables[y+1]->lowerlimit<<" "<<obserVariables[y+1]->upperlimit<<std::endl;
+
+        holdBinVar[y] = obserVariables[y]->numbins;
+        obserVariables[y]->numbins = bkgTH2[y/2].GetNbinsX();
+
+        holdBinVar[y+1] = obserVariables[y+1]->numbins;
+        obserVariables[y+1]->numbins = bkgTH2[y/2].GetNbinsY();
+
+        lowerL[y] = obserVariables[y]->lowerlimit;
+        obserVariables[y]->lowerlimit = bkgTH2[y/2].GetXaxis()->GetBinLowEdge(1);
+
+        lowerL[y+1] = obserVariables[y+1]->lowerlimit;
+        obserVariables[y+1]->lowerlimit = bkgTH2[y/2].GetYaxis()->GetBinLowEdge(1);
+
+        upperL[y] = obserVariables[y]->upperlimit;
+        obserVariables[y]->upperlimit = bkgTH2[y/2].GetXaxis()->GetBinUpEdge(bkgTH2[y/2].GetNbinsX());
+
+        upperL[y+1] = obserVariables[y+1]->upperlimit;
+        obserVariables[y+1]->upperlimit = bkgTH2[y/2].GetYaxis()->GetBinUpEdge(bkgTH2[y/2].GetNbinsY());
+
+        // std::cout<<"Name : "<<obserVariables[y]->name<<" "<<obserVariables[y]->numbins<<" "<<obserVariables[y]->lowerlimit<<" "<<obserVariables[y]->upperlimit<<std::endl;
+        // std::cout<<"Name : "<<obserVariables[y+1]->name<<" "<<obserVariables[y+1]->numbins<<" "<<obserVariables[y+1]->lowerlimit<<" "<<obserVariables[y+1]->upperlimit<<std::endl;
+
+
+      }
 
       bkgDatasetMasses = new BinnedDataSet(obserVariables,"bkg Dataset Masses");
       bkgDatasetAngles = new BinnedDataSet(obserVariables,"bkg Dataset Angles");
@@ -1238,47 +1385,264 @@ int main(int argc, char** argv) {
       for (int j = 0; j < bkgDatasetAngles->getNumBins(); ++j) {
 
         bkgDatasetAngles->setBinContent(j, bkgTH2Ang->GetBinContent(bkgTH2Ang->FindBin(bkgDatasetAngles->getBinCenter(cosMuMu,j),bkgDatasetAngles->getBinCenter(phi,j))));
-        //if ((bkgTH2Ang->GetBinContent(bkgTH2Ang->FindBin(bkgDatasetAngles->getBinCenter(cosMuMu,j),bkgDatasetAngles->getBinCenter(phi,j))))!=0.) {
-        // std::cout<<"Histo content at phi : "<<bkgDatasetMasses->getBinCenter(phi,j)<<" and cosMuMu : " <<bkgDatasetMasses->getBinCenter(cosMuMu,j)<<" is = "<<bkgTH2Ang->GetBinContent(bkgTH2Ang->FindBin(bkgDatasetMasses->getBinCenter(phi,j),bkgDatasetMasses->getBinCenter(cosMuMu,j)))<<std::endl;
-        // std::cout<<"Binned dataset content : "<<bkgDatasetMasses->getBinContent(j)<<" at phi : "<<bkgDatasetMasses->getBinCenter(phi,j)<<" and cosMuMu : " <<bkgDatasetMasses->getBinCenter(cosMuMu,j)<<" Bin = "<<j<<std::endl;
-	//}
+  //       if ((bkgTH2Ang->GetBinContent(bkgTH2Ang->FindBin(bkgDatasetAngles->getBinCenter(cosMuMu,j),bkgDatasetAngles->getBinCenter(phi,j))))!=0.) {
+  //       std::cout<<"Histo content at phi : "<<bkgDatasetAngles->getBinCenter(phi,j)<<" and cosMuMu : " <<bkgDatasetAngles->getBinCenter(cosMuMu,j)<<" is = "<<bkgTH2Ang->GetBinContent(bkgTH2Ang->FindBin(bkgDatasetAngles->getBinCenter(phi,j),bkgDatasetAngles->getBinCenter(cosMuMu,j)))<<std::endl;
+  //       std::cout<<"Binned dataset content : "<<bkgDatasetAngles->getBinContent(j)<<" at phi : "<<bkgDatasetAngles->getBinCenter(phi,j)<<" and cosMuMu : " <<bkgDatasetAngles->getBinCenter(cosMuMu,j)<<" Bin = "<<j<<std::endl;
+	// }
       }
 
       for (int j = 0; j < bkgDataset->getNumBins(); ++j) {
-        fptype anglesContent = bkgTH2Ang->GetBinContent(bkgTH2Ang->FindBin(bkgDataset->getBinCenter(phi,j), bkgDataset->getBinCenter(cosMuMu,j)));
-        fptype massesContent = bkgTH2Mass->GetBinContent(bkgTH2Mass->FindBin(bkgDataset->getBinCenter(massPsiPi,j), bkgDataset->getBinCenter(massKPi,j)));
+        fptype anglesContent = bkgTH2Ang->GetBinContent(bkgTH2Ang->FindBin(bkgDataset->getBinCenter(cosMuMu,j), bkgDataset->getBinCenter(phi,j)));
+        fptype massesContent = bkgTH2Mass->GetBinContent(bkgTH2Mass->FindBin(bkgDataset->getBinCenter(massKPi,j), bkgDataset->getBinCenter(massPsiPi,j)));
+        // if(anglesContent!=0.0 && massesContent !=0.0) std::cout<<"Both not ZERO "<<anglesContent<<" - "<<massesContent<<std::endl;
+        // if(anglesContent!=0.0) std::cout<<"Angles not ZERO "<<anglesContent<<" - "<<massesContent<<std::endl;
+        // if(massesContent!=0.0) std::cout<<"Masses not ZERO "<<anglesContent<<" - "<<massesContent<<std::endl;
 
-        fptype content = anglesContent * massesContent;
+        bkgDataset->setBinContent(j,anglesContent * massesContent);
 
-        bkgDataset->setBinContent(j,content);
       }
+
+      for (int j = 0; j < bkgDataset->getNumBins(); ++j)
+        if(bkgDataset->getBinContent(j)>1)
+          std::cout<<"Binned dataset content : "<<bkgDataset->getBinContent(j)<<std::endl;
+
 
       //int noOfEntries = bkgTH2Mass->GetEntries() + bkgTH2Ang->GetEntries();
       //std::cout<<"Dataset events : " <<bkgDataset->getNumEvents()<<" histograms : " <<noOfEntries <<std::endl;
       //std::cout<<"Mass histo : " <<bkgTH2Mass->GetEntries()<<" Angles histo : " <<bkgTH2Ang->GetEntries() <<std::endl;
 
-      bkgHistMasses = new FlatHistoPdf ("bkgHistMasses",bkgDatasetMasses,obserVariables);
-      bkgHistAngles = new FlatHistoPdf ("bkgHistAngles",bkgDatasetAngles,obserVariables);
+      if (bkgHistMapHis)
+      {
 
-      //efficiencyHistMasses = new BiDimHistoPdf ("EfficiencyPdf",bkgDatasetMasses,massVars,1);
-      // UnbinnedDataSet plottingGridMasses(massVars);
+        bkgHistMasses = new FlatHistoPdf ("bkgHistMasses",bkgDatasetMasses,obserVariables);
+        bkgHistAngles = new FlatHistoPdf ("bkgHistAngles",bkgDatasetAngles,obserVariables);
+        bkgHistPdf    = new FlatHistoPdf ("bkgHistPdf",bkgDataset,obserVariables);
+      }
+      else if(bkgHistMapInt)
+      {
+
+        bkgHistMasses = new BiDimHistoPdf ("bkgHistMasses",bkgDatasetMasses,obserVariables);
+        bkgHistAngles = new BiDimHistoPdf ("bkgHistAngles",bkgDatasetAngles,obserVariables);
+        bkgHistPdf    = new BiDimHistoPdf ("bkgHistPdf",bkgDataset,obserVariables);
+
+
+      }
+
+      // massKPi->numbins = plottingfine1;
+      // cosMuMu->numbins = plottingfine2;
+      // massPsiPi->numbins = plottingfine3;
+      // phi->numbins = plottingfine4;
       //
+      // UnbinnedDataSet plottingGridDataBkg(obserVariables);
       //
-      // for (int i = 0; i < massKPi->numbins; ++i)
-      // {
-      //     //pdfTestValues.push_back(0.0);
-      //     massKPi->value = massKPi->lowerlimit + (massKPi->upperlimit - massKPi->lowerlimit)*(i + 0.5) / massKPi->numbins;
-      //     for (int j = 0; j < massPsiPi->numbins; ++j)
-      //     {
-      //       massPsiPi->value = massPsiPi->lowerlimit + (massPsiPi->upperlimit - massPsiPi->lowerlimit)*(j + 0.5) / massPsiPi->numbins;
-      //       plottingGridMasses.addEvent();
-      //     }
+      // for (int k = 0; k < phi->numbins; ++k) {
+      //   phi->value = phi->lowerlimit + (phi->upperlimit - phi->lowerlimit)*(k + 0.5) / phi->numbins;
+      //   //std::cout <<"Phi : " << k <<std::endl;
+      //   for (int j = 0; j < cosMuMu->numbins; ++j) {
+      //     cosMuMu->value = cosMuMu->lowerlimit + (cosMuMu->upperlimit - cosMuMu->lowerlimit)*(j + 0.5) / cosMuMu->numbins;
+      //     //std::cout <<"CosMu : " << j <<std::endl;
+      //     for (int a = 0; a < massPsiPi->numbins; ++a) {
+    	//          massPsiPi->value = massPsiPi->lowerlimit + (massPsiPi->upperlimit - massPsiPi->lowerlimit)*(a + 0.5) / massPsiPi->numbins;
+    	//          //std::cout <<"CosK : " << a <<std::endl;
+    	//           for (int i = 0; i < massKPi->numbins; ++i) {
+    	//             //std::vector<std::vector<fptype> > tempValues;
+    	//             //UnbinnedDataSet tempData(obserVariables);
+    	//             massKPi->value = massKPi->lowerlimit + (massKPi->upperlimit - massKPi->lowerlimit)*(i + 0.5) / massKPi->numbins;
+    	//             //std::cout <<"MKP : " << i <<std::endl;
+      //
+      //         	  /*tempData.addEvent();
+      //         	    matrix->setData(&tempData);
+      //         	    matrix->getCompProbsAtDataPoints(tempValues);
+      //
+      //         	    std::cout <<massKPi->value<<" ";
+      //         	    std::cout <<cosMuMu->value<<" ";
+      //         	    std::cout <<massPsiPi->value<<" ";
+      //         	    std::cout <<phi->value<<" ";
+      //         	    std::cout <<tempValues[0][0]<<std::endl;*/
+      //
+      //         	  //mkpTotalProjection[i]+=tempValues[0][0];
+      //         	  //sum +=tempValues[0][0];
+      //
+    	//             plottingGridDataBkg.addEvent();
+      //         	  /*for (size_t ii = 0; ii < compData.size(); ++ii) {
+      //         	    compData[ii].addEvent();
+      //         	    }*/
+    	//              }
+      //            }
+      //         }
       // }
 
-      obserVariables[iVar1]->numbins = holdBinVar1;
-      obserVariables[iVar2]->numbins = holdBinVar2;
-      obserVariables[iVar1]->numbins = holdBinVar3;
-      obserVariables[iVar2]->numbins = holdBinVar4;
+      if(bkgHistMapInt)
+        bkgHistPdfPlot= new BiDimHistoPdf ("bkgHistPdf",bkgDataset,obserVariables);
+
+      bkgHistPdfPlot->setData(bkgDataset);
+      //bkgHistAngles->getValue();
+      //std::cout<<"ang"<<std::endl;
+      TH1F* projMKPiHistoBkgInt;
+      TH1F* projmassPsiPiHistoBkgInt;
+      TH1F* projCosMuMuHistoBkgInt;
+      TH1F* projPhiHistoBkgInt;
+
+      TH2F* massesHistoBkgInt = new TH2F("massesHistoBkgInt","massesHistoBkgInt", massKPi->numbins, massKPi->lowerlimit, massKPi->upperlimit,massPsiPi->numbins, massPsiPi->lowerlimit, massPsiPi->upperlimit);
+      TH2F* anglesHistoBkgInt = new TH2F("anglesHistoBkgInt","anglesHistoBkgInt", cosMuMu->numbins, cosMuMu->lowerlimit, cosMuMu->upperlimit,phi->numbins, phi->lowerlimit, phi->upperlimit);
+
+      fptype massKPiStep = (massKPi->upperlimit-massKPi->lowerlimit)/(fptype)massKPi->numbins;
+      fptype massPsiPiStep = (massPsiPi->upperlimit-massPsiPi->lowerlimit)/(fptype)massPsiPi->numbins;
+      fptype phiStep = (phi->upperlimit-phi->lowerlimit)/(fptype)phi->numbins;
+      fptype cosMuMuStep = (cosMuMu->upperlimit-cosMuMu->lowerlimit)/(fptype)cosMuMu->numbins;
+
+      std::cout<<"-Producing sidebands background plots"<<std::endl;
+
+      fptype interpolationSum = 0.0;
+      std::vector< std::vector <fptype> > pdfIntValues;
+      bkgHistPdfPlot->getCompProbsAtDataPoints(pdfIntValues);
+
+      //PLOTTING MASSES
+      //   ==================================================
+      //   array ind   coordinates where the pdf is evaluated
+      //   ==================================================
+      //   0                phi0 cosMu0 cosk0 mkp0
+      //   1                phi0 cosMu0 cosk0 mkp1
+      //   2                phi0 cosMu0 cosk0 mkp2
+      //   3                phi0 cosMu0 cosk0 mkp3
+      //   4(b1)            phi0 cosMu0 cosk1 mkp0
+      //   5                phi0 cosMu0 cosk1 mkp1
+      //   . . .
+      //   19               phi0 cosMu0 cosk4 mkp3
+      //   20(b1*b2)        phi0 cosMu1 cosk0 mkp0
+      //   . . .
+      //   59               phi0 cosMu2 cosk4 mkp3
+      //   60(b1*b2*b3)     phi1 cosMu0 cosk0 mkp0
+      //   . . .            phi0 cosMu0 cosk0 mkp3
+      //   179              phi2 cosMu2 cosk4 mkp3
+
+      //MASSES PLOT
+      for (int j = 0; j < massKPi->numbins; ++j)
+        for (int i = 0; i < massPsiPi->numbins; ++i)
+          {
+            fptype xval   = massKPi->lowerlimit + j*massKPiStep +0.5*massKPiStep;
+            fptype yval   = massPsiPi->lowerlimit + i*massPsiPiStep +0.5*massPsiPiStep;
+
+            fptype zval = 0.0;
+
+            for (int k = 0; k < phi->numbins * cosMuMu->numbins; ++k)
+              zval += pdfIntValues[0][j+i*massKPi->numbins+k*massKPi->numbins * massPsiPi->numbins];
+
+            interpolationSum += zval;
+            massesHistoBkgInt->SetBinContent(massesHistoBkgInt->FindBin(xval,yval),zval);
+
+          }
+
+
+      interpolationSum = .0;
+      //PLOTTING ANGLES
+      for (int j = 0; j < cosMuMu->numbins; ++j)
+        for (int i = 0; i < phi->numbins; ++i)
+          {
+
+            fptype xval   = cosMuMu->lowerlimit + j*cosMuMuStep + 0.5*cosMuMuStep;
+            fptype yval   = phi->lowerlimit + i*phiStep + 0.5*phiStep;
+
+            fptype zval = 0.0;
+
+            for (int k = 0; k < massKPi->numbins * massPsiPi->numbins; ++k)
+              zval += pdfIntValues[0][j * massKPi->numbins * massPsiPi->numbins+ i * massKPi->numbins * massPsiPi->numbins * cosMuMu->numbins + k ];
+
+            interpolationSum += zval;
+            anglesHistoBkgInt->SetBinContent(anglesHistoBkgInt->FindBin(xval,yval),zval);
+
+          }
+
+      TCanvas* canvasM = new TCanvas("mcanvas","mcanvas",2000,1200);
+      canvasM->cd();
+
+      massesHistoBkgInt->Scale(1.0/interpolationSum);
+      massesHistoBkgInt->Scale(bkgTH2Mass->GetEntries());
+
+      projMKPiHistoBkgInt = (TH1F*)massesHistoBkgInt->ProjectionX();
+      projMKPiHistoBkgInt->Scale(1.0/projMKPiHistoBkgInt->Integral());
+      projMKPiHistoBkgInt->Scale(bkgTH2Mass->ProjectionX()->GetEntries());
+
+      projmassPsiPiHistoBkgInt  = (TH1F*)massesHistoBkgInt->ProjectionY();
+      projmassPsiPiHistoBkgInt->Scale(1.0/projmassPsiPiHistoBkgInt->Integral());
+      projmassPsiPiHistoBkgInt->Scale(bkgTH2Mass->ProjectionY()->GetEntries());
+
+      massesHistoBkgInt->Draw("LEGO");
+      canvasM->SaveAs("./plots/massesBkgInterpolation.png");
+      canvasM->Clear();
+      std::cout<<"-Producing sidebands background plots"<<std::endl;
+
+      bkgTH2Mass->Draw("LEGO");
+      canvasM->SaveAs("./plots/massesBkgHistogram.png");
+      canvasM->Clear();
+      std::cout<<"-Producing sidebands background plots"<<std::endl;
+
+      massesHistoBkgInt->Draw("SURF3");
+      bkgTH2Mass->Draw("same");
+      canvasM->SaveAs("./plots/massesBkgHistogramInterpolation.png");
+      canvasM->Clear();
+      std::cout<<"-Producing sidebands background plots"<<std::endl;
+
+      projMKPiHistoBkgInt->Draw("L");
+      bkgTH2Mass->ProjectionX()->Draw("same");
+      canvasM->SaveAs("./plots/massesBkgMKPiProjection.png");
+      canvasM->Clear();
+      std::cout<<"-Producing sidebands background plots"<<std::endl;
+
+      projmassPsiPiHistoBkgInt->Draw("L");
+      bkgTH2Mass->ProjectionY()->Draw("same");
+      canvasM->SaveAs("./plots/massesBkgMPsiPiProjection.png");
+      canvasM->Clear();
+      std::cout<<"-Producing sidebands background plots"<<std::endl;
+
+      TCanvas* canvasA = new TCanvas("acanvas","acanvas",2000,1200);
+      canvasA->cd();
+      canvasA->Clear();
+
+      anglesHistoBkgInt->Scale(1.0/interpolationSum);
+      anglesHistoBkgInt->Scale(bkgTH2Ang->GetEntries());
+
+      projCosMuMuHistoBkgInt = (TH1F*)anglesHistoBkgInt->ProjectionX();
+      projCosMuMuHistoBkgInt->Scale(1.0/projCosMuMuHistoBkgInt->Integral());
+      projCosMuMuHistoBkgInt->Scale(bkgTH2Ang->ProjectionX()->GetEntries());
+
+      projPhiHistoBkgInt = (TH1F*)anglesHistoBkgInt->ProjectionY();
+      projPhiHistoBkgInt->Scale(1.0/projPhiHistoBkgInt->Integral());
+      projPhiHistoBkgInt->Scale(bkgTH2Ang->ProjectionY()->GetEntries());
+
+      // //
+      // anglesHistoBkgInt->Draw("LEGO");
+      // canvasA->SaveAs("./plots/anglesBkgInterpolation.png");
+      // canvasA->Clear();
+      // std::cout<<"-Producing sidebands background plots"<<std::endl;
+      //
+      // anglesHistoBkgInt->Draw("SURF3");
+      // bkgTH2Ang->Draw("same");
+      // canvasA->SaveAs("./plots/InterpolationHistoAngles.png");
+      // canvasA->Clear();
+      // std::cout<<"-Producing sidebands background plots"<<std::endl;
+      // //
+      //
+      // projCosMuMuHistoBkgInt->Draw("L");
+      // bkgTH2Ang->ProjectionX()->Draw("same");
+      // canvasA->SaveAs("./plots/anglesBkgCosProjection.png");
+      // canvasA->Clear();
+      // std::cout<<"-Producing sidebands background plots"<<std::endl;
+      // //
+      // projPhiHistoBkgInt->Draw("L");
+      // bkgTH2Ang->ProjectionY()->Draw("same");
+      // canvasA->SaveAs("./plots/anglesBkgPhiProjection.png");
+      // canvasA->Clear();
+      // std::cout<<"-Producing sidebands background plots"<<std::endl;
+
+      canvas->cd();
+      for(int y=0; y<4;++y){
+
+        obserVariables[y]->numbins = holdBinVar[y];
+        obserVariables[y]->lowerlimit = lowerL[y];
+        obserVariables[y]->upperlimit = upperL[y];
+
+      }
 
       std::vector<Variable*> weights;
 
@@ -1290,7 +1654,8 @@ int main(int argc, char** argv) {
 
       //background = new AddPdf("Background P.d.f Map",halfFrac,bkgHistAngles,bkgHistMasses);
       //background = new FlatHistoPdf ("bkgHistAngles",bkgDataset,obserVariables);
-      background = new ProdPdf("background",pdfComponents);
+      //background = new ProdPdf("background",pdfComponents);
+      background = bkgHistPdf;
       sumPdf = new AddPdf("Kstars_signal + combinatorial", sFrac, matrix, background);
       //sumPdf = new AddPdf("Kstars_signal + PhaseSpace",weights,pdfComponents);
 
@@ -1306,25 +1671,23 @@ int main(int argc, char** argv) {
       }
       else
         totalPdf = sumPdf;
-    } // if (bkgPhaseSpaceMap)
+    } // if (bkgHistMap)
     else {
-      if (effPdfProd) {
-	pdfComponents.push_back(matrix);
-	pdfComponents.push_back(efficiencyHistMasses);
+      if(effPdfProd)
+      {
+        	pdfComponents.push_back(matrix);
+        	pdfComponents.push_back(efficiencyHistMasses);
 
-	totalPdf = new ProdPdf("Kstars_signal * efficiency",pdfComponents);
-	//totalPdf = matrix;
+	        totalPdf = new ProdPdf("Kstars_signal * efficiency",pdfComponents);
+	         //totalPdf = matrix;
       }
       else
-	totalPdf = matrix;
+	     totalPdf = matrix;
     }
   }
 
   pdfComponents.clear();
   pdfYield.clear();
-
-  obserVariables[0]->numbins = bin1;
-  obserVariables[1]->numbins = bin2;
 
   totalPdf->setData(&dataset);
   //total->setData(&dataset);
@@ -1338,7 +1701,6 @@ int main(int argc, char** argv) {
   //   fitter = new FitManager(totalPdf,hesse);
 
   FitManager* fitter = new FitManager(totalPdf);
-
   totalPdf->setFitControl(new UnbinnedNllFit());
 
 
@@ -1348,6 +1710,30 @@ int main(int argc, char** argv) {
   //fitter->fitOrdered(algos);
   fitter->fit();
   fitter->getMinuitValues();
+
+  int aCounter = 0;
+
+  if(outParams)
+  {
+    for (size_t i = 0; i < Masses.size(); ++i) {
+      //std::cout<<as.size()<<" "<<aCounter<<" "<<i<<std::endl;
+      if(Spins[i]==0)
+        outParamsFile<<Masses[i]->name<<" "<<as[aCounter]->value<<" "<<bs[aCounter]->value<<std::endl;
+      else
+      {
+          outParamsFile<<Masses[i]->name<<" "<<as[aCounter]->value<<" "<<bs[aCounter]->value<<std::endl;
+          outParamsFile<<Masses[i]->name<<" "<<as[aCounter+1]->value<<" "<<bs[aCounter+1]->value<<std::endl;
+          outParamsFile<<Masses[i]->name<<" "<<as[aCounter+2]->value<<" "<<bs[aCounter+2]->value<<std::endl;
+
+          aCounter += 2;
+
+      }
+
+      ++aCounter;
+    }
+    outParamsFile<<sFrac->value<<std::endl;
+
+  }
 
   std::vector<fptype> originalAs;
   std::vector<fptype> originalBs;
@@ -1461,6 +1847,10 @@ int main(int argc, char** argv) {
 
   std::cout <<"\n- Starting plotting cycle" ;
   std::cout <<"\n- Plotting generated dataset" <<std::endl;
+
+  if(b0Var)
+    b0Beauty->value = 1.0;
+
   for (int k = 0; k < phi->numbins; ++k) {
     phi->value = phi->lowerlimit + (phi->upperlimit - phi->lowerlimit)*(k + 0.5) / phi->numbins;
     //std::cout <<"Phi : " << k <<std::endl;
@@ -1468,34 +1858,34 @@ int main(int argc, char** argv) {
       cosMuMu->value = cosMuMu->lowerlimit + (cosMuMu->upperlimit - cosMuMu->lowerlimit)*(j + 0.5) / cosMuMu->numbins;
       //std::cout <<"CosMu : " << j <<std::endl;
       for (int a = 0; a < massPsiPi->numbins; ++a) {
-	massPsiPi->value = massPsiPi->lowerlimit + (massPsiPi->upperlimit - massPsiPi->lowerlimit)*(a + 0.5) / massPsiPi->numbins;
-	//std::cout <<"CosK : " << a <<std::endl;
-	for (int i = 0; i < massKPi->numbins; ++i) {
-	  //std::vector<std::vector<fptype> > tempValues;
-	  //UnbinnedDataSet tempData(obserVariables);
-	  massKPi->value = massKPi->lowerlimit + (massKPi->upperlimit - massKPi->lowerlimit)*(i + 0.5) / massKPi->numbins;
-	  //std::cout <<"MKP : " << i <<std::endl;
+	         massPsiPi->value = massPsiPi->lowerlimit + (massPsiPi->upperlimit - massPsiPi->lowerlimit)*(a + 0.5) / massPsiPi->numbins;
+	         //std::cout <<"CosK : " << a <<std::endl;
+	          for (int i = 0; i < massKPi->numbins; ++i) {
+	            //std::vector<std::vector<fptype> > tempValues;
+	            //UnbinnedDataSet tempData(obserVariables);
+	            massKPi->value = massKPi->lowerlimit + (massKPi->upperlimit - massKPi->lowerlimit)*(i + 0.5) / massKPi->numbins;
+	            //std::cout <<"MKP : " << i <<std::endl;
 
-	  /*tempData.addEvent();
-	    matrix->setData(&tempData);
-	    matrix->getCompProbsAtDataPoints(tempValues);
+          	  /*tempData.addEvent();
+          	    matrix->setData(&tempData);
+          	    matrix->getCompProbsAtDataPoints(tempValues);
 
-	    std::cout <<massKPi->value<<" ";
-	    std::cout <<cosMuMu->value<<" ";
-	    std::cout <<massPsiPi->value<<" ";
-	    std::cout <<phi->value<<" ";
-	    std::cout <<tempValues[0][0]<<std::endl;*/
+          	    std::cout <<massKPi->value<<" ";
+          	    std::cout <<cosMuMu->value<<" ";
+          	    std::cout <<massPsiPi->value<<" ";
+          	    std::cout <<phi->value<<" ";
+          	    std::cout <<tempValues[0][0]<<std::endl;*/
 
-	  //mkpTotalProjection[i]+=tempValues[0][0];
-	  //sum +=tempValues[0][0];
+          	  //mkpTotalProjection[i]+=tempValues[0][0];
+          	  //sum +=tempValues[0][0];
 
-	  plottingGridData.addEvent();
-	  /*for (size_t ii = 0; ii < compData.size(); ++ii) {
-	    compData[ii].addEvent();
-	    }*/
-	}
-      }
-    }
+	            plottingGridData.addEvent();
+          	  /*for (size_t ii = 0; ii < compData.size(); ++ii) {
+          	    compData[ii].addEvent();
+          	    }*/
+	             }
+             }
+          }
   }
   //
   stopC = times(&stopProc);
@@ -1517,7 +1907,8 @@ int main(int argc, char** argv) {
   gettimeofday(&startTime, NULL);
   startC = times(&startProc);
   //
-  if (bkgPhaseSpaceMap && effPdfProd) {
+  if(bkgHistMap)
+  {
     sumPdf->setData(&plottingGridData);
     sumPdf->getCompProbsAtDataPoints(pdfTotalValues);
   }
@@ -1615,7 +2006,7 @@ int main(int argc, char** argv) {
     }
   }
 
-  //Cos Mu Mu
+  //Mass Psi Pi
   for (int j = 0; j < massPsiPi->numbins; ++j) {
     for (int k = 0; k < phi->numbins * cosMuMu->numbins; ++k) {
       for (int i = 0; i < massKPi->numbins; ++i) {
@@ -1965,7 +2356,7 @@ int main(int argc, char** argv) {
     // Normalising, integrating and evaluating the single component pdf
 
     sprintf(bufferstring,"Kstars_signal_plot_%d",kCounter);
-    GooPdf* matrixPlot = new MatrixPdf(bufferstring, massKPi, cosMuMu, massPsiPi, phi, B0beauty, MassesPlot,GammasPlot,SpinsPlot,asPlot,bsPlot,psi_nS,dRadB0,dRadKs);
+    GooPdf* matrixPlot = new MatrixPdf(bufferstring, massKPi, cosMuMu, massPsiPi, phi,MassesPlot,GammasPlot,SpinsPlot,asPlot,bsPlot,psi_nS,dRadB0,dRadKs);
     matrixPlot->setData(&plottingGridData);
 
     matrixPlot->copyParams();
@@ -2142,7 +2533,8 @@ int main(int argc, char** argv) {
   pointsX[0] = massKPi->lowerlimit; pointsX[1] = massKPi->upperlimit;
   pointsY[0] = 0.01; pointsY[1] = massKPiHisto.GetMaximum();
   TGraph* pointsMKP = new TGraph(2,pointsX,pointsY);
-  if (bkgPhaseSpace && !effPdfProd) {
+  if(bkgPhaseSpace && !effPdfProd)
+  {
     multiGraphMKPi->Add(&signalTotalBkgPlotMKPi,"L");
     //multiGraphMKPi->Add(&signalTotalSigPlotMKPi,"L");
   }
@@ -2185,7 +2577,7 @@ int main(int argc, char** argv) {
   ////////////////////////////////////////////////////////////////////////////////
   // PLOTTING
 
-  if (bkgPhaseSpaceMap) {
+  if (bkgHistMap) {
     bkgMKPi->Scale(events*bkgFrac);
     bkgMPsiPi->Scale(events*bkgFrac);
     bkgCMuMu->Scale(events*bkgFrac);
@@ -2196,7 +2588,7 @@ int main(int argc, char** argv) {
     fptype ratioMassPsiPiBkg = ((fptype)(bkgCMuMu->GetNbinsX()))/((fptype)datapoints3);
     fptype ratioPhiBkg = ((fptype)(bkgPhi->GetNbinsX()))/((fptype)datapoints4);
 
-    bkgMKPi->Scale(ratioMKPiBkg);
+    bkgMKPi->Scale(ratioMKPiBkg*0.8);
     bkgMPsiPi->Scale(ratioMassPsiPiBkg);
     bkgCMuMu->Scale(ratioCosMuMuBkg);
     bkgPhi->Scale(ratioPhiBkg);
@@ -2207,7 +2599,7 @@ int main(int argc, char** argv) {
   //Mass K Pi
   multiGraphMKPi->Draw("AL");
   massKPiHisto.Draw("Esame");
-  if (bkgMKPi) bkgMKPi->Draw("same");
+  bkgMKPi->Draw("same");
   legPlot->Draw(); fitStat->Draw();
 
   // first Logy(1) and after Logy(0), viceversa does not work
@@ -2221,7 +2613,7 @@ int main(int argc, char** argv) {
   //CosMuMu
   multiGraphCosMuMu->Draw("AL");
   cosMuMuHisto.Draw("Esame");
-  if (bkgCMuMu) bkgCMuMu->Draw("same");
+  bkgCMuMu->Draw("same");
   // it's enough on the m(KPi) plot
   //legPlot->Draw(); //fitStat->Draw();
 
@@ -2235,7 +2627,7 @@ int main(int argc, char** argv) {
   //massPsiPi
   multiGraphmassPsiPi->Draw("AL");
   massPsiPiHisto.Draw("Esame");
-  if (bkgMPsiPi) bkgMPsiPi->Draw("same");
+  bkgMPsiPi->Draw("same");
   // it's enough on the m(KPi) plot
   //legPlot->Draw(); //fitStat->Draw();
 
@@ -2249,7 +2641,7 @@ int main(int argc, char** argv) {
   //Phi
   multiGraphPhi->Draw("AL");
   phiHisto.Draw("Esame");
-  if (bkgPhi) bkgPhi->Draw("same");
+  bkgPhi->Draw("same");
   // it's enough on the m(KPi) plot
   //legPlot->Draw(); //fitStat->Draw();
 
