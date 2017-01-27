@@ -897,19 +897,23 @@ int main(int argc, char** argv) {
 
   //DATASET
   UnbinnedDataSet dataset(obserVariables);
-  UnbinnedDataSet datasetEffCorr(obserVariables);
+  UnbinnedDataSet dataset_EffCorr(obserVariables);
 
   std::cout<<"Dataset : "<<std::endl;
   // std::cout<<" - dataset with "<<dataset.getNumBins()<<" bins "<<std::endl;
   //std::cout<<" - efficiencyDatasetMasses with "<<efficiencyDatasetMasses->getNumBins()<<" bins "<<std::endl;
 
-  vector<TH1F*> varHistos;
+  vector<TH1F*> varHistos, varHistos_effCorr;
   for (Int_t iVar=0; iVar<nProjVars; ++iVar) {
     TString xTitle = varTitles[iVar];
     if (iVar <= 2) xTitle.Append(" [GeV]");
     TH1F* hist = new TH1F(varNames[iVar]+"_Histo", TString::Format("%s;%s",varNames[iVar].Data(),xTitle.Data()), dataPoints[iVar], obserVariables[iVar]->lowerlimit, obserVariables[iVar]->upperlimit);
     hist->SetLineColor(kBlack); hist->SetMarkerColor(kBlack); hist->SetMarkerStyle(kFullCircle);
     varHistos.push_back( hist );
+
+    TH1F* hist_effCorr = (TH1F*)hist->Clone(TString::Format("%s_effCorr",hist->GetName()));
+    hist_effCorr->SetTitle(TString::Format("%s effCorr",hist->GetTitle()));
+    varHistos_effCorr.push_back( hist_effCorr );
   }
 
   TString path;
@@ -1022,6 +1026,7 @@ int main(int argc, char** argv) {
 	}
       }
 
+      inputFile->Close();
     }
   } // if (!txtfile)
 
@@ -1080,21 +1085,25 @@ int main(int argc, char** argv) {
     TString effName = "TMVApp_MC_withBDTCutAt0p00_JPsi_2p0Sig_6p0to9p0SB.root";
 
     TFile *effFile = TFile::Open(path+effName);
-    TString relEffNameMass = "RelEff_psi2SPi_vs_KPi_B0constr_1B0_BDTCutAt0p00";
-    TString relEffNameAng = "RelEff_planesAngle_vs_cos_psi2S_helicityAngle_BDTCutAt0p00";
+    if (!effFile) {
+      cout <<"ERROR! Unable to open efficiency file \"" <<effName <<"\".\nReturning" <<endl;
+      return -1;
+    }
 
-    // TString relEffNameMass = "RelEff_psi2SPi_vs_KPi_B0constr";
-    // TString relEffNameAng = "RelEff_planesAngle_vs_cos_psi2S_helicityAngle";
+    //TString relEffNameMass = "RelEff_psi2SPi_vs_KPi_B0constr";
+    TString relEffNameMass = "RelEff_psi2SPi_vs_KPi_B0constr_1B0";
+    TString relEffNameAng = "RelEff_planesAngle_vs_cos_psi2S_helicityAngle";
+    relEffNameMass.Append("_BDTCutAt0p00"); relEffNameAng.Append("_BDTCutAt0p00");
 
     relEffTH2Mass = (TH2F*)effFile->Get(relEffNameMass) ;
     relEffTH2Ang = (TH2F*)effFile->Get(relEffNameAng) ;
 
     if (!(relEffTH2Mass)) {
-      std::cout<<"Efficiency TH2 named \'"<<relEffNameMass<<"\' NOT FOUND in found in TFile \'" <<effFile->GetName() <<"\'.\nReturning."<<std::endl;
+      std::cout<<"ERROR! Efficiency TH2 named \'"<<relEffNameMass <<"\' not found in TFile \'" <<effFile->GetName() <<"\'.\nReturning" <<std::endl;
       return -1;
     }
     if (!(relEffTH2Ang)) {
-      std::cout<<"Efficiency TH2 named \'"<<relEffNameAng<<"\' NOT FOUND in found in TFile \'" <<effFile->GetName() <<"\'.\nReturning."<<std::endl;
+      std::cout<<"ERROR! Efficiency TH2 named \'"<<relEffNameAng <<"\' not found in TFile \'" <<effFile->GetName() <<"\'.\nReturning" <<std::endl;
       return -1;
     }
 
@@ -1182,17 +1191,17 @@ int main(int argc, char** argv) {
 
       dataset.loadEvent(i);
       vector <fptype> varValues;
-      for (Int_t iVar=0; iVar<nProjVars; ++iVar)
+      for (Int_t iVar=0; iVar<nProjVars; ++iVar) {
 	varValues.push_back(obserVariables[iVar]->value);
-
-      for (Int_t iVar=0; iVar<nProjVars; ++iVar)
 	obserVariables[iVar]->value = effDataset->getBinCenter(obserVariables[iVar],i) ;
-
+      }
       fptype massEff = effDatasetMasses->getBinContent(effDatasetMasses->getBinNumber());
       fptype anglEff = effDatasetAngles->getBinContent(effDatasetAngles->getBinNumber());
 
+      dataset_EffCorr.addEventVector(varValues, 1/(massEff*anglEff));
 
-      datasetEffCorr.addEventVector(varValues, 1/(massEff*anglEff));
+      for (Int_t iVar=0; iVar<nProjVars; ++iVar)
+	varHistos_effCorr[iVar]->Fill(obserVariables[iVar]->value, 1/(massEff*anglEff));
 
     }
 
@@ -1223,8 +1232,10 @@ int main(int argc, char** argv) {
       obserVariables[y]->lowerlimit = lowerL[y];
       obserVariables[y]->upperlimit = upperL[y];
     }
+
+    effFile->Close();
     //return 0;
-  }
+  } // if (effPdfProd)
 
 
   //PDFs
@@ -1631,6 +1642,8 @@ int main(int argc, char** argv) {
       }
       else
         totalPdf = sumPdf;
+
+      bkgFile->Close();
     } // if (bkgHist)
     else {
       if (effPdfProd) {
@@ -2230,7 +2243,7 @@ int main(int argc, char** argv) {
     }
     compHistos[3][k]->Scale(ratios[3]);
 
-    if (nKstars > 1  &&  plotSingleKstars) { // in case of background enter also with 1 K*
+    if (bkgFlag  ||  (nKstars > 1  &&  plotSingleKstars)) {
       // Kstars components points array for each projection
       for (Int_t iVar=0; iVar<nProjVars; ++iVar) {
 	fptype pointsXComp[obserVariables[iVar]->numbins], pointsYComp[obserVariables[iVar]->numbins];
@@ -2254,7 +2267,7 @@ int main(int argc, char** argv) {
 	  legPlot->AddEntry(signalCompPlot,bufferstring,"l");
 	}
       }
-    } // if (nKstars > 1  &&  plotSingleKstars)
+    } // if (bkgFlag  ||  (nKstars > 1  &&  plotSingleKstars))
 
     /*
       massKPiHisto.Draw("");
