@@ -103,7 +103,7 @@ void chi2N_hist(TFile* file, const TString errTH2_name, const TH2F* TH2, const R
 
   const TH2F* errTH2 = (TH2F*)file->Get( errTH2_name ) ;
   if (!errTH2) {
-    cout <<"Histogram \"" <<errTH2_name <<"\" not found in TFile \"" <<file->GetName() <<"\"\\ Chi2 histogram will not be calculated." <<endl;
+    cout <<"Histogram \"" <<errTH2_name <<"\" not found in TFile \"" <<file->GetName() <<"\"\nChi2 histogram will not be calculated." <<endl;
   } else {
     TH2F* chi2N_TH2 = twoD_chiSquare(TH2, errTH2, pdf, x, y) ;
     TCanvas* chi2N_C = new TCanvas("chi2N_"+errTH2_name+"_C",TString::Format("chi2N for %s",errTH2->GetTitle()),800,600) ;
@@ -191,7 +191,7 @@ void Analysis()
   Kstar_spin.push_back( make_pair("892_1", make_pair(M892,G892) ) ) ;
   helJ_map["892_1_0"] = make_pair(1.,0.); helJ_map["892_1_p1"] = make_pair(0.844,3.14); helJ_map["892_1_m1"] = make_pair(0.196,-1.7); // from Belle
   //helJ_map["892_1_0"] = make_pair(0.775,0.); helJ_map["892_1_p1"] = make_pair(0.159,1.563); helJ_map["892_1_m1"] = make_pair(0.612,2.712); // from EvtGen
-  /*
+  
   cout <<"Adding K*(800)..." <<endl;
   Kstar_spin.push_back( make_pair("800_0", make_pair(M800,G800) ) ) ;
   helJ_map["800_0_0"] = make_pair(1.12,2.3);
@@ -208,7 +208,7 @@ void Analysis()
   cout <<"Adding K*(1430)_2..." <<endl;
   Kstar_spin.push_back( make_pair("1430_2", make_pair(M1430_2,G1430_2) ) ) ;
   helJ_map["1430_2_0"] = make_pair(4.66,-0.32); helJ_map["1430_2_p1"] = make_pair(4.65,-3.05); helJ_map["1430_2_m1"] = make_pair(1.26,-1.92);
-  *//*
+  /*
   cout <<"Adding K*(1780)_3..." <<endl;
   Kstar_spin.push_back( make_pair("1780_3", make_pair(M1780_3,G1780_3) ) ) ;
   helJ_map["1780_3_0"] = make_pair(16.8,-1.43); helJ_map["1780_3_p1"] = make_pair(19.1,2.03); helJ_map["1780_3_m1"] = make_pair(10.2,1.55);
@@ -318,7 +318,8 @@ void Analysis()
   TString inputFileName = "MC_K892_JPsi_Bd2MuMuKpi_B0massConstraint.root";
 
   path.Append("TMVA/");
-  inputFileName = "TMVApp_data_withBDTCutAt0p00_JPsi_2p0Sig_6p0to9p0SB.root";
+  TString bdtCut = "0p00"; bdtCut = "-0p03";
+  inputFileName = "TMVApp_data_withBDTCutAt"+bdtCut+"_JPsi_2p0Sig_6p0to9p0SB.root";
 
   TString prefix = "", postfix = "";
   if (inputFileName.Contains("MC")) {
@@ -438,7 +439,7 @@ void Analysis()
   //totEvents *= 10;
   //totEvents *= 10; totEvents *= 5;
   //totEvents *= 10; totEvents *= 3;
-  //totEvents /= 2;
+  totEvents /= 2; totEvents /= 100;
   RooRealVar nSig("nSig", "n_{SIG}", 0, 0, 1E6);
   //nSig.setVal( 10*nSig.getVal() ); // Does not work on the fly
   Float_t purity = 0.75;
@@ -500,7 +501,7 @@ void Analysis()
   //TString bkgFileName = path+"Data_JPsi_2p0Sig_4p0to6p0SB.root";
   //TString bkgFileName = path+"Data_JPsi_2p0Sig_5p0to9p0SB.root";
   TString bkgFileName = path+"Data_JPsi_2p0Sig_6p0to9p0SB.root";
-  bkgFileName = path+"TMVApp_data_withBDTCutAt0p00_JPsi_2p0Sig_6p0to9p0SB.root";
+  bkgFileName = path+"TMVApp_data_withBDTCutAt"+bdtCut+"_JPsi_2p0Sig_6p0to9p0SB.root";
   cout <<"\nOpening \"" <<bkgFileName <<endl;
   TFile *bkgFile = TFile::Open(bkgFileName);
   const Int_t nVars = 2;
@@ -621,7 +622,7 @@ void Analysis()
   //TString effFileName = path+"officialMC_noPtEtaCuts_JPsi_Bd2MuMuKPi_2p0Sig_4p0to6p0SB.root";
   //TString effFileName = path+"officialMC_noPtEtaCuts_JPsi_Bd2MuMuKPi_2p0Sig_5p0to9p0SB.root";
   TString effFileName = path+"officialMC_noPtEtaCuts_JPsi_Bd2MuMuKPi_2p0Sig_6p0to9p0SB.root";
-  effFileName = path+"TMVApp_MC_withBDTCutAt0p00_JPsi_2p0Sig_6p0to9p0SB.root";
+  effFileName = path+"TMVApp_MC_withBDTCutAt"+bdtCut+"_JPsi_2p0Sig_6p0to9p0SB.root";
   cout <<"\nOpening \"" <<effFileName <<endl;
   TFile *effFile = TFile::Open(effFileName);
   RooProdPdf* modelWithEff = 0;
@@ -630,18 +631,21 @@ void Analysis()
   pair< pair<TString, pair<RooArgSet*,pair<Int_t,Int_t> > >, pair<TString,pair< pair<TString,TString>,pair<TString,TString> > > > effHisto_names[] = {make_pair( make_pair("RelEff_psi2SPi_vs_KPi_B0constr_Dalitz",make_pair(&mass2Vars,make_pair(m2KPi_order_relEff,m2PsiPi_order_relEff))), make_pair("relEffDalitz",make_pair(make_pair("m2KPi",mass2KPi_title),make_pair("m2PsiPi",mass2PsiPi_title)))), make_pair(make_pair("RelEff_"+anglesScatt_name,make_pair(&angleVars,make_pair(cosMuMu_order_relEff,phi_order_relEff))), make_pair("relEffAngles",make_pair(make_pair("cosMuMu",cosMuMu_title),make_pair("phi",phi_title))))}; DalitzEff = kTRUE;
   // if you use &mass2Fors you get "ERROR:InputArguments -- RooAbsDataStore::initialize(RelEff_psi2SPi_vs_KPi_B0constr): Data set cannot contain non-fundamental types"
   //effHisto_names[0] = make_pair(make_pair("RelEff_psi2SPi_vs_KPi_B0constr",make_pair(&massVars,make_pair(mKPi_order_relEff,mPsiPi_order_relEff))), make_pair("relEffMasses",make_pair(make_pair("mKPi",massKPi_title),make_pair("mPsiPi",massPsiPi_title)))); DalitzEff = kFALSE;
-  effHisto_names[0] = make_pair(make_pair("RelEff_psi2SPi_vs_KPi_B0constr_1B0_BDTCutAt0p00",make_pair(&massVars,make_pair(mKPi_order_relEff,mPsiPi_order_relEff))), make_pair("relEffMasses",make_pair(make_pair("mKPi",massKPi_title),make_pair("mPsiPi",massPsiPi_title)))); DalitzEff = kFALSE;
+  effHisto_names[0] = make_pair(make_pair("RelEff_psi2SPi_vs_KPi_B0constr_1B0",make_pair(&massVars,make_pair(mKPi_order_relEff,mPsiPi_order_relEff))), make_pair("relEffMasses",make_pair(make_pair("mKPi",massKPi_title),make_pair("mPsiPi",massPsiPi_title)))); DalitzEff = kFALSE;
   //effHisto_names[0] = make_pair(make_pair("RelEff_cos_Kstar_helicityAngle_vs_KPiSq_varBins",make_pair(&sqDalitz,make_pair(m2KPi_order_relEff,cosKstar_order_relEff))), make_pair("relEffSqDalitz",make_pair(make_pair("m2KPi",mass2KPi_title),make_pair("cosKstar",cosKstar_title)))); DalitzEff = kTRUE;
-  effHisto_names[1] = make_pair(make_pair("RelEffErr_planesAngle_vs_cos_psi2S_helicityAngle_BDTCutAt0p00",make_pair(&angleVars,make_pair(cosMuMu_order_relEff,phi_order_relEff))), make_pair("relEffAngles",make_pair(make_pair("cosMuMu",cosMuMu_title),make_pair("phi",phi_title))));
+
   pair<RooAbsPdf*, Float_t> effPdf[] = {make_pair(null,0.),make_pair(null,0.)};
 
   //effFile = 0;
   if (effFile)
     for (Int_t iEff=0; iEff <2 ; ++iEff) {
       TString effName = effHisto_names[iEff].second.first;
-      const TH2F* relEffTH2 = (TH2F*)effFile->Get( effHisto_names[iEff].first.first ) ;
+      TString histName = effHisto_names[iEff].first.first;
+      histName.Append("_BDTCutAt"+bdtCut);
+      histName.ReplaceAll("RelEff","RelEffInv"); effName.ReplaceAll("relEff","relEffInv");
+      const TH2F* relEffTH2 = (TH2F*)effFile->Get( histName ) ;
       if (!relEffTH2) {
-	cout <<"WARNING! No TH2F \"" <<effHisto_names[iEff].first.first <<"\" found in TFile \"" <<effFile->GetName() <<"\".\nSkipping " <<effName <<" correction" <<endl;
+	cout <<"WARNING! No TH2F \"" <<histName <<"\" found in TFile \"" <<effFile->GetName() <<"\".\nSkipping " <<effName <<" correction" <<endl;
 	continue; }
 
       Float_t xMin = 0, xMax = 0; RooBinning* xRooBinning = 0;
@@ -802,7 +806,7 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
 
   Int_t nLegendEntries = 0;
   
-  Bool_t generating = kFALSE; //generating = kTRUE;
+  Bool_t generating = kFALSE; generating = kTRUE;
   if (generating) {
     // Generate toy data from pdf and plot data and p.d.f on frame
     cout <<"\nGenerating " <<nEvents.getVal() <<" events according to " <<model->GetTitle() <<" pdf for " <<model->GetName() <<endl;
@@ -825,7 +829,7 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
     cout <<"My processes time: " << (genTimeProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
     //if (nEvents.getVal() > 100000)
     dataGenPDF->write(TString::Format("%s/%s.txt",datasetsPath.Data(),model->GetName()));
-    //return;
+    return;
     
     dataToFit = dataGenPDF;
   }
