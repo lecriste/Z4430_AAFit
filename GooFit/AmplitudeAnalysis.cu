@@ -172,7 +172,7 @@ int main(int argc, char** argv) {
   vector <Int_t> dataPoints; // same order as varNames
   dataPoints.push_back(dataBins); dataPoints.push_back(dataBins); dataPoints.push_back(dataBins); dataPoints.push_back(dataBins);
   vector <Int_t> plottingFine; // same order as varNames
-  plottingFine.push_back(pdfBins*2); plottingFine.push_back(pdfBins); plottingFine.push_back(pdfBins); plottingFine.push_back(pdfBins);
+  plottingFine.push_back(pdfBins*4); plottingFine.push_back(pdfBins); plottingFine.push_back(pdfBins); plottingFine.push_back(pdfBins);
 
   fptype aMax = +9999.;
   fptype bMax = +9999.;
@@ -602,7 +602,8 @@ int main(int argc, char** argv) {
     }
     if (effPdfProd ) {
       cout <<"  - With efficiency multiplication" <<endl;
-      datasetName.Append("__withEff"); plotsName.Append("__withEff"); 
+      datasetName.Append("__withEff"); plotsName.Append("__withEff");
+      if (datasetName.Contains("InvEff")) plotsName.ReplaceAll("withEff","withInvEff");
     }
     if (b0Bar){
       cout <<"  - With B0Bar dataset" <<endl;
@@ -2031,7 +2032,7 @@ int main(int argc, char** argv) {
 
   std::vector< std::vector<TH1F*> > compHistos(nProjVars);
 
-  Bool_t plotSingleKstars = kTRUE; plotSingleKstars = kFALSE;
+  Bool_t plotSingleKstars = kTRUE; //plotSingleKstars = kFALSE;
 
   int lastAmplitude = 0;
 
@@ -2044,27 +2045,20 @@ int main(int argc, char** argv) {
   for (int k = 0; k < nKstars; ++k) {
     ////////////////////////////////////////////////////////////////////////////////
     //Initialising projection vectors
+    // these have not been vectorised because their fill is not similar
+    std::vector<fptype> mkpCompProjection, cosMuMuCompProjection, massPsiPiCompProjection, phiCompProjection;
 
-    std::vector<fptype> mkpCompProjection;
-    std::vector<fptype> cosMuMuCompProjection;
-    std::vector<fptype> massPsiPiCompProjection;
-    std::vector<fptype> phiCompProjection;
-
-    for (int i = 0; i < massKPi->numbins; ++i) {
+    for (int i = 0; i < massKPi->numbins; ++i)
       mkpCompProjection.push_back(0.0);
-    }
 
-    for (int i = 0; i < cosMuMu->numbins; ++i) {
+    for (int i = 0; i < cosMuMu->numbins; ++i)
       cosMuMuCompProjection.push_back(0.0);
-    }
 
-    for (int i = 0; i < massPsiPi->numbins; ++i) {
+    for (int i = 0; i < massPsiPi->numbins; ++i)
       massPsiPiCompProjection.push_back(0.0);
-    }
 
-    for (int i = 0; i < phi->numbins; ++i) {
+    for (int i = 0; i < phi->numbins; ++i)
       phiCompProjection.push_back(0.0);
-    }
 
     // Pushing histogram for each projection
     for (Int_t iVar=0; iVar<nProjVars; ++iVar) {
@@ -2125,7 +2119,7 @@ int main(int argc, char** argv) {
       //   asPlot.push_back(new Variable("zero_a",0.0));
       //   bsPlot.push_back(new Variable("zero_b",0.0));
       // }}
-      lastAmplitude+=3;
+      lastAmplitude += 3;
     }
 
     // std::cout<<" --- "<<k<<std::endl;
@@ -2158,6 +2152,7 @@ int main(int argc, char** argv) {
 
     matrixPlot->getCompProbsAtDataPoints(pdfCompValues);
 
+    /* // not working for the moment
     if (effPdfProd)
       for (int k = 0; k < pdfCompValues[0].size(); k++)
 	{
@@ -2165,10 +2160,9 @@ int main(int argc, char** argv) {
 	    obserVariables[i]->value = plottingGridData.getValue(obserVariables[i],k);
 
 	  fptype effDataCont = effDataset->getBinContent(effDataset->getBinNumber());
-
 	  pdfCompValues[0][k] *= effDataCont;
 	}
-
+    */
     matrixPlot->clearCurrentFit();
 
     for (int i=0; i<pdfCompValues[0].size(); i++) {

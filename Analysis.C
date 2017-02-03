@@ -643,7 +643,7 @@ void Analysis()
       TString effName = effHisto_names[iEff].second.first;
       TString histName = effHisto_names[iEff].first.first;
       histName.Append("_BDTCutAt"+bdtCut);
-      histName.ReplaceAll("RelEff","RelEffInv"); effName.ReplaceAll("relEff","relEffInv");
+      histName.ReplaceAll("RelEff","RelEffInv"); effName.ReplaceAll("relEff","relInvEff");
       const TH2F* relEffTH2 = (TH2F*)effFile->Get( histName ) ;
       if (!relEffTH2) {
 	cout <<"WARNING! No TH2F \"" <<histName <<"\" found in TFile \"" <<effFile->GetName() <<"\".\nSkipping " <<effName <<" correction" <<endl;
