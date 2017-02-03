@@ -103,7 +103,7 @@ void chi2N_hist(TFile* file, const TString errTH2_name, const TH2F* TH2, const R
 
   const TH2F* errTH2 = (TH2F*)file->Get( errTH2_name ) ;
   if (!errTH2) {
-    cout <<"Histogram \"" <<errTH2_name <<"\" not found in TFile \"" <<file->GetName() <<"\"\nChi2 histogram will not be calculated." <<endl;
+    cout <<"\nHistogram \"" <<errTH2_name <<"\" not found in TFile \"" <<file->GetName() <<"\"\nChi2 histogram will not be calculated." <<endl;
   } else {
     TH2F* chi2N_TH2 = twoD_chiSquare(TH2, errTH2, pdf, x, y) ;
     TCanvas* chi2N_C = new TCanvas("chi2N_"+errTH2_name+"_C",TString::Format("chi2N for %s",errTH2->GetTitle()),800,600) ;
@@ -433,13 +433,14 @@ void Analysis()
 
   RooAbsPdf* bkgPDF = BdToPsiPiK_PHSP; bkgPDF = 0;
 
-  Double_t totEvents = 2000;
+  Double_t totEvents = 2000; // Generation time does not scale with number of events up to at least 10k events
+  //totEvents *= 2;
   //totEvents *= 2.5;
-  //totEvents *= 5;
+  totEvents *= 5;
   //totEvents *= 10;
   //totEvents *= 10; totEvents *= 5;
   //totEvents *= 10; totEvents *= 3;
-  totEvents /= 2; totEvents /= 100;
+  //totEvents /= 2; totEvents /= 100;
   RooRealVar nSig("nSig", "n_{SIG}", 0, 0, 1E6);
   //nSig.setVal( 10*nSig.getVal() ); // Does not work on the fly
   Float_t purity = 0.75;
@@ -743,7 +744,7 @@ void Analysis()
       }
       */
 
-     if (iEff==0) {
+      if (iEff==0) {
  	if (effVars != &massVars) {
           method = "derivedFromFit";
 /*
@@ -793,29 +794,40 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
 	//cout <<"model->getVal() = " <<model->getVal() <<", model->getValV() = " <<model->getValV() <<endl;
 	//cout <<"massKPi = " <<massKPi.getVal() <<", mass2KPi = " <<mass2KPi.getVal() <<", massPsiPi = " <<massPsiPi.getVal() <<", mass2PsiPi = " <<mass2PsiPi.getVal() <<endl;
       } // if (iEff==0)
-
-      modelWithEff = new RooProdPdf(modelName.Append("__with"+effType+"Eff"),TString::Format("%s * #epsilon("+efftype+")",model->GetTitle()),RooArgSet(*model,*effPdf[iEff].first)) ;
-      model = modelWithEff;
-
+      
+      //modelWithEff = new RooProdPdf(modelName.Append("__with"+effType+"Eff"),TString::Format("%s * #epsilon("+efftype+")",model->GetTitle()),RooArgSet(*model,*effPdf[iEff].first)) ; model = modelWithEff; // replacing sigPdf * eff(M) * eff(A) with sigPdf * [eff(M) * eff(A)] seems to improve the generation time
+      
     } // for (Int_t iEff=0; iEff < 2; ++iEff)
   else
     cout <<"WARNING! TFile \"" <<effFileName <<"\" could not be opened.\nSkipping efficiency correction" <<endl;
 
   //return;
 
+  RooProdPdf* effModel = 0;
+  if (effPdf[0].first && effPdf[1].first)
+    effModel = new RooProdPdf(TString::Format("%s_times_%s",effPdf[0].first->GetName(),effPdf[1].first->GetName()),TString::Format("%s * %s",effPdf[0].first->GetTitle(),effPdf[1].first->GetTitle()),RooArgSet(*effPdf[0].first,*effPdf[1].first));
+
+  if ((model != modelWithEff) && effModel) {
+    std::cout<<"\nMultiplying eff to pdf" <<std::endl;
+    modelWithEff = new RooProdPdf(TString::Format("%s__with__%s",modelName.Data(),effModel->GetName()),TString::Format("%s * (%s)",model->GetTitle(),effModel->GetTitle()),*model,*effModel) ;
+    model = modelWithEff;
+  }
+
 
   Int_t nLegendEntries = 0;
   
   Bool_t generating = kFALSE; generating = kTRUE;
   if (generating) {
+    B0beauty.setVal(1); B0beauty.setConstant(kTRUE);
     // Generate toy data from pdf and plot data and p.d.f on frame
-    cout <<"\nGenerating " <<nEvents.getVal() <<" events according to " <<model->GetTitle() <<" pdf for " <<model->GetName() <<endl;
+    cout <<"\nGenerating " <<nEvents.getVal() <<" events according to " <<model->GetTitle() <<" pdf for " <<model->GetName() <<" with " <<B0beauty.getTitle() <<" = " <<B0beauty.getVal() <<endl;
     timeval genTime;
     gettimeofday(&start, NULL);
     startCPU = times(&startProc);
     //
     TString dataGenName = "Generated_data_from_PDF"; TString dataGen_Name = dataGenName;
-    RooDataSet* dataGenPDF = model->generate(kinematicVars_withBeauty, nEvents.getVal(), Verbose(kTRUE), Name(dataGenName)) ; dataGenPDF->SetTitle(dataGenName.ReplaceAll("_"," "));
+    RooArgSet genSet = kinematicVars; genSet = kinematicVars_withBeauty;
+    RooDataSet* dataGenPDF = model->generate(genSet, nEvents.getVal(), Verbose(kTRUE), Name(dataGenName)) ; dataGenPDF->SetTitle(dataGenName.ReplaceAll("_"," "));
     //
     stopCPU = times(&stopProc);
     gettimeofday(&stop, NULL);

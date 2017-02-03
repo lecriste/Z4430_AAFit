@@ -71,16 +71,16 @@ bool debugging = false;
 
 fptype phaseSpaceFunction(fptype x,fptype mP,fptype m1,fptype m2,fptype m3)
 {
-   fptype value = sqrt(pow(x,4) + pow(m1,4) + pow(m2,4) - 2*pow(x,2)*pow(m1,2) - 2*pow(x,2)*pow(m2,2) - 2*pow(m1,2)*pow(m2,2)) * sqrt(pow(mP,4) + pow(x,4) + pow(m3,4) - 2*pow(mP,2)*pow(x,2) - 2*pow(mP,2)*pow(m3,2) - 2*pow(x,2)*pow(m3,2) ) / (x) ;
+  fptype value = sqrt(pow(x,4) + pow(m1,4) + pow(m2,4) - 2*pow(x,2)*pow(m1,2) - 2*pow(x,2)*pow(m2,2) - 2*pow(m1,2)*pow(m2,2)) * sqrt(pow(mP,4) + pow(x,4) + pow(m3,4) - 2*pow(mP,2)*pow(x,2) - 2*pow(mP,2)*pow(m3,2) - 2*pow(x,2)*pow(m3,2) ) / (x) ;
 
-   fptype function = isnan(value) ? 0 : value;
+  fptype function = isnan(value) ? 0 : value;
 
-   return function;
+  return function;
 }
 
 void debug(int line) {
-  if(debugging)
-  std::cout <<"Debugging on line " <<line <<std::endl;
+  if (debugging)
+    std::cout <<"Debugging on line " <<line <<std::endl;
 }
 
 int parDotSpin (fptype dotSpin) {
@@ -90,7 +90,7 @@ int parDotSpin (fptype dotSpin) {
 
 std::string doubleToStr (fptype dbl) {
   std::ostringstream strs;
-  strs << dbl;
+  strs <<dbl;
   return strs.str();
 }
 
@@ -111,51 +111,51 @@ void addHelAmplStat(TPaveText *fitStat, TString hel, Variable* a, Variable* b) {
 
 void printCodes()
 {
-  std::cerr << "Codes" <<std::endl;
+  std::cerr <<"Codes" <<std::endl;
 }
 
 void printinstruction() {
 
-  std::cerr << "======= Instructions \n"
-	          << "\t-h,--help \t\t Show this help message\n"
-            << "\t-evtGen \t\t Select EvtGen dataset and p.d.f. parameters\n"
-            << "\t-effH \t\t\t Perform the product of the pdf by the efficiency histogram \n"
-            << "\t-effHInt \t\t Perform the product of the pdf by the efficiency histogram interpolation \n"
-            << "\t-BkgMap \t\t Add Phase Space Background Map \n"
-            << "\t-BkgMapInt \t\t Add Phase Space Background Interpolation Map \n"
-            << "\t-BkgPHSP \t\t Add Phase Space Background to p.d.f.\n"
-            //<< "\t-effH <4-dig-code> \t Perform the product of the pdf by the efficiency histogram ()\n"
-            //<< "\t\t\t\t\t\t - code1 ()\n"
-	          << "\t-n <events> \t\t Specify the number of events to use\n"
-	          << "\t-r <path> \t\t Read Generated Events from txt in <path>\n"
-            << "\t-o <path> \t\t Write estimated parameters in \" parameters.txt \" file in <path> (default . )\n"
-            << "\t-algos <Algo1Algo2...>\t Select the mimimisation algos in the order they should \n \t\t\t\t be performed (MIGRAD at least once) ["<<m<<" for MIGRAD, "<<h<<" for HESSE, "<<n<<" for MINOS]\n \t\t\t\t (e.g -algo "<<h<<m<<h<<n<<" for HESSE MIGRAD HESSE MINOS - default: MIGRAD only) \n"
-	          << "\t-b1 <b1> \t\t Select binning for MassKPi (for normalisation & integration, default: " <<compBins <<")\n"
-            << "\t-b2 <b2> \t\t Select binning for MassPsiPi (for normalisation & integration, default: " <<compBins <<")\n"
-            << "\t-b3 <b3> \t\t Select binning for CosMuMu (for normalisation & integration, default: " <<compBins <<")\n"
-            << "\t-b4 <b4> \t\t Select binning for Phi (for normalisation & integration, default: " <<compBins <<")\n"
-            << "\t-p1 <p> \t\t Select p.d.f. plotting binning finenness (default: " <<pdfBins <<") for MassKPi \n"
-            << "\t-p2 <p> \t\t Select p.d.f. plotting binning finenness (default: " <<pdfBins <<") for MassPsiPi \n"
-            << "\t-p3 <p> \t\t Select p.d.f. plotting binning finenness (default: " <<pdfBins <<") for CosMuMu \n"
-            << "\t-p4 <p> \t\t Select p.d.f. plotting binning finenness (default: " <<pdfBins <<") for Phi \n"
-            << "\t-d1 <p> \t\t Select dataset binning (default: " <<dataBins <<") for MassKPi \n"
-            << "\t-d2 <p> \t\t Select dataset binning (default: " <<dataBins <<") for MassPsiPi \n"
-            << "\t-d3 <p> \t\t Select dataset binning (default: " <<dataBins <<") for CosMuMu \n"
-            << "\t-d4 <p> \t\t Select dataset binning (default: " <<dataBins <<") for Phi \n"
-            << "\t-Bb <Bb> \t\t Select bound limits for b parameter (default: 9999)\n"
-            << "\t-k800 \t\t\t Add K*_0(800) to p.d.f.\n"
-            << "\t-k892 \t\t\t Add K*_1(892) to p.d.f.\n"
-            << "\t-k1410 \t\t\t Add K*_1(1410) to p.d.f.\n"
-            << "\t-k1430_0 \t\t Add K*_0(1430) to p.d.f.\n"
-            << "\t-k1430_2 \t\t Add K*_2(1430) to p.d.f.\n"
-            << "\t-k1780 \t\t\t Add K*_3(1780) to p.d.f.\n"
-            << "\t-b0Var \t\t\t Add B0 - B0Bar flag as variable for each event candidate \n \t\t\t\t (Incompatible with -b0Var) \n"
-            << "\t-b0BarPdf \t\t Use B0Bar p.d.f. instead of B0 p.d.f. \n \t\t\t\t (Incompatible with -b0Var)\n"
-            << "\t-b0Flag \t\t Add B0 - B0Bar flag: multplying phi by -1\n"
-            << "\t-b0Bar  \t\t B0Bar dataset instead of B0 \n"
-            << "\t-fixA <code> \t\t Fix K* p.d.f. amplitudes to starting values (option -fixH to read codes) \n"
-            << "\t-fixB <code> \t\t Fix K* p.d.f. phases to starting values (option -fixH to read codes)\n"
-            << std::endl;
+  std::cerr <<"======= Instructions \n"
+	    <<"\t-h,--help \t\t Show this help message\n"
+            <<"\t-evtGen \t\t Select EvtGen dataset and p.d.f. parameters\n"
+            <<"\t-effH \t\t\t Perform the product of the pdf by the efficiency histogram \n"
+            <<"\t-effHInt \t\t Perform the product of the pdf by the efficiency histogram interpolation \n"
+            <<"\t-BkgMap \t\t Add Phase Space Background Map \n"
+            <<"\t-BkgMapInt \t\t Add Phase Space Background Interpolation Map \n"
+            <<"\t-BkgPHSP \t\t Add Phase Space Background to p.d.f.\n"
+    //<<"\t-effH <4-dig-code> \t Perform the product of the pdf by the efficiency histogram ()\n"
+    //<<"\t\t\t\t\t\t - code1 ()\n"
+	    <<"\t-n <events> \t\t Specify the number of events to use\n"
+	    <<"\t-r <path> \t\t Read Generated Events from txt in <path>\n"
+            <<"\t-o <path> \t\t Write estimated parameters in \" parameters.txt \" file in <path> (default . )\n"
+            <<"\t-algos <Algo1Algo2...>\t Select the mimimisation algos in the order they should \n \t\t\t\t be performed (MIGRAD at least once) ["<<m<<" for MIGRAD, "<<h<<" for HESSE, "<<n<<" for MINOS]\n \t\t\t\t (e.g -algo "<<h<<m<<h<<n<<" for HESSE MIGRAD HESSE MINOS - default: MIGRAD only) \n"
+	    <<"\t-b1 <b1> \t\t Select binning for MassKPi (for normalisation & integration, default: " <<compBins <<")\n"
+            <<"\t-b2 <b2> \t\t Select binning for MassPsiPi (for normalisation & integration, default: " <<compBins <<")\n"
+            <<"\t-b3 <b3> \t\t Select binning for CosMuMu (for normalisation & integration, default: " <<compBins <<")\n"
+            <<"\t-b4 <b4> \t\t Select binning for Phi (for normalisation & integration, default: " <<compBins <<")\n"
+            <<"\t-p1 <p> \t\t Select p.d.f. plotting binning finenness (default: " <<pdfBins <<") for MassKPi \n"
+            <<"\t-p2 <p> \t\t Select p.d.f. plotting binning finenness (default: " <<pdfBins <<") for MassPsiPi \n"
+            <<"\t-p3 <p> \t\t Select p.d.f. plotting binning finenness (default: " <<pdfBins <<") for CosMuMu \n"
+            <<"\t-p4 <p> \t\t Select p.d.f. plotting binning finenness (default: " <<pdfBins <<") for Phi \n"
+            <<"\t-d1 <p> \t\t Select dataset binning (default: " <<dataBins <<") for MassKPi \n"
+            <<"\t-d2 <p> \t\t Select dataset binning (default: " <<dataBins <<") for MassPsiPi \n"
+            <<"\t-d3 <p> \t\t Select dataset binning (default: " <<dataBins <<") for CosMuMu \n"
+            <<"\t-d4 <p> \t\t Select dataset binning (default: " <<dataBins <<") for Phi \n"
+            <<"\t-Bb <Bb> \t\t Select bound limits for b parameter (default: 9999)\n"
+            <<"\t-k800 \t\t\t Add K*_0(800) to p.d.f.\n"
+            <<"\t-k892 \t\t\t Add K*_1(892) to p.d.f.\n"
+            <<"\t-k1410 \t\t\t Add K*_1(1410) to p.d.f.\n"
+            <<"\t-k1430_0 \t\t Add K*_0(1430) to p.d.f.\n"
+            <<"\t-k1430_2 \t\t Add K*_2(1430) to p.d.f.\n"
+            <<"\t-k1780 \t\t\t Add K*_3(1780) to p.d.f.\n"
+            <<"\t-b0Var \t\t\t Add B0 - B0Bar flag as variable for each event candidate \n \t\t\t\t (Incompatible with -b0Var) \n"
+            <<"\t-b0BarPdf \t\t Use B0Bar p.d.f. instead of B0 p.d.f. \n \t\t\t\t (Incompatible with -b0Var)\n"
+            <<"\t-b0Flag \t\t Add B0 - B0Bar flag: multplying phi by -1\n"
+            <<"\t-b0Bar  \t\t B0Bar dataset instead of B0 \n"
+            <<"\t-fixA <code> \t\t Fix K* p.d.f. amplitudes to starting values (option -fixH to read codes) \n"
+            <<"\t-fixB <code> \t\t Fix K* p.d.f. phases to starting values (option -fixH to read codes)\n"
+            <<std::endl;
 }
 
 
@@ -210,8 +210,8 @@ int main(int argc, char** argv) {
   std::vector<std::string> algos;
   algos.push_back(migrad);
 
-  std::string oPath;
-  std::string iPath;
+  std::string outPath;
+  std::string inPath;
 
   std::string aFixCode;
   std::string bFixCode;
@@ -227,380 +227,274 @@ int main(int argc, char** argv) {
 
   TH1D* bkgHistos[] = {0,0,0,0};
 
-  if (argc<=1)
-    {
+  if (argc<=1) {
+    printinstruction();
+    return 0;
+  }
+
+  for (int i = 1; i < argc; ++i) {
+    std::string arg = argv[i];
+
+    if ((arg == "-h") || (arg == "--help")) {
       printinstruction();
       return 0;
     }
-
-  for (int i = 1; i < argc; ++i)
-    {
-      std::string arg = argv[i];
-      if ((arg == "-h") || (arg == "--help"))
-    	{
-    	  printinstruction();
-    	  return 0;
-    	}
-      else if (arg == "-n")
-  	{
-  	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-  	    {
-  	      i++;
-  	      std::istringstream ss(argv[i]);
-  	      if (!(ss >> events))
-  		{
-  		  std::cerr << "Invalid number " << argv[i] << '\n';
-  		  exit(1);
-  		}
-  	    }
-  	}
-      else if (arg == "-b1")
-  	{
-  	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-  	    {
-  	      i++;
-  	      std::istringstream ss(argv[i]);
-  	      if (!(ss >> bin[0]))
-  		{
-  		  std::cerr << "Invalid number " << argv[i] << '\n';
-  		  exit(1);
-  		}
-  	    }
-  	}
-      else if (arg == "-b2")
-  	{
-  	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-  	    {
-  	      i++;
-  	      std::istringstream ss(argv[i]);
-  	      if (!(ss >> bin[1]))
-  		{
-  		  std::cerr << "Invalid number " << argv[i] << '\n';
-  		  exit(1);
-  		}
-  	    }
-  	}
-      else if (arg == "-b3")
-  	{
-  	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-  	    {
-  	      i++;
-  	      std::istringstream ss(argv[i]);
-  	      if (!(ss >> bin[2]))
-  		{
-  		  std::cerr << "Invalid number " << argv[i] << '\n';
-  		  exit(1);
-  		}
-  	    }
-  	}
-      else if (arg == "-b4")
-  	{
-  	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-  	    {
-  	      i++;
-  	      std::istringstream ss(argv[i]);
-  	      if (!(ss >> bin[3]))
-  		{
-  		  std::cerr << "Invalid number " << argv[i] << '\n';
-  		  exit(1);
-  		}
-  	    }
-  	}
-      else if (arg == "-p1")
-  	{
-  	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-  	    {
-  	      i++;
-  	      std::istringstream ss(argv[i]);
-  	      if (!(ss >> plottingFine[0]))
-  		{
-  		  std::cerr << "Invalid number " << argv[i] << '\n';
-  		  exit(1);
-  		}
-  	    }
-  	}
-      else if (arg == "-p2")
-  	{
-  	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-  	    {
-  	      i++;
-  	      std::istringstream ss(argv[i]);
-  	      if (!(ss >> plottingFine[1]))
-  		{
-  		  std::cerr << "Invalid number " << argv[i] << '\n';
-  		  exit(1);
-  		}
-  	    }
-  	}
-      else if (arg == "-p3")
-  	{
-  	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-  	    {
-  	      i++;
-  	      std::istringstream ss(argv[i]);
-  	      if (!(ss >> plottingFine[2]))
-  		{
-  		  std::cerr << "Invalid number " << argv[i] << '\n';
-  		  exit(1);
-  		}
-  	    }
-  	}
-      else if (arg == "-p4")
-  	{
-  	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-  	    {
-  	      i++;
-  	      std::istringstream ss(argv[i]);
-  	      if (!(ss >> plottingFine[3]))
-  		{
-  		  std::cerr << "Invalid number " << argv[i] << '\n';
-  		  exit(1);
-  		}
-  	    }
-  	}
-      else if (arg == "-Bb")
-  	{
-  	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-  	    {
-  	      i++;
-  	      std::istringstream ss(argv[i]);
-  	      if (!(ss >> bMax))
-  		{
-  		  std::cerr << "Invalid number " << argv[i] << '\n';
-  		  exit(1);
-  		}
-  	    }
-  	  else
-  	    bMax = TMATH_PI;
-  	}
-      else if (arg == "-k892")
-  	{
-  	  k892Star = true;
-  	  ++nKstars;
-  	}
-      else if (arg == "-k800")
-  	{
-  	  k800Star = true;
-  	  ++nKstars;
-  	}
-      else if (arg == "-k1410")
-  	{
-  	  k1410Star = true;
-  	  ++nKstars;
-  	}
-      else if (arg == "-k1430_0")
-  	{
-  	  k1430Star0 = true;
-  	  ++nKstars;
-  	}
-      else if (arg == "-k1430_2")
-  	{
-  	  k1430Star2 = true;
-  	  ++nKstars;
-  	}
-      else if (arg == "-k1780")
-  	{
-  	  k1780Star = true;
-  	  ++nKstars;
-  	}
-      else if (arg == "-BkgPHSP")
-	{
-	  bkgPhaseSpace = true;
-	  bkgFlag = true;
-	}
-      else if (arg == "-BkgMap")
-	{
-	  bkgHistMap = true;
-	  bkgHist = true;
-	  bkgFlag = true;
-	}
-      else if (arg == "-BkgMapInt")
-	{
-	  bkgHistInt = true;
-	  bkgHist = true;
-	  bkgFlag = true;
-	}
-      else if (arg == "-effH")
-	{
-	  effPdfProd = true;
-	  effPdfFlat = true;
-	}
-      else if (arg == "-effHInt")
-	{
-	  effPdfProd = true;
-	  effPdfInter = true;
-	}
-      else if (arg == "-txt")
-	{
-	  txtfile = true;
-	}
-      else if (arg == "-d1")
-  	{
-  	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-  	    {
-  	      i++;
-  	      std::istringstream ss(argv[i]);
-  	      if (!(ss >> dataPoints[0]))
-  		{
-  		  std::cerr << "Invalid number " << argv[i] << '\n';
-  		  exit(1);
-  		}
-  	    }
-  	}
-      else if (arg == "-d2")
-  	{
-  	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-  	    {
-  	      i++;
-  	      std::istringstream ss(argv[i]);
-  	      if (!(ss >> dataPoints[1]))
-  		{
-  		  std::cerr << "Invalid number " << argv[i] << '\n';
-  		  exit(1);
-  		}
-  	    }
-  	}
-      else if (arg == "-d3")
-  	{
-  	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-  	    {
-  	      i++;
-  	      std::istringstream ss(argv[i]);
-  	      if (!(ss >> dataPoints[2]))
-  		{
-  		  std::cerr << "Invalid number " << argv[i] << '\n';
-  		  exit(1);
-  		}
-  	    }
-  	}
-      else if (arg == "-d4")
-  	{
-  	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-  	    {
-  	      i++;
-  	      std::istringstream ss(argv[i]);
-  	      if (!(ss >> dataPoints[3]))
-  		{
-  		  std::cerr << "Invalid number " << argv[i] << '\n';
-  		  exit(1);
-  		}
-  	    }
-  	}
-      else if (arg == "-o")
-	{
-	  outParams = true;
-
-	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-	    {
-	      i++;
-
-	      oPath = argv[i];
-
-	    }
-	}
-      else if (arg == "-local")
-	{
-	  ghostRead = true;
-
-	}
-      else if (arg == "-b0Var")
-	{
-	  b0Var = true;
-
-	}
-      else if (arg == "-debug")
-	{
-	  debugging = true;
-	}
-      else if (arg == "-b0Flag")
-	{
-	  b0Flag = true;
-	}
-      else if (arg == "-b0Bar")
-	{
-	  b0Bar = true;
-	}
-  else if (arg == "-b0BarPdf")
-  {
-    b0BarPdf = true;
-  }
-      //     else if (arg == "-H")
-      // {
-      //   hesse = true;
-      // }
-      else if (arg == "-algos")
-	{
-	  algos.clear();
-	  if (i + 1 < argc) // Make sure we aren't at the end of argv!
-  	    {
-  	      i++;
-
-  	      std::string algosInput= argv[i];
-	        std::size_t found = algosInput.find(m);
-
-	      if (found == std::string::npos)
-		{
-		  std::cout << "Minimisation algorithms invalid input : MIGRAD to be called at least once \n";
-		  exit(1);
-		}
-	      std::cout << "- Minimisation algorithms sequence : "<<std::endl;
-
-	      for (std::string::size_type l = 0; l < algosInput.length(); ++l)
-		{
-		  std::string::value_type algo = algosInput[l];
-
-		  if(algo==m)
-		    {
-		      algos.push_back(migrad);
-		      std::cout<<"  - MIGRAD "<<std::endl;
-		    }
-		  else if(algo==h)
-		    {
-		      algos.push_back(hesse);
-		      std::cout<<"  - HESSE "<<std::endl;
-		    }
-		  else if(algo==n)
-		    {
-		      algos.push_back(minos);
-		      std::cout<<"  - MINOS "<<std::endl;
-		    }
-		  else std:: cout<<"  - \""<<algo<<"\" invalid input, ignored "<<std::endl;
-		}
-
-  	    }
-	}
-
-  else if (arg == "-fixA")
-  {
-    aFix = true;
-
-    if (i + 1 < argc) // Make sure we aren't at the end of argv!
-      {
-        i++;
-        aFixCode = argv[i];
+    else if (arg == "-n") {
+      if (i + 1 < argc) { // Make sure we aren't at the end of argv!
+	i++;
+	std::istringstream ss(argv[i]);
+	if (!(ss >> events)) {
+	  std::cerr <<"Invalid number " <<argv[i] <<'\n';
+	  exit(1); }
+      } }
+    else if (arg == "-r") {
+      if (i + 1 < argc) { // Make sure we aren't at the end of argv!
+	i++;
+	txtfile = true;
+	inPath = argv[i];
+      } }
+    else if (arg == "-b1") {
+      if (i + 1 < argc) { // Make sure we aren't at the end of argv!
+	i++;
+	std::istringstream ss(argv[i]);
+	if (!(ss >> bin[0])) {
+	  std::cerr <<"Invalid number " <<argv[i] <<'\n';
+	  exit(1); }
+      } }
+    else if (arg == "-b2") {
+      if (i + 1 < argc) { // Make sure we aren't at the end of argv!
+	i++;
+	std::istringstream ss(argv[i]);
+	if (!(ss >> bin[1])) {
+	  std::cerr <<"Invalid number " <<argv[i] <<'\n';
+	  exit(1); }
+      } }
+    else if (arg == "-b3") {
+      if (i + 1 < argc) { // Make sure we aren't at the end of argv!
+	i++;
+	std::istringstream ss(argv[i]);
+	if (!(ss >> bin[2])) {
+	  std::cerr <<"Invalid number " <<argv[i] <<'\n';
+	  exit(1); }
+      } }
+    else if (arg == "-b4") {
+      if (i + 1 < argc) { // Make sure we aren't at the end of argv!
+	i++;
+	std::istringstream ss(argv[i]);
+	if (!(ss >> bin[3])) {
+	  std::cerr <<"Invalid number " <<argv[i] <<'\n';
+	  exit(1); }
+      } }
+    else if (arg == "-p1") {
+      if (i + 1 < argc) { // Make sure we aren't at the end of argv!
+	i++;
+	std::istringstream ss(argv[i]);
+	if (!(ss >> plottingFine[0])) {
+	  std::cerr <<"Invalid number " <<argv[i] <<'\n';
+	  exit(1); }
+      } }
+    else if (arg == "-p2") {
+      if (i + 1 < argc) { // Make sure we aren't at the end of argv!
+	i++;
+	std::istringstream ss(argv[i]);
+	if (!(ss >> plottingFine[1])) {
+	  std::cerr <<"Invalid number " <<argv[i] <<'\n';
+	  exit(1); }
+      } }
+    else if (arg == "-p3") {
+      if (i + 1 < argc) { // Make sure we aren't at the end of argv!
+	i++;
+	std::istringstream ss(argv[i]);
+	if (!(ss >> plottingFine[2])) {
+	  std::cerr <<"Invalid number " <<argv[i] <<'\n';
+	  exit(1); }
+      } }
+    else if (arg == "-p4") {
+      if (i + 1 < argc) { // Make sure we aren't at the end of argv!
+	i++;
+	std::istringstream ss(argv[i]);
+	if (!(ss >> plottingFine[3])) {
+	  std::cerr <<"Invalid number " <<argv[i] <<'\n';
+	  exit(1); }
+      } }
+    else if (arg == "-Bb") {
+      if (i + 1 < argc) { // Make sure we aren't at the end of argv!
+	i++;
+	std::istringstream ss(argv[i]);
+	if (!(ss >> bMax)) {
+	  std::cerr <<"Invalid number " <<argv[i] <<'\n';
+	  exit(1); }
       }
-  }
-  else if (arg == "-fixA")
-  {
-    bFix = true;
-
-    if (i + 1 < argc) // Make sure we aren't at the end of argv!
-      {
-        i++;
-        bFixCode = argv[i];
-      }
-  }
-  else if (arg == "-fixH")
-  {
-    i++;
-    printCodes();
-  }
-
-
+      else
+	bMax = TMATH_PI;
     }
+    else if (arg == "-k892") {
+      k892Star = true;
+      ++nKstars;
+    }
+    else if (arg == "-k800") {
+      k800Star = true;
+      ++nKstars;
+    }
+    else if (arg == "-k1410") {
+      k1410Star = true;
+      ++nKstars;
+    }
+    else if (arg == "-k1430_0") {
+      k1430Star0 = true;
+      ++nKstars;
+    }
+    else if (arg == "-k1430_2") {
+      k1430Star2 = true;
+      ++nKstars;
+    }
+    else if (arg == "-k1780") {
+      k1780Star = true;
+      ++nKstars;
+    }
+    else if (arg == "-BkgPHSP") {
+	bkgPhaseSpace = true;
+	bkgFlag = true;
+      }
+    else if (arg == "-BkgMap") {
+	bkgHistMap = true;
+	bkgHist = true;
+	bkgFlag = true;
+      }
+    else if (arg == "-BkgMapInt") {
+	bkgHistInt = true;
+	bkgHist = true;
+	bkgFlag = true;
+      }
+    else if (arg == "-effH") {
+	effPdfProd = true;
+	effPdfFlat = true;
+      }
+    else if (arg == "-effHInt") {
+	effPdfProd = true;
+	effPdfInter = true;
+      }
+    else if (arg == "-d1") {
+      if (i + 1 < argc) { // Make sure we aren't at the end of argv!
+	i++;
+	std::istringstream ss(argv[i]);
+	if (!(ss >> dataPoints[0])) {
+	  std::cerr <<"Invalid number " <<argv[i] <<'\n';
+	  exit(1); }
+      } }
+    else if (arg == "-d2") {
+      if (i + 1 < argc) { // Make sure we aren't at the end of argv!
+	i++;
+	std::istringstream ss(argv[i]);
+	if (!(ss >> dataPoints[1])) {
+	  std::cerr <<"Invalid number " <<argv[i] <<'\n';
+	  exit(1); }
+      } }
+    else if (arg == "-d3") {
+      if (i + 1 < argc) { // Make sure we aren't at the end of argv!
+	i++;
+	std::istringstream ss(argv[i]);
+	if (!(ss >> dataPoints[2])) {
+	  std::cerr <<"Invalid number " <<argv[i] <<'\n';
+	  exit(1); }
+      } }
+    else if (arg == "-d4") {
+      if (i + 1 < argc) { // Make sure we aren't at the end of argv!
+	i++;
+	std::istringstream ss(argv[i]);
+	if (!(ss >> dataPoints[3])) {
+	  std::cerr <<"Invalid number " <<argv[i] <<'\n';
+	  exit(1); }
+      } }
+    else if (arg == "-o") {
+	outParams = true;
+	if (i + 1 < argc) { // Make sure we aren't at the end of argv!
+	    i++;
+	    outPath = argv[i];
+	  } }
+    else if (arg == "-local") {
+	ghostRead = true;
+      }
+    else if (arg == "-b0Var") {
+	b0Var = true;
 
-  if(b0BarPdf && b0Var)
-  {
+      }
+    else if (arg == "-debug") {
+	debugging = true;
+      }
+    else if (arg == "-b0Flag") {
+	b0Flag = true;
+      }
+    else if (arg == "-b0Bar") {
+	b0Bar = true;
+      }
+    else if (arg == "-b0BarPdf") {
+	b0BarPdf = true;
+      }
+    //     else if (arg == "-H")
+    // {
+    //   hesse = true;
+    // }
+    else if (arg == "-algos") {
+	algos.clear();
+	if (i + 1 < argc) { // Make sure we aren't at the end of argv!
+	  i++;
+
+	  std::string algosInput= argv[i];
+	  std::size_t found = algosInput.find(m);
+
+	  if (found == std::string::npos)
+	    {
+	      std::cout <<"Minimisation algorithms invalid input : MIGRAD to be called at least once \n";
+	      exit(1);
+	    }
+	  std::cout <<"- Minimisation algorithms sequence : "<<std::endl;
+
+	  for (std::string::size_type l = 0; l < algosInput.length(); ++l)
+	    {
+	      std::string::value_type algo = algosInput[l];
+
+	      if (algo==m)
+		{
+		  algos.push_back(migrad);
+		  std::cout<<"  - MIGRAD "<<std::endl;
+		}
+	      else if (algo==h)
+		{
+		  algos.push_back(hesse);
+		  std::cout<<"  - HESSE "<<std::endl;
+		}
+	      else if (algo==n)
+		{
+		  algos.push_back(minos);
+		  std::cout<<"  - MINOS "<<std::endl;
+		}
+	      else std:: cout<<"  - \""<<algo<<"\" invalid input, ignored "<<std::endl;
+	    }
+
+	} }
+
+    else if (arg == "-fixA") {
+	aFix = true;
+
+	if (i + 1 < argc) { // Make sure we aren't at the end of argv!
+	    i++;
+	    aFixCode = argv[i];
+	  } }
+    else if (arg == "-fixB") {
+	bFix = true;
+
+	if (i + 1 < argc) { // Make sure we aren't at the end of argv!
+	    i++;
+	    bFixCode = argv[i];
+	  } }
+    else if (arg == "-fixH") {
+	i++;
+	printCodes();
+      }
+  }
+
+  if (b0BarPdf && b0Var) {
     cout <<"Both B0Bar p.d.f. and B0Bar flag as variable selected. \n Incompatible selections, please see instructions below" <<endl;
     printinstruction();
     return 1;
@@ -708,11 +602,11 @@ int main(int argc, char** argv) {
     }
     if (effPdfProd ) {
       cout <<"  - With efficiency multiplication" <<endl;
-      plotsName.Append("__withMassesEff");datasetName.Append("__withMassesEff");
+      datasetName.Append("__withEff"); plotsName.Append("__withEff"); 
     }
-    if(b0Bar){
+    if (b0Bar){
       cout <<"  - With B0Bar dataset" <<endl;
-      plotsName.Append("__B0Bar");datasetName.Append("__B0Bar");
+      datasetName.Append("__B0Bar"); plotsName.Append("__B0Bar");
     }
   }
 
@@ -874,25 +768,25 @@ int main(int argc, char** argv) {
 
   Int_t nHelAmps = as.size();
 
-  if( nHelAmps!=aFixCode.size() && aFix)
-  {
-    std::cout<<aFixCode.size()<<"-digits code provided for amplitude fix and "<<nHelAmps<<" amplitudes provided. \n Not matching, returning."<<std::endl;
-    return -1;
-  }
-  if( nHelAmps!=bFixCode.size() && bFix)
-  {
-    std::cout<<bFixCode.size()<<"-digits code provided for phase fix and "<<nHelAmps<<" phase provided. \n Not matching, returning."<<std::endl;
-    return -1;
-  }
+  if (nHelAmps!=aFixCode.size() && aFix)
+    {
+      std::cout<<aFixCode.size()<<"-digits code provided for amplitude fix and "<<nHelAmps<<" amplitudes provided. \n Not matching, returning."<<std::endl;
+      return -1;
+    }
+  if (nHelAmps!=bFixCode.size() && bFix)
+    {
+      std::cout<<bFixCode.size()<<"-digits code provided for phase fix and "<<nHelAmps<<" phase provided. \n Not matching, returning."<<std::endl;
+      return -1;
+    }
 
-  if(aFix)
+  if (aFix)
     for (Int_t i = 0; i < nHelAmps; i++)
-      if(aFixCode.data()[i]=='1') as[i]->fixed = true;
+      if (aFixCode.data()[i]=='1') as[i]->fixed = true;
 
 
-  if(bFix)
+  if (bFix)
     for (Int_t i = 0; i < nHelAmps; i++)
-      if(bFixCode.data()[i]=='1') bs[i]->fixed = true;
+      if (bFixCode.data()[i]=='1') bs[i]->fixed = true;
 
   fptype ratios[nProjVars];
   for (Int_t iVar=0; iVar<nProjVars; ++iVar)
@@ -903,7 +797,7 @@ int main(int argc, char** argv) {
   UnbinnedDataSet dataset(obserVariables);
   UnbinnedDataSet dataset_EffCorr(obserVariables);
 
-  std::cout<<"Dataset : "<<std::endl;
+  std::cout<<"Dataset: "<<std::endl;
   // std::cout<<" - dataset with "<<dataset.getNumBins()<<" bins "<<std::endl;
   //std::cout<<" - efficiencyDatasetMasses with "<<efficiencyDatasetMasses->getNumBins()<<" bins "<<std::endl;
 
@@ -931,11 +825,16 @@ int main(int argc, char** argv) {
   if (datasetName.Contains("dataGen_B0")) plotsDir.Append("/B0");
   else if (datasetName.Contains("dataGen_B0bar")) plotsDir.Append("/B0bar");
 
-  if(evtGen) datasetName.Append("__EvtGen");
+  if (evtGen) datasetName.Append("__EvtGen");
   //datasetName.Append("_mPhi");
-  if (txtfile || outParams) datasetName.Append(".txt");
+
   TString fullDatasetName = "./datasets/"+datasetName;
   fullDatasetName = "../datasets/"+datasetName;
+  if (txtfile || outParams) {
+    datasetName = inPath;
+    //datasetName.Append(".txt");
+    fullDatasetName = datasetName;
+  }
 
   if (txtfile) {
     ifstream dataTxt(fullDatasetName.Data());
@@ -956,18 +855,19 @@ int main(int argc, char** argv) {
 
       cout <<"\n- Reading " <<events <<" out of " <<totEvents <<" events from " <<datasetName <<" and filling variables histograms" <<endl;
       dataTxt.clear(); dataTxt.seekg (0, ios::beg);
-      while( (evt < events)  &&  (dataTxt >> var1 >> var2 >> var3 >> var4 >> var5) ) {
+      //while( (evt < events)  &&  (dataTxt >> var1 >> var2 >> var3 >> var4 >> var5) ) { // need to add a check for var5 and skip it if not present in the file
+      while( (evt < events)  &&  (dataTxt >> var1 >> var2 >> var3 >> var4) ) {
 	evt++;
 	massKPi->value = var1;
 	massPsiPi->value = var2;
 	cosMuMu->value = var3;
 	phi->value = var4;
-	if(b0Var)
+	if (b0Var)
 	  b0Beauty->value = var5;
-	else if(var5 < 0.0 && b0Flag)
+	else if (var5 < 0.0  &&  b0Flag)
 	  phi->value *= -1.0;
 
-	//std::cout << massKPi->value << " - " <<cosMuMu->value << " - " << massPsiPi->value << " - " << phi->value << " - " << std::endl;
+	//std::cout <<massKPi->value <<" - " <<cosMuMu->value <<" - " <<massPsiPi->value <<" - " <<phi->value <<" - " <<std::endl;
 	if (Dalitz_contour_host(massKPi->value, massPsiPi->value, kFALSE, (Int_t)psi_nS->value) ) {
 	  dataset.addEvent();
 	  for (Int_t iVar=0; iVar<nProjVars; ++iVar)
@@ -993,7 +893,7 @@ int main(int argc, char** argv) {
       TString dataTreeName = "AA_vars";
       TNtupleD* dataNTuple = (TNtupleD*)inputFile->Get(dataTreeName);
 
-      if(!(dataNTuple)){
+      if (!(dataNTuple)){
       	std::cout<<"Data NTuple named \'"<<dataTreeName<<"\' not found in TFile \'" <<inputFile->GetName() <<"\'.\nReturning."<<std::endl;
       	return -1;
       }
@@ -1039,7 +939,7 @@ int main(int argc, char** argv) {
   std::ofstream outParamsFile;
 
   if (outParams) {
-    std::string outPutPath = oPath+"outParams_"+datasetName.Data();
+    std::string outPutPath = outPath+"outParams_"+datasetName.Data();
     outParamsFile.open(outPutPath.data(),std::ofstream::out);
     if ( !(outParamsFile.good()) ) {
       std::cout <<"No path for output parameters txt : " <<outPutPath <<" provided.\nReturning." <<std::endl;
@@ -1151,7 +1051,7 @@ int main(int argc, char** argv) {
     for (int j = 0; j < effDatasetMasses->getNumBins(); ++j) {
 
       effDatasetMasses->setBinContent(j, relEffTH2Mass->GetBinContent(relEffTH2Mass->FindBin(effDatasetMasses->getBinCenter(massKPi,j),effDatasetMasses->getBinCenter(massPsiPi,j))));
-      // if()
+      // if ()
       // {
       //   std::cout<<"Histo content at massKpi : "<<effDatasetMasses->getBinCenter(massKPi,j)<<" and massPsiPi : " <<effDatasetMasses->getBinCenter(massPsiPi,j)<<" is = "<<relEffTH2Mass->GetBinContent(relEffTH2Mass->FindBin(effDatasetMasses->getBinCenter(massKPi,j),effDatasetMasses->getBinCenter(massPsiPi,j)))<<std::endl;
       //   std::cout<<"Binned dataset content : "<<effDatasetMasses->getBinContent(j)<<" at massKpi : "<<effDatasetMasses->getBinCenter(massKPi,j)<<" and massPsiPi : " <<effDatasetMasses->getBinCenter(massPsiPi,j)<<" Bin = "<<j<<std::endl;
@@ -1162,7 +1062,7 @@ int main(int argc, char** argv) {
     for (int j = 0; j < effDatasetAngles->getNumBins(); ++j) {
 
       effDatasetAngles->setBinContent(j,relEffTH2Ang->GetBinContent(relEffTH2Ang->FindBin(effDatasetAngles->getBinCenter(cosMuMu,j),effDatasetAngles->getBinCenter(phi,j))));
-      // if((relEffTH2Ang->GetBinContent(relEffTH2Ang->FindBin(effDatasetAngles->getBinCenter(cosMuMu,j),effDatasetAngles->getBinCenter(phi,j)))!=0.0))
+      // if ((relEffTH2Ang->GetBinContent(relEffTH2Ang->FindBin(effDatasetAngles->getBinCenter(cosMuMu,j),effDatasetAngles->getBinCenter(phi,j)))!=0.0))
       // {
       //   std::cout<<"Histo content at cosMuMu : "<<effDatasetAngles->getBinCenter(cosMuMu,j)<<" and phi : " <<effDatasetAngles->getBinCenter(phi,j)<<" is = "<<relEffTH2Ang->GetBinContent(relEffTH2Ang->FindBin(effDatasetAngles->getBinCenter(cosMuMu,j),effDatasetAngles->getBinCenter(phi,j)))<<std::endl;
       //   std::cout<<"Binned dataset content : "<<effDatasetAngles->getBinContent(j)<<" at cosMuMu : "<<effDatasetAngles->getBinCenter(cosMuMu,j)<<" and phi : " <<effDatasetAngles->getBinCenter(phi,j)<<" Bin = "<<j<<std::endl;
@@ -1172,7 +1072,7 @@ int main(int argc, char** argv) {
     for (int j = 0; j < effDataset->getNumBins(); ++j) {
 
       for (Int_t iVar=0; iVar<nProjVars; ++iVar)
-	     obserVariables[iVar]->value = effDataset->getBinCenter(obserVariables[iVar],j);
+	obserVariables[iVar]->value = effDataset->getBinCenter(obserVariables[iVar],j);
       if (b0Var)
         b0Beauty->value = 1.0;
 
@@ -1180,7 +1080,7 @@ int main(int argc, char** argv) {
       fptype anglEff = effDatasetAngles->getBinContent(effDatasetAngles->getBinNumber());
 
       effDataset->setBinContent(j, massEff*anglEff);
-      // if(massEff!=0.0 && anglEff!=0.0)
+      // if (massEff!=0.0 && anglEff!=0.0)
       // {
       //   std::cout<<"MassKPi : "<<massKPi->value<<" - MassPsiPi : "<<massPsiPi->value<<" - Phi : "<<phi->value<<" - CosMuMu : "<<cosMuMu->value<<std::endl;
       //   std::cout<<"Ang efficiency "<<anglEff<<" and massPsiPi : " <<massEff<<" tot eff : "<<anglEff*massEff<<std::endl;
@@ -1215,10 +1115,10 @@ int main(int argc, char** argv) {
       //efficiencyHistAngles = new FlatHistoPdf("EfficiencyAnglesPdf",effDatasetAngles,obserVariables);
       effHist = new FlatHistoPdf("EfficienciesPdf",effDataset,obserVariables);
       //effHistPlot = new FlatHistoPdf("EfficienciesPdf",effDataset,obserVariables);
-    }else if(effPdfInter)
-    {
-      effHist = new BiDimHistoPdf("EfficienciesPdf",effDataset,obserVariables);
-    }
+    } else if (effPdfInter)
+      {
+	effHist = new BiDimHistoPdf("EfficienciesPdf",effDataset,obserVariables);
+      }
     //efficiencyHistMasses = new BiDimHistoPdf ("EfficiencyPdf",effDatasetMasses,massVars,1);
     // UnbinnedDataSet plottingGridMasses(massVars);
     //
@@ -1259,7 +1159,7 @@ int main(int argc, char** argv) {
 
   if (b0Var)
     matrix = new MatrixPdf("Kstars_signal", massKPi, cosMuMu, massPsiPi, phi, b0Beauty, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
-  else if(b0BarPdf)
+  else if (b0BarPdf)
     matrix = new MatrixPdf("Kstars_signal", Masses, Gammas, Spins, as,bs,psi_nS,dRadB0,dRadKs,massKPi, cosMuMu, massPsiPi, phi);
   else
     matrix = new MatrixPdf("Kstars_signal", massKPi, cosMuMu, massPsiPi, phi,Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
@@ -1364,7 +1264,7 @@ int main(int argc, char** argv) {
       for (int j = 0; j < bkgDatasetMasses->getNumBins(); ++j) {
 
         bkgDatasetMasses->setBinContent(j, bkgTH2Mass->GetBinContent(bkgTH2Mass->FindBin(bkgDatasetMasses->getBinCenter(massKPi,j),bkgDatasetMasses->getBinCenter(massPsiPi,j))));
-        //if((bkgTH2Mass->GetBinContent(bkgTH2Mass->FindBin(bkgDatasetMasses->getBinCenter(massKPi,j),bkgDatasetMasses->getBinCenter(massPsiPi,j)))!=0.)) {
+        //if ((bkgTH2Mass->GetBinContent(bkgTH2Mass->FindBin(bkgDatasetMasses->getBinCenter(massKPi,j),bkgDatasetMasses->getBinCenter(massPsiPi,j)))!=0.)) {
         //std::cout<<"Histo content at massKpi : "<<bkgDatasetMasses->getBinCenter(massKPi,j)<<" and massPsiPi : " <<bkgDatasetMasses->getBinCenter(massPsiPi,j)<<" is = "<<bkgTH2Mass->GetBinContent(bkgTH2Mass->FindBin(bkgDatasetMasses->getBinCenter(massKPi,j),bkgDatasetMasses->getBinCenter(massPsiPi,j)))<<std::endl;
         //std::cout<<"Binned dataset content : "<<bkgDatasetMasses->getBinContent(j)<<" at massKpi : "<<bkgDatasetMasses->getBinCenter(massKPi,j)<<" and massPsiPi : " <<bkgDatasetMasses->getBinCenter(massPsiPi,j)<<" Bin = "<<j<<std::endl;
         //}
@@ -1395,9 +1295,9 @@ int main(int argc, char** argv) {
           std::cout<<"Binned dataset content : "<<bkgDataset->getBinContent(j)<<std::endl;
 
       /*
-      int noOfEntries = bkgTH2Mass->GetEntries() + bkgTH2Ang->GetEntries();
-      std::cout<<"Dataset events : " <<bkgDataset->getNumEvents()<<" histograms : " <<noOfEntries <<std::endl;
-      std::cout<<"Mass histo : " <<bkgTH2Mass->GetEntries()<<" Angles histo : " <<bkgTH2Ang->GetEntries() <<std::endl;
+	int noOfEntries = bkgTH2Mass->GetEntries() + bkgTH2Ang->GetEntries();
+	std::cout<<"Dataset events : " <<bkgDataset->getNumEvents()<<" histograms : " <<noOfEntries <<std::endl;
+	std::cout<<"Mass histo : " <<bkgTH2Mass->GetEntries()<<" Angles histo : " <<bkgTH2Ang->GetEntries() <<std::endl;
       */
       if (bkgHistMap) {
         bkgHistMasses = new FlatHistoPdf("bkgHistMasses",bkgDatasetMasses,obserVariables);
@@ -1411,76 +1311,76 @@ int main(int argc, char** argv) {
       }
 
       // same order as varNames
-      if(effPdfProd)
-      {
-      //   for (Int_t i = 0; i < bkgTH2Mass->GetNbinsX(); ++i)
-      //     for (Int_t l = 0; l < bkgTH2Mass->GetNbinsY(); ++l)
-      //     {
-      //       fptype correction = relEffTH2Mass->GetBinContent(relEffTH2Mass->FindBin(bkgTH2Mass->GetXaxis()->GetBinCenter(i), bkgTH2Mass->GetYaxis()->GetBinCenter(l)));
-      //       fptype cont = bkgTH2Mass->GetBinContent(i,l) * correction;
-      //       bkgTH2Mass->SetBinContent(i,l,cont);
-      //     }
-      //
-      //   for (Int_t i = 0; i < bkgTH2Ang->GetNbinsX(); ++i)
-      //     for (Int_t l = 0; l < bkgTH2Ang->GetNbinsY(); ++l)
-      //     {
-      //       fptype correction = relEffTH2Ang->GetBinContent(relEffTH2Ang->FindBin(bkgTH2Ang->GetXaxis()->GetBinCenter(i), bkgTH2Ang->GetYaxis()->GetBinCenter(l)));
-      //       fptype cont = bkgTH2Ang->GetBinContent(i,l) * correction;
-      //       bkgTH2Ang->SetBinContent(i,l,cont);
-      //     }
-      //
-      //   bkgTH2Mass->Scale(1/bkgTH2Mass->GetEntries());
-      //   bkgTH2Ang->Scale(1/bkgTH2Ang->GetEntries());
+      if (effPdfProd)
+	{
+	  //   for (Int_t i = 0; i < bkgTH2Mass->GetNbinsX(); ++i)
+	  //     for (Int_t l = 0; l < bkgTH2Mass->GetNbinsY(); ++l)
+	  //     {
+	  //       fptype correction = relEffTH2Mass->GetBinContent(relEffTH2Mass->FindBin(bkgTH2Mass->GetXaxis()->GetBinCenter(i), bkgTH2Mass->GetYaxis()->GetBinCenter(l)));
+	  //       fptype cont = bkgTH2Mass->GetBinContent(i,l) * correction;
+	  //       bkgTH2Mass->SetBinContent(i,l,cont);
+	  //     }
+	  //
+	  //   for (Int_t i = 0; i < bkgTH2Ang->GetNbinsX(); ++i)
+	  //     for (Int_t l = 0; l < bkgTH2Ang->GetNbinsY(); ++l)
+	  //     {
+	  //       fptype correction = relEffTH2Ang->GetBinContent(relEffTH2Ang->FindBin(bkgTH2Ang->GetXaxis()->GetBinCenter(i), bkgTH2Ang->GetYaxis()->GetBinCenter(l)));
+	  //       fptype cont = bkgTH2Ang->GetBinContent(i,l) * correction;
+	  //       bkgTH2Ang->SetBinContent(i,l,cont);
+	  //     }
+	  //
+	  //   bkgTH2Mass->Scale(1/bkgTH2Mass->GetEntries());
+	  //   bkgTH2Ang->Scale(1/bkgTH2Ang->GetEntries());
 
-        bkgHistos[0] = bkgTH2Mass->ProjectionX(); bkgHistos[1] = bkgTH2Mass->ProjectionY();
-        bkgHistos[2] = bkgTH2Ang->ProjectionX(); bkgHistos[3] = bkgTH2Ang->ProjectionY();
+	  bkgHistos[0] = bkgTH2Mass->ProjectionX(); bkgHistos[1] = bkgTH2Mass->ProjectionY();
+	  bkgHistos[2] = bkgTH2Ang->ProjectionX(); bkgHistos[3] = bkgTH2Ang->ProjectionY();
 
-      }
+	}
       else
-      {
-        bkgHistos[0] = bkgTH2Mass->ProjectionX(); bkgHistos[1] = bkgTH2Mass->ProjectionY();
-        bkgHistos[2] = bkgTH2Ang->ProjectionX(); bkgHistos[3] = bkgTH2Ang->ProjectionY();
-      }
+	{
+	  bkgHistos[0] = bkgTH2Mass->ProjectionX(); bkgHistos[1] = bkgTH2Mass->ProjectionY();
+	  bkgHistos[2] = bkgTH2Ang->ProjectionX(); bkgHistos[3] = bkgTH2Ang->ProjectionY();
+	}
 
       /*
-      massKPi->numbins = plottingfine1;
-      cosMuMu->numbins = plottingfine2;
-      massPsiPi->numbins = plottingfine3;
-      phi->numbins = plottingfine4;
-      //
-      UnbinnedDataSet plottingGridDataBkg(obserVariables);
-      //
-      for (int k = 0; k < phi->numbins; ++k) {
+	massKPi->numbins = plottingfine1;
+	cosMuMu->numbins = plottingfine2;
+	massPsiPi->numbins = plottingfine3;
+	phi->numbins = plottingfine4;
+	//
+	UnbinnedDataSet plottingGridDataBkg(obserVariables);
+	//
+	for (int k = 0; k < phi->numbins; ++k) {
         phi->value = phi->lowerlimit + (phi->upperlimit - phi->lowerlimit)*(k + 0.5) / phi->numbins;
-        //std::cout <<"Phi : " << k <<std::endl;
+        //std::cout <<"Phi : " <<k <<std::endl;
         for (int j = 0; j < cosMuMu->numbins; ++j) {
-          cosMuMu->value = cosMuMu->lowerlimit + (cosMuMu->upperlimit - cosMuMu->lowerlimit)*(j + 0.5) / cosMuMu->numbins;
-          //std::cout <<"CosMu : " << j <<std::endl;
-          for (int a = 0; a < massPsiPi->numbins; ++a) {
-	    massPsiPi->value = massPsiPi->lowerlimit + (massPsiPi->upperlimit - massPsiPi->lowerlimit)*(a + 0.5) / massPsiPi->numbins;
-	    //std::cout <<"CosK : " << a <<std::endl;
-	    for (int i = 0; i < massKPi->numbins; ++i) {
-	      //std::vector<std::vector<fptype> > tempValues;
-	      //UnbinnedDataSet tempData(obserVariables);
-	      massKPi->value = massKPi->lowerlimit + (massKPi->upperlimit - massKPi->lowerlimit)*(i + 0.5) / massKPi->numbins;
-	      //std::cout <<"MKP : " << i <<std::endl;
-	      //
-	      //tempData.addEvent();
-	      //matrix->setData(&tempData);
-	      //matrix->getCompProbsAtDataPoints(tempValues);
-	      //
-	      //std::cout <<massKPi->value <<" " <<cosMuMu->value <<" " <<massPsiPi->value <<" " <<phi->value <<" " <<tempValues[0][0] <<std::endl;
-	      //
-	      //mkpTotalProjection[i]+=tempValues[0][0];
-	      //sum +=tempValues[0][0];
-	      //
-	      plottingGridDataBkg.addEvent();
-	      //for (size_t ii = 0; ii < compData.size(); ++ii) compData[ii].addEvent();
+	cosMuMu->value = cosMuMu->lowerlimit + (cosMuMu->upperlimit - cosMuMu->lowerlimit)*(j + 0.5) / cosMuMu->numbins;
+	//std::cout <<"CosMu : " <<j <<std::endl;
+	for (int a = 0; a < massPsiPi->numbins; ++a) {
+	massPsiPi->value = massPsiPi->lowerlimit + (massPsiPi->upperlimit - massPsiPi->lowerlimit)*(a + 0.5) / massPsiPi->numbins;
+	//std::cout <<"CosK : " <<a <<std::endl;
+	for (int i = 0; i < massKPi->numbins; ++i) {
+	//std::vector<std::vector<fptype> > tempValues;
+	//UnbinnedDataSet tempData(obserVariables);
+	massKPi->value = massKPi->lowerlimit + (massKPi->upperlimit - massKPi->lowerlimit)*(i + 0.5) / massKPi->numbins;
+	//std::cout <<"MKP : " <<i <<std::endl;
+	//
+	//tempData.addEvent();
+	//matrix->setData(&tempData);
+	//matrix->getCompProbsAtDataPoints(tempValues);
+	//
+	//std::cout <<massKPi->value <<" " <<cosMuMu->value <<" " <<massPsiPi->value <<" " <<phi->value <<" " <<tempValues[0][0] <<std::endl;
+	//
+	//mkpTotalProjection[i]+=tempValues[0][0];
+	//sum +=tempValues[0][0];
+	//
+	plottingGridDataBkg.addEvent();
+	//for (size_t ii = 0; ii < compData.size(); ++ii) compData[ii].addEvent();
 
-	    }
-	  }
 	}
-      }
+	}
+	}
+	}
       */
 
       if (bkgHistInt)
@@ -1812,13 +1712,13 @@ int main(int argc, char** argv) {
 
   for (int k = 0; k < phi->numbins; ++k) {
     phi->value = phi->lowerlimit + (phi->upperlimit - phi->lowerlimit)*(k + 0.5) / phi->numbins;
-    //std::cout <<"Phi : " << k <<std::endl;
+    //std::cout <<"Phi : " <<k <<std::endl;
     for (int j = 0; j < cosMuMu->numbins; ++j) {
       cosMuMu->value = cosMuMu->lowerlimit + (cosMuMu->upperlimit - cosMuMu->lowerlimit)*(j + 0.5) / cosMuMu->numbins;
-      //std::cout <<"CosMu : " << j <<std::endl;
+      //std::cout <<"CosMu : " <<j <<std::endl;
       for (int a = 0; a < massPsiPi->numbins; ++a) {
         massPsiPi->value = massPsiPi->lowerlimit + (massPsiPi->upperlimit - massPsiPi->lowerlimit)*(a + 0.5) / massPsiPi->numbins;
-        //std::cout <<"CosK : " << a <<std::endl;
+        //std::cout <<"CosK : " <<a <<std::endl;
         for (int i = 0; i < massKPi->numbins; ++i) {
           //std::vector<std::vector<fptype> > tempValues;
           //UnbinnedDataSet tempData(obserVariables);
@@ -1882,18 +1782,17 @@ int main(int argc, char** argv) {
   //   . . .            phi0 cosMu0 cosk0 mkp3
   //   179              phi2 cosMu2 cosk4 mkp3
 
-  if(effPdfProd)
-    for (int k = 0; k < pdfTotalValues[0+indexComponents].size(); k++)
-    {
+  if (effPdfProd)
+    for (int k = 0; k < pdfTotalValues[0+indexComponents].size(); k++) {
       for (Int_t i = 0; i < nProjVars; ++i)
-        obserVariables[i]->value = plottingGridData.getValue(obserVariables[i],k);
-
+	obserVariables[i]->value = plottingGridData.getValue(obserVariables[i],k);
+      
       fptype effDataCont = effDataset->getBinContent(effDataset->getBinNumber());
-
+      
       pdfTotalValues[0+indexComponents][k] *= effDataCont;
       if (bkgPhaseSpace) {
-        pdfTotalValues[1][k] *= effDataCont;
-        pdfTotalValues[2][k] *= effDataCont;
+	pdfTotalValues[1][k] *= effDataCont;
+	pdfTotalValues[2][k] *= effDataCont;
       }
 
     }
@@ -2002,21 +1901,21 @@ int main(int argc, char** argv) {
   /*
   // cos(MuMu)
   for (int j = 0; j < cosMuMu->numbins; ++j) {
-    for (int k = 0; k < phi->numbins*cosMuMu->numbins; ++k) {
-      for (int i = 0; i < massKPi->numbins; ++i) {
-        cosMuMuTotalProjection[j] += pdfTotalValues[0][i+k*massKPi->numbins*massPsiPi->numbins+j*massKPi->numbins];
-      }
-    }
+  for (int k = 0; k < phi->numbins*cosMuMu->numbins; ++k) {
+  for (int i = 0; i < massKPi->numbins; ++i) {
+  cosMuMuTotalProjection[j] += pdfTotalValues[0][i+k*massKPi->numbins*massPsiPi->numbins+j*massKPi->numbins];
+  }
+  }
   }
   *//*
-  // cos(K*)
-  for (int j = 0; j < massPsiPi->numbins; ++j) {
+    // cos(K*)
+    for (int j = 0; j < massPsiPi->numbins; ++j) {
     for (int k = 0; k < phi->numbins; ++k) {
-      for (int i = 0; i < massKPi->numbins*cosMuMu->numbins; ++i) {
-        massPsiPiTotalProjection[j] += pdfTotalValues[0][i+j*massKPi->numbins*massPsiPi->numbins+k*massKPi->numbins*cosMuMu->numbins*massPsiPi->numbins];
-      }
+    for (int i = 0; i < massKPi->numbins*cosMuMu->numbins; ++i) {
+    massPsiPiTotalProjection[j] += pdfTotalValues[0][i+j*massKPi->numbins*massPsiPi->numbins+k*massKPi->numbins*cosMuMu->numbins*massPsiPi->numbins];
     }
-  }
+    }
+    }
     */
   // cos(MuMu)
   for (int j = 0; j < cosMuMu->numbins; ++j) {
@@ -2132,7 +2031,7 @@ int main(int argc, char** argv) {
 
   std::vector< std::vector<TH1F*> > compHistos(nProjVars);
 
-  Bool_t plotSingleKstars = kTRUE; //plotSingleKstars = kFALSE;
+  Bool_t plotSingleKstars = kTRUE; plotSingleKstars = kFALSE;
 
   int lastAmplitude = 0;
 
@@ -2220,12 +2119,12 @@ int main(int argc, char** argv) {
         asPlot[i]->value = originalAs[i];
         bsPlot[i]->value = originalBs[i];
       }
-  //     for (int d = 0; d < nHelAmps; ++d) {
-	// if (d!=lastAmplitude && d!=lastAmplitude+1 && d!=lastAmplitude+2) {
-	//   // std::cout<<" putting zero: "<<d<<" index "<<std::endl;
-	//   asPlot.push_back(new Variable("zero_a",0.0));
-	//   bsPlot.push_back(new Variable("zero_b",0.0));
-	// }}
+      //     for (int d = 0; d < nHelAmps; ++d) {
+      // if (d!=lastAmplitude && d!=lastAmplitude+1 && d!=lastAmplitude+2) {
+      //   // std::cout<<" putting zero: "<<d<<" index "<<std::endl;
+      //   asPlot.push_back(new Variable("zero_a",0.0));
+      //   bsPlot.push_back(new Variable("zero_b",0.0));
+      // }}
       lastAmplitude+=3;
     }
 
@@ -2242,7 +2141,7 @@ int main(int argc, char** argv) {
 
     if (b0Var)
       matrixPlot = new MatrixPdf(bufferstring, massKPi, cosMuMu, massPsiPi, phi, b0Beauty, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
-    else if(b0BarPdf)
+    else if (b0BarPdf)
       matrixPlot = new MatrixPdf(bufferstring, Masses, Gammas, Spins, as,bs,psi_nS,dRadB0,dRadKs,massKPi, cosMuMu, massPsiPi, phi);
     else
       matrixPlot = new MatrixPdf(bufferstring, massKPi, cosMuMu, massPsiPi, phi,Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
@@ -2259,21 +2158,21 @@ int main(int argc, char** argv) {
 
     matrixPlot->getCompProbsAtDataPoints(pdfCompValues);
 
-    if(effPdfProd)
+    if (effPdfProd)
       for (int k = 0; k < pdfCompValues[0].size(); k++)
-      {
-        for (Int_t i = 0; i < nProjVars; ++i)
-          obserVariables[i]->value = plottingGridData.getValue(obserVariables[i],k);
+	{
+	  for (Int_t i = 0; i < nProjVars; ++i)
+	    obserVariables[i]->value = plottingGridData.getValue(obserVariables[i],k);
 
-        fptype effDataCont = effDataset->getBinContent(effDataset->getBinNumber());
+	  fptype effDataCont = effDataset->getBinContent(effDataset->getBinNumber());
 
-        pdfCompValues[0][k] *= effDataCont;
-      }
+	  pdfCompValues[0][k] *= effDataCont;
+	}
 
     matrixPlot->clearCurrentFit();
 
     for (int i=0; i<pdfCompValues[0].size(); i++) {
-      //std::cout <<" Bin : " << i << " pdf : " << pdfCompValues[0][i] <<std::endl;
+      //std::cout <<" Bin : " <<i <<" pdf : " <<pdfCompValues[0][i] <<std::endl;
       sum += pdfCompValues[0][i];
     }
 
@@ -2414,11 +2313,11 @@ int main(int argc, char** argv) {
 
   cout <<endl;
   cout <<"~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~" <<endl;
-  cout << "PDF fitting time:       " << (fitClocks / CLOCKS_PER_SEC) << " s" << endl ;
-  cout << "Data plotting time:     " << (dataSetClocks / CLOCKS_PER_SEC) << " s" << endl ;
-  cout << "PDF sum time:           " << (sumClocks / CLOCKS_PER_SEC) << " s" << endl ;
-  cout << "PDF normalisation time: " << (normClocks / CLOCKS_PER_SEC) << " s" << endl ;
-  cout << "PDF projection time:    " << (projClocks / CLOCKS_PER_SEC) << " s" << endl ;
+  cout <<"PDF fitting time:       " <<(fitClocks / CLOCKS_PER_SEC) <<" s" <<endl ;
+  cout <<"Data plotting time:     " <<(dataSetClocks / CLOCKS_PER_SEC) <<" s" <<endl ;
+  cout <<"PDF sum time:           " <<(sumClocks / CLOCKS_PER_SEC) <<" s" <<endl ;
+  cout <<"PDF normalisation time: " <<(normClocks / CLOCKS_PER_SEC) <<" s" <<endl ;
+  cout <<"PDF projection time:    " <<(projClocks / CLOCKS_PER_SEC) <<" s" <<endl ;
   cout <<"~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~" <<endl;
 
   return 0;
