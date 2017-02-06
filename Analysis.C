@@ -13,6 +13,11 @@
 // or
 // time root -l -b -q run_Analysys.sh > log.txt
 //
+// or
+// root -l -b load_Analysys.sh
+// to load libraries and run with custom flasgs
+//
+
 
 #include "RooGlobalFunc.h"
 #include "RooRealVar.h"
@@ -165,7 +170,7 @@ void plotting(const RooDataHist* hist, const TString name, const RooRealVar* x, 
 }
 
 
-void Analysis()
+void Analysis(Int_t nEvt = 100000,Bool_t generating = kFALSE, Bool_t bkgFlag = kFALSE,Bool_t effFlag = kFALSE,Bool_t B0BarFlag = kFALSE,Int_t bkgOrd = 1,Int_t effOrd = 1)
 {
   SysInfo_t* s = new SysInfo_t();
   gSystem->GetSysInfo(s);
@@ -191,7 +196,7 @@ void Analysis()
   Kstar_spin.push_back( make_pair("892_1", make_pair(M892,G892) ) ) ;
   helJ_map["892_1_0"] = make_pair(1.,0.); helJ_map["892_1_p1"] = make_pair(0.844,3.14); helJ_map["892_1_m1"] = make_pair(0.196,-1.7); // from Belle
   //helJ_map["892_1_0"] = make_pair(0.775,0.); helJ_map["892_1_p1"] = make_pair(0.159,1.563); helJ_map["892_1_m1"] = make_pair(0.612,2.712); // from EvtGen
-  
+
   cout <<"Adding K*(800)..." <<endl;
   Kstar_spin.push_back( make_pair("800_0", make_pair(M800,G800) ) ) ;
   helJ_map["800_0_0"] = make_pair(1.12,2.3);
@@ -522,10 +527,10 @@ void Analysis()
   //bkgHisto_names[0] = make_pair(make_pair("cos_Kstar_helicityAngle_fromMasses_vs_psiPiMassSq",make_pair(&sqDalitz_v2,make_pair(m2PsiPi_order_bkg,cosKstar_order_bkg))), make_pair("bkgSqDalitz_v2",make_pair(make_pair("m2PsiPi",mass2PsiPi_title),make_pair("cosKstar",cosKstar_title)))); DalitzEff = kTRUE;
   //bkgHisto_names[0] = make_pair(make_pair("cos_Kstar_helicityAngle_fromMasses_vs_psiPiMass",make_pair(&sqDalitz1_v2,make_pair(mPsiPi_order_bkg,cosKstar_order_bkg))), make_pair("bkgSqDalitz1_v2",make_pair(make_pair("mPsiPi",massPsiPi_title),make_pair("cosKstar",cosKstar_title)))); DalitzEff = kFALSE;
 
-  bkgFile = 0;
-  if (bkgFile)
+  // bkgFile = 0;
+  if (bkgFile && bkgFlag)
     for (Int_t iVars = 0; iVars < 2; ++iVars) {
-      
+
       RooArgSet* bkgVars = bkgHisto_names[iVars].first.second.first ;
       // Set x and y vars
       RooRealVar* x = 0, *y = 0;
@@ -638,8 +643,8 @@ void Analysis()
   pair<RooAbsPdf*, Float_t> effPdf[] = {make_pair(null,0.),make_pair(null,0.)};
 
   //effFile = 0;
-  if (effFile)
-    for (Int_t iEff=0; iEff <2 ; ++iEff) {
+if (effFile && effFlag)
+  for (Int_t iEff=0; iEff <2 ; ++iEff) {
       TString effName = effHisto_names[iEff].second.first;
       TString histName = effHisto_names[iEff].first.first;
       histName.Append("_BDTCutAt"+bdtCut);
@@ -794,9 +799,9 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
 	//cout <<"model->getVal() = " <<model->getVal() <<", model->getValV() = " <<model->getValV() <<endl;
 	//cout <<"massKPi = " <<massKPi.getVal() <<", mass2KPi = " <<mass2KPi.getVal() <<", massPsiPi = " <<massPsiPi.getVal() <<", mass2PsiPi = " <<mass2PsiPi.getVal() <<endl;
       } // if (iEff==0)
-      
+
       //modelWithEff = new RooProdPdf(modelName.Append("__with"+effType+"Eff"),TString::Format("%s * #epsilon("+efftype+")",model->GetTitle()),RooArgSet(*model,*effPdf[iEff].first)) ; model = modelWithEff; // replacing sigPdf * eff(M) * eff(A) with sigPdf * [eff(M) * eff(A)] seems to improve the generation time
-      
+
     } // for (Int_t iEff=0; iEff < 2; ++iEff)
   else
     cout <<"WARNING! TFile \"" <<effFileName <<"\" could not be opened.\nSkipping efficiency correction" <<endl;
@@ -815,10 +820,16 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
 
 
   Int_t nLegendEntries = 0;
-  
-  Bool_t generating = kFALSE; generating = kTRUE;
+
   if (generating) {
-    B0beauty.setVal(1); B0beauty.setConstant(kTRUE);
+
+    if(B0BarFlag)
+      B0Beauty.setVal(-1.1);
+    else
+      B0beauty.setVal(+1.1);
+
+    B0beauty.setConstant(kTRUE);
+
     // Generate toy data from pdf and plot data and p.d.f on frame
     cout <<"\nGenerating " <<nEvents.getVal() <<" events according to " <<model->GetTitle() <<" pdf for " <<model->GetName() <<" with " <<B0beauty.getTitle() <<" = " <<B0beauty.getVal() <<endl;
     timeval genTime;
@@ -826,8 +837,12 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
     startCPU = times(&startProc);
     //
     TString dataGenName = "Generated_data_from_PDF"; TString dataGen_Name = dataGenName;
-    RooArgSet genSet = kinematicVars; genSet = kinematicVars_withBeauty;
-    RooDataSet* dataGenPDF = model->generate(genSet, nEvents.getVal(), Verbose(kTRUE), Name(dataGenName)) ; dataGenPDF->SetTitle(dataGenName.ReplaceAll("_"," "));
+
+    RooDataSet* dataGenPDF = model->generate(kinematicVars, nEvents.getVal(), Verbose(kTRUE), Name(dataGenName)) ; dataGenPDF->SetTitle(dataGenName.ReplaceAll("_"," "));
+    RooDataSet* dataGenPDFB0 = model->generate(kinematicVars_withBeauty, nEvents.getVal(), Verbose(kTRUE), Name(dataGenName)) ; dataGenPDF->SetTitle(dataGenName.ReplaceAll("_"," "));
+
+    // RooArgSet genSet = kinematicVars; genSet = kinematicVars_withBeauty;
+    // RooDataSet* dataGenPDF = model->generate(genSet, nEvents.getVal(), Verbose(kTRUE), Name(dataGenName)) ; dataGenPDF->SetTitle(dataGenName.ReplaceAll("_"," "));
     //
     stopCPU = times(&stopProc);
     gettimeofday(&stop, NULL);
@@ -840,18 +855,30 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
     cout <<"Total CPU time: " << (genTimeCPU / CLOCKS_PER_SEC) <<" seconds\n" ;
     cout <<"My processes time: " << (genTimeProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
     //if (nEvents.getVal() > 100000)
-    dataGenPDF->write(TString::Format("%s/%s.txt",datasetsPath.Data(),model->GetName()));
+    // dataGenPDF->write(TString::Format("%s/%s.txt",datasetsPath.Data(),model->GetName()));
+
+    if(B0BarFlag)
+    {
+      dataGenPDF->write(TString::Format("%s/B0Bar/%s.txt",datasetsPath.Data(),model->GetName()));
+      dataGenPDFB0->write(TString::Format("%s/B0Bar/%s__B0Flag.txt",datasetsPath.Data(),model->GetName()));
+    }
+    else
+    {
+      dataGenPDF->write(TString::Format("%s/B0/%s.txt",datasetsPath.Data(),model->GetName()));
+      dataGenPDFB0->write(TString::Format("%s/B0/%s__B0Flag.txt",datasetsPath.Data(),model->GetName()));
+    }
+
     return;
-    
+
     dataToFit = dataGenPDF;
   }
-    
+
   // Create corresponding m2 dataset + K* helicity angle if absent
   if ( !kinematicVars_m2.contains(cosKstar) )
     kinematicVars_m2.add(cosKstar);
   RooDataSet* data_withCos = (RooDataSet*)dataToFit->emptyClone();
   data_withCos->addColumn(cosKstar);
-  
+
   RooDataSet* data_m2 = new RooDataSet(dataToFit->GetName(), dataToFit->GetTitle(), kinematicVars_m2 ) ;
   for (Int_t iEvent=0; iEvent<dataToFit->numEntries(); ++iEvent) {
     kinematicVars = *(dataToFit->get(iEvent)) ; // this line will propagate the RooRealVars values of the event to all the corresponding RooRealVars in kinematicVars
