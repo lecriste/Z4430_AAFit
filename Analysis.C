@@ -438,12 +438,12 @@ void Analysis(Int_t nEvt = 100000,Bool_t generating = kFALSE, Bool_t bkgFlag = k
 
   RooAbsPdf* bkgPDF = BdToPsiPiK_PHSP; bkgPDF = 0;
 
-  Double_t totEvents = 2000; // Generation time does not scale with number of events up to at least 10k events
+  Double_t totEvents = 2000; // Generation time does not scale with number of events up to at least 10k events, from 100k yes
   //totEvents *= 2;
   //totEvents *= 2.5;
-  totEvents *= 5;
+  //totEvents *= 5;
   //totEvents *= 10;
-  //totEvents *= 10; totEvents *= 5;
+  totEvents *= 10; totEvents *= 5;
   //totEvents *= 10; totEvents *= 3;
   //totEvents /= 2; totEvents /= 100;
   RooRealVar nSig("nSig", "n_{SIG}", 0, 0, 1E6);
@@ -643,12 +643,12 @@ void Analysis(Int_t nEvt = 100000,Bool_t generating = kFALSE, Bool_t bkgFlag = k
   pair<RooAbsPdf*, Float_t> effPdf[] = {make_pair(null,0.),make_pair(null,0.)};
 
   //effFile = 0;
-if (effFile && effFlag)
-  for (Int_t iEff=0; iEff <2 ; ++iEff) {
+  if (effFile && effFlag)
+    for (Int_t iEff=0; iEff <2 ; ++iEff) {
       TString effName = effHisto_names[iEff].second.first;
       TString histName = effHisto_names[iEff].first.first;
       histName.Append("_BDTCutAt"+bdtCut);
-      histName.ReplaceAll("RelEff","RelEffInv"); effName.ReplaceAll("relEff","relInvEff");
+      //histName.ReplaceAll("RelEff","RelEffInv"); effName.ReplaceAll("relEff","relInvEff");
       const TH2F* relEffTH2 = (TH2F*)effFile->Get( histName ) ;
       if (!relEffTH2) {
 	cout <<"WARNING! No TH2F \"" <<histName <<"\" found in TFile \"" <<effFile->GetName() <<"\".\nSkipping " <<effName <<" correction" <<endl;
@@ -810,10 +810,10 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
 
   RooProdPdf* effModel = 0;
   if (effPdf[0].first && effPdf[1].first)
-    effModel = new RooProdPdf(TString::Format("%s_times_%s",effPdf[0].first->GetName(),effPdf[1].first->GetName()),TString::Format("%s * %s",effPdf[0].first->GetTitle(),effPdf[1].first->GetTitle()),RooArgSet(*effPdf[0].first,*effPdf[1].first));
+    effModel = new RooProdPdf(TString::Format("%s_X_%s",effPdf[0].first->GetName(),effPdf[1].first->GetName()),TString::Format("%s * %s",effPdf[0].first->GetTitle(),effPdf[1].first->GetTitle()),RooArgSet(*effPdf[0].first,*effPdf[1].first));
 
   if ((model != modelWithEff) && effModel) {
-    std::cout<<"\nMultiplying eff to pdf" <<std::endl;
+    std::cout<<"\nMultiplying " <<effModel->GetTitle() <<" to " <<model->GetTitle() <<std::endl;
     modelWithEff = new RooProdPdf(TString::Format("%s__with__%s",modelName.Data(),effModel->GetName()),TString::Format("%s * (%s)",model->GetTitle(),effModel->GetTitle()),*model,*effModel) ;
     model = modelWithEff;
   }
