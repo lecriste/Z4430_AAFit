@@ -1,3 +1,4 @@
+#include <cuda_runtime.h>
 #include "Variable.hh"
 #include "ThreeBodiesPsiPiKPdf.hh"
 #include "FitManager.hh"
@@ -114,23 +115,44 @@ void printCodes()
   std::cerr <<"Codes" <<std::endl;
 }
 
+int checkGPU()
+{
+    int deviceCount, device;
+    int gpuDeviceCount = 0;
+    struct cudaDeviceProp properties;
+    cudaError_t cudaResultCode = cudaGetDeviceCount(&deviceCount);
+    if (cudaResultCode != cudaSuccess)
+        deviceCount = 0;
+    for (device = 0; device < deviceCount; ++device) {
+        cudaGetDeviceProperties(&properties, device);
+        if (properties.major != 9999) /* 9999 means emulation only */
+            ++gpuDeviceCount;
+    }
+    printf("%d GPU CUDA device(s) found\n", gpuDeviceCount);
+
+    if (gpuDeviceCount > 0)
+        return 0; /* success */
+    else
+        return 1; /* failure */
+}
+
 void printinstruction() {
 
   std::cerr <<"======= Instructions \n"
-	    <<"\t-h,--help \t\t Show this help message\n"
+	          <<"\t-h,--help \t\t Show this help message\n"
             <<"\t-evtGen \t\t Select EvtGen dataset and p.d.f. parameters\n"
             <<"\t-effH \t\t\t Perform the product of the pdf by the efficiency histogram \n"
             <<"\t-effHInt \t\t Perform the product of the pdf by the efficiency histogram interpolation \n"
             <<"\t-BkgMap \t\t Add Phase Space Background Map \n"
             <<"\t-BkgMapInt \t\t Add Phase Space Background Interpolation Map \n"
             <<"\t-BkgPHSP \t\t Add Phase Space Background to p.d.f.\n"
-    //<<"\t-effH <4-dig-code> \t Perform the product of the pdf by the efficiency histogram ()\n"
-    //<<"\t\t\t\t\t\t - code1 ()\n"
-	    <<"\t-n <events> \t\t Specify the number of events to use\n"
-	    <<"\t-r <path> \t\t Read Generated Events from txt in <path>\n"
+            //<<"\t-effH <4-dig-code> \t Perform the product of the pdf by the efficiency histogram ()\n"
+            //<<"\t\t\t\t\t\t - code1 ()\n"
+	          <<"\t-n <events> \t\t Specify the number of events to use\n"
+	          <<"\t-r <path> \t\t Read Generated Events from txt in <path>\n"
             <<"\t-o <path> \t\t Write estimated parameters in \" parameters.txt \" file in <path> (default . )\n"
             <<"\t-algos <Algo1Algo2...>\t Select the mimimisation algos in the order they should \n \t\t\t\t be performed (MIGRAD at least once) ["<<m<<" for MIGRAD, "<<h<<" for HESSE, "<<n<<" for MINOS]\n \t\t\t\t (e.g -algo "<<h<<m<<h<<n<<" for HESSE MIGRAD HESSE MINOS - default: MIGRAD only) \n"
-	    <<"\t-b1 <b1> \t\t Select binning for MassKPi (for normalisation & integration, default: " <<compBins <<")\n"
+	          <<"\t-b1 <b1> \t\t Select binning for MassKPi (for normalisation & integration, default: " <<compBins <<")\n"
             <<"\t-b2 <b2> \t\t Select binning for MassPsiPi (for normalisation & integration, default: " <<compBins <<")\n"
             <<"\t-b3 <b3> \t\t Select binning for CosMuMu (for normalisation & integration, default: " <<compBins <<")\n"
             <<"\t-b4 <b4> \t\t Select binning for Phi (for normalisation & integration, default: " <<compBins <<")\n"
@@ -160,6 +182,13 @@ void printinstruction() {
 
 
 int main(int argc, char** argv) {
+
+  if(checkGPU())
+  {
+    std::cerr<<"NO Cuda capable device found. Returning.\n"<<std::endl;
+    return 1;
+  }
+
   debug(__LINE__);
 
   char bufferstring[1024];
@@ -512,6 +541,8 @@ int main(int argc, char** argv) {
   fptype massKPi_min = 0.6, massKPi_max = 2.2;
   fptype massPsiPi_min = 3.2, massPsiPi_max = 4.9;
 
+
+
   Variable* massKPi = new Variable(massKPi_name.Data(),1.,massKPi_min,massKPi_max); massKPi->numbins = bin[0];
   //Variable* massKPiEff = new Variable(massKPi_eff_name.Data(),1.,0.6,2.2); massKPiEff->numbins = bin[0];
   //Variable* massKPi = new Variable(massKPi_name.Data(),1.,0.6,1.67); massKPi->numbins = bin[0];
@@ -798,6 +829,8 @@ int main(int argc, char** argv) {
   UnbinnedDataSet dataset(obserVariables);
   UnbinnedDataSet dataset_EffCorr(obserVariables);
 
+  std::vector<fptype> effCorrection;
+
   std::cout<<"Dataset: "<<std::endl;
   // std::cout<<" - dataset with "<<dataset.getNumBins()<<" bins "<<std::endl;
   //std::cout<<" - efficiencyDatasetMasses with "<<efficiencyDatasetMasses->getNumBins()<<" bins "<<std::endl;
@@ -962,7 +995,7 @@ int main(int argc, char** argv) {
   //Efficiencies
 
   //GooPdf* efficiencyHistMasses, *efficiencyHistAngles;
-  GooPdf* effHist;
+  GooPdf* effHist, *effHistAng, *effHistMas;
   //GooPdf* effHistPlot;
 
   BinnedDataSet* effDataset, *effDatasetMasses, *effDatasetAngles;
@@ -987,7 +1020,9 @@ int main(int argc, char** argv) {
 
     // path = "./effFiles/";
     //TString effName = "officialMC_noPtEtaCuts_JPsi_Bd2MuMuKPi_2p0Sig_4p0to6p0SB.root";
-    TString effName = "TMVApp_MC_withBDTCutAt0p00_JPsi_2p0Sig_6p0to9p0SB.root";
+
+    TString eff = "TMVApp_MC_withBDTCutAt0p00_JPsi_2p0Sig_6p0to9p0SB";
+    TString effName = eff; effName.Append(".root");
 
     TFile *effFile = TFile::Open(path+effName);
     if (!effFile) {
@@ -1073,7 +1108,7 @@ int main(int argc, char** argv) {
     for (int j = 0; j < effDataset->getNumBins(); ++j) {
 
       for (Int_t iVar=0; iVar<nProjVars; ++iVar)
-	obserVariables[iVar]->value = effDataset->getBinCenter(obserVariables[iVar],j);
+	     obserVariables[iVar]->value = effDataset->getBinCenter(obserVariables[iVar],j);
       if (b0Var)
         b0Beauty->value = 1.0;
 
@@ -1114,34 +1149,64 @@ int main(int argc, char** argv) {
     if (effPdfFlat) {
       //efficiencyHistMasses = new FlatHistoPdf("EfficiencyMassPdf",effDatasetMasses,obserVariables);
       //efficiencyHistAngles = new FlatHistoPdf("EfficiencyAnglesPdf",effDatasetAngles,obserVariables);
+      effHistMas = new FlatHistoPdf("EfficienciesPdf",effDatasetMasses,obserVariables);
+      effHistAng = new FlatHistoPdf("EfficienciesPdf",effDatasetAngles,obserVariables);
       effHist = new FlatHistoPdf("EfficienciesPdf",effDataset,obserVariables);
       //effHistPlot = new FlatHistoPdf("EfficienciesPdf",effDataset,obserVariables);
     } else if (effPdfInter)
       {
-	effHist = new BiDimHistoPdf("EfficienciesPdf",effDataset,obserVariables);
+         effHistMas = new BiDimHistoPdf("EfficienciesPdf",effDatasetMasses,obserVariables);
+         effHistAng = new BiDimHistoPdf("EfficienciesPdf",effDatasetAngles,obserVariables);
+	       effHist = new BiDimHistoPdf("EfficienciesPdf",effDataset,obserVariables);
       }
-    //efficiencyHistMasses = new BiDimHistoPdf ("EfficiencyPdf",effDatasetMasses,massVars,1);
-    // UnbinnedDataSet plottingGridMasses(massVars);
-    //
-    //
-    // for (int i = 0; i < massKPi->numbins; ++i)
-    // {
-    //     //pdfTestValues.push_back(0.0);
-    //     massKPi->value = massKPi->lowerlimit + (massKPi->upperlimit - massKPi->lowerlimit)*(i + 0.5) / massKPi->numbins;
-    //     for (int j = 0; j < massPsiPi->numbins; ++j)
-    //     {
-    //       massPsiPi->value = massPsiPi->lowerlimit + (massPsiPi->upperlimit - massPsiPi->lowerlimit)*(j + 0.5) / massPsiPi->numbins;
-    //       plottingGridMasses.addEvent();
-    //     }
-    // }
 
     for (int y=0; y<nProjVars;++y){
-      obserVariables[y]->numbins = holdBinVar[y];
-      obserVariables[y]->lowerlimit = lowerL[y];
-      obserVariables[y]->upperlimit = upperL[y];
+        obserVariables[y]->lowerlimit = lowerL[y];
+        obserVariables[y]->upperlimit = upperL[y];
+    }
+
+    for (Int_t iVar=0; iVar<nProjVars; ++iVar)
+        obserVariables[iVar]->numbins = plottingFine[iVar];
+
+      UnbinnedDataSet plottingGridDataFirst(obserVariables);
+
+      if (b0Var)
+        b0Beauty->value = 1.0;
+
+      for (int k = 0; k < phi->numbins; ++k) {
+        phi->value = phi->lowerlimit + (phi->upperlimit - phi->lowerlimit)*(k + 0.5) / phi->numbins;
+        //std::cout <<"Phi : " <<k <<std::endl;
+        for (int j = 0; j < cosMuMu->numbins; ++j) {
+          cosMuMu->value = cosMuMu->lowerlimit + (cosMuMu->upperlimit - cosMuMu->lowerlimit)*(j + 0.5) / cosMuMu->numbins;
+          //std::cout <<"CosMu : " <<j <<std::endl;
+          for (int a = 0; a < massPsiPi->numbins; ++a) {
+            massPsiPi->value = massPsiPi->lowerlimit + (massPsiPi->upperlimit - massPsiPi->lowerlimit)*(a + 0.5) / massPsiPi->numbins;
+            //std::cout <<"CosK : " <<a <<std::endl;
+            for (int i = 0; i < massKPi->numbins; ++i) {
+              //std::vector<std::vector<fptype> > tempValues;
+              //UnbinnedDataSet tempData(obserVariables);
+              massKPi->value = massKPi->lowerlimit + (massKPi->upperlimit - massKPi->lowerlimit)*(i + 0.5) / massKPi->numbins;
+              plottingGridDataFirst.addEvent();
+            }
+          }
+        }
+      }
+
+    std::vector<std::vector<fptype> > effPdfValues;
+
+    effHist->setData(&plottingGridDataFirst);
+    effHist->getCompProbsAtDataPoints(effPdfValues);
+
+    for (size_t i = 0; i < effPdfValues[0].size(); i++) {
+      effCorrection.push_back(effPdfValues[0][i]);
     }
 
     effFile->Close();
+
+    for (Int_t iVar=0; iVar<nProjVars; ++iVar)
+        obserVariables[iVar]->numbins = dataPoints[iVar];
+
+
     //return 0;
   } // if (effPdfProd)
 
@@ -1314,27 +1379,73 @@ int main(int argc, char** argv) {
       // same order as varNames
       if (effPdfProd)
 	{
-	  //   for (Int_t i = 0; i < bkgTH2Mass->GetNbinsX(); ++i)
-	  //     for (Int_t l = 0; l < bkgTH2Mass->GetNbinsY(); ++l)
-	  //     {
-	  //       fptype correction = relEffTH2Mass->GetBinContent(relEffTH2Mass->FindBin(bkgTH2Mass->GetXaxis()->GetBinCenter(i), bkgTH2Mass->GetYaxis()->GetBinCenter(l)));
-	  //       fptype cont = bkgTH2Mass->GetBinContent(i,l) * correction;
-	  //       bkgTH2Mass->SetBinContent(i,l,cont);
-	  //     }
-	  //
-	  //   for (Int_t i = 0; i < bkgTH2Ang->GetNbinsX(); ++i)
-	  //     for (Int_t l = 0; l < bkgTH2Ang->GetNbinsY(); ++l)
-	  //     {
-	  //       fptype correction = relEffTH2Ang->GetBinContent(relEffTH2Ang->FindBin(bkgTH2Ang->GetXaxis()->GetBinCenter(i), bkgTH2Ang->GetYaxis()->GetBinCenter(l)));
-	  //       fptype cont = bkgTH2Ang->GetBinContent(i,l) * correction;
-	  //       bkgTH2Ang->SetBinContent(i,l,cont);
-	  //     }
-	  //
-	  //   bkgTH2Mass->Scale(1/bkgTH2Mass->GetEntries());
-	  //   bkgTH2Ang->Scale(1/bkgTH2Ang->GetEntries());
+    bkgHistos[0] = bkgTH2Mass->ProjectionX(); bkgHistos[1] = bkgTH2Mass->ProjectionY();
+    bkgHistos[2] = bkgTH2Ang->ProjectionX(); bkgHistos[3] = bkgTH2Ang->ProjectionY();
 
-	  bkgHistos[0] = bkgTH2Mass->ProjectionX(); bkgHistos[1] = bkgTH2Mass->ProjectionY();
-	  bkgHistos[2] = bkgTH2Ang->ProjectionX(); bkgHistos[3] = bkgTH2Ang->ProjectionY();
+    massKPi->lowerlimit = bkgTH2Mass->GetXaxis()->GetBinLowEdge(1);
+    massKPi->upperlimit = bkgTH2Mass->GetXaxis()->GetBinUpEdge(bkgTH2Mass->GetNbinsX());
+
+    massPsiPi->lowerlimit = bkgTH2Mass->GetYaxis()->GetBinLowEdge(1);
+    massPsiPi->upperlimit = bkgTH2Mass->GetYaxis()->GetBinUpEdge(bkgTH2Mass->GetNbinsY());
+
+    cosMuMu->lowerlimit = bkgTH2Ang->GetXaxis()->GetBinLowEdge(1);
+    cosMuMu->upperlimit = bkgTH2Ang->GetXaxis()->GetBinUpEdge(bkgTH2Ang->GetNbinsX());
+
+    phi->lowerlimit = bkgTH2Ang->GetYaxis()->GetBinLowEdge(1);
+    phi->upperlimit = bkgTH2Ang->GetYaxis()->GetBinUpEdge(bkgTH2Ang->GetNbinsY());
+
+    for (size_t i = 0; i < 4; i++) {
+      bkgHistos[i]->Draw();
+      sprintf(bufferstring,"./plots/testPreEffBkg_%d.png",i);
+      canvas->SaveAs(bufferstring);
+      canvas->Clear();
+    }
+
+    effHistMas->setData(bkgDatasetMasses);
+
+    for (Int_t i = 1; i <= bkgTH2Mass->GetNbinsX(); ++i)
+      for (Int_t l = 1; l <= bkgTH2Mass->GetNbinsY(); ++l)
+      {
+        massKPi->value = bkgTH2Mass->GetXaxis()->GetBinCenter(i);
+        massPsiPi->value = bkgTH2Mass->GetYaxis()->GetBinCenter(l);
+
+        fptype correction = effHistMas->getValue();
+
+        fptype cont = bkgTH2Mass->GetBinContent(i,l) * correction;
+        bkgTH2Mass->SetBinContent(i,l,cont);
+      }
+
+    effHistAng->setData(bkgDatasetAngles);
+
+    massKPi->value = ((massKPi->upperlimit - massKPi->lowerlimit)/2.0) + massKPi->lowerlimit;
+    massPsiPi->value = ((massPsiPi->upperlimit - massPsiPi->lowerlimit)/2.0) + massPsiPi->lowerlimit;
+
+    for (Int_t d = 1; d <= bkgTH2Ang->GetNbinsX(); ++d)
+      for (Int_t l = 1; l <= bkgTH2Ang->GetNbinsY(); ++l)
+      {
+
+        cosMuMu->value = bkgTH2Ang->GetXaxis()->GetBinCenter(d);
+        phi->value = bkgTH2Ang->GetYaxis()->GetBinCenter(l);
+
+        fptype correction = effHistAng->getValue();
+
+        fptype cont = bkgTH2Ang->GetBinContent(d,l) * correction;
+        bkgTH2Ang->SetBinContent(d,l,cont);
+      }
+
+  //
+  //   bkgTH2Mass->Scale(1/bkgTH2Mass->GetEntries());
+  //   bkgTH2Ang->Scale(1/bkgTH2Ang->GetEntries());
+
+    bkgHistos[0] = bkgTH2Mass->ProjectionX(); bkgHistos[1] = bkgTH2Mass->ProjectionY();
+    bkgHistos[2] = bkgTH2Ang->ProjectionX(); bkgHistos[3] = bkgTH2Ang->ProjectionY();
+
+    for (size_t i = 0; i < 4; i++) {
+      bkgHistos[i]->Draw();
+      sprintf(bufferstring,"./plots/testPostEffBkg_%d.png",i);
+      canvas->SaveAs(bufferstring);
+      canvas->Clear();
+    }
 
 	}
       else
@@ -1343,46 +1454,7 @@ int main(int argc, char** argv) {
 	  bkgHistos[2] = bkgTH2Ang->ProjectionX(); bkgHistos[3] = bkgTH2Ang->ProjectionY();
 	}
 
-      /*
-	massKPi->numbins = plottingfine1;
-	cosMuMu->numbins = plottingfine2;
-	massPsiPi->numbins = plottingfine3;
-	phi->numbins = plottingfine4;
-	//
-	UnbinnedDataSet plottingGridDataBkg(obserVariables);
-	//
-	for (int k = 0; k < phi->numbins; ++k) {
-        phi->value = phi->lowerlimit + (phi->upperlimit - phi->lowerlimit)*(k + 0.5) / phi->numbins;
-        //std::cout <<"Phi : " <<k <<std::endl;
-        for (int j = 0; j < cosMuMu->numbins; ++j) {
-	cosMuMu->value = cosMuMu->lowerlimit + (cosMuMu->upperlimit - cosMuMu->lowerlimit)*(j + 0.5) / cosMuMu->numbins;
-	//std::cout <<"CosMu : " <<j <<std::endl;
-	for (int a = 0; a < massPsiPi->numbins; ++a) {
-	massPsiPi->value = massPsiPi->lowerlimit + (massPsiPi->upperlimit - massPsiPi->lowerlimit)*(a + 0.5) / massPsiPi->numbins;
-	//std::cout <<"CosK : " <<a <<std::endl;
-	for (int i = 0; i < massKPi->numbins; ++i) {
-	//std::vector<std::vector<fptype> > tempValues;
-	//UnbinnedDataSet tempData(obserVariables);
-	massKPi->value = massKPi->lowerlimit + (massKPi->upperlimit - massKPi->lowerlimit)*(i + 0.5) / massKPi->numbins;
-	//std::cout <<"MKP : " <<i <<std::endl;
-	//
-	//tempData.addEvent();
-	//matrix->setData(&tempData);
-	//matrix->getCompProbsAtDataPoints(tempValues);
-	//
-	//std::cout <<massKPi->value <<" " <<cosMuMu->value <<" " <<massPsiPi->value <<" " <<phi->value <<" " <<tempValues[0][0] <<std::endl;
-	//
-	//mkpTotalProjection[i]+=tempValues[0][0];
-	//sum +=tempValues[0][0];
-	//
-	plottingGridDataBkg.addEvent();
-	//for (size_t ii = 0; ii < compData.size(); ++ii) compData[ii].addEvent();
 
-	}
-	}
-	}
-	}
-      */
 
       if (bkgHistInt)
         bkgHistPdfPlot = new BiDimHistoPdf("bkgHistPdf",bkgDataset,obserVariables);
@@ -1586,7 +1658,7 @@ int main(int argc, char** argv) {
     } // if (bkgHist)
     else {
       if (effPdfProd) {
-	pdfComponents.push_back(matrix);
+	      pdfComponents.push_back(matrix);
         pdfComponents.push_back(effHist);
 	//pdfComponents.push_back(efficiencyHistMasses);
 	//pdfComponents.push_back(efficiencyHistAngles);
@@ -1659,6 +1731,18 @@ int main(int argc, char** argv) {
       bs[i]->value += bs[i]->value > 0 ? -period : +period ;
   }
 
+  totalPdf->clearCurrentFit();
+
+
+  GooPdf* matrixTotPlot;
+
+  if (b0Var)
+    matrixTotPlot = new MatrixPdf(bufferstring, massKPi, cosMuMu, massPsiPi, phi, b0Beauty, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
+  else if (b0BarPdf)
+    matrixTotPlot = new MatrixPdf(bufferstring, Masses, Gammas, Spins, as,bs,psi_nS,dRadB0,dRadKs,massKPi, cosMuMu, massPsiPi, phi);
+  else
+    matrixTotPlot = new MatrixPdf(bufferstring, massKPi, cosMuMu, massPsiPi, phi,Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
+
   gettimeofday(&startTime, NULL);
   startC = times(&startProc);
   //
@@ -1666,7 +1750,7 @@ int main(int argc, char** argv) {
 
   std::vector<UnbinnedDataSet> compData;
   std::vector<std::vector<fptype> > pdfTotalValues, pdfTotalSigValues, pdfTotalBkgValues;
-  std::vector<std::vector<fptype> > pdfCompValues;
+  std::vector<std::vector<fptype> > pdfCompValues, effPdfValues;
 
   for (int id = 0; id < nKstars; ++id)
     compData.push_back( UnbinnedDataSet(obserVariables) );
@@ -1744,12 +1828,15 @@ int main(int argc, char** argv) {
   TPaveText *fitStat = new TPaveText(legPlot->GetX2(), 0.4, xMax, yMax, "NDC");
 
   std::cout <<"\n- Evaluating the total p.d.f." <<std::endl;
-  totalPdf->setData(&plottingGridData);
+  matrixTotPlot->setData(&plottingGridData);
+  // totalPdf->setData(&plottingGridData);
 
   gettimeofday(&startTime, NULL);
   startC = times(&startProc);
   //
-  totalPdf->getCompProbsAtDataPoints(pdfTotalValues);
+  // totalPdf->getCompProbsAtDataPoints(pdfTotalValues);
+  matrixTotPlot->getCompProbsAtDataPoints(pdfTotalValues);
+
   int indexComponents = 0;
 
   //std::cout <<" Vector size : " <<pdfTotalValues.size() <<std::endl;
@@ -1783,27 +1870,33 @@ int main(int argc, char** argv) {
   //   . . .            phi0 cosMu0 cosk0 mkp3
   //   179              phi2 cosMu2 cosk4 mkp3
 
-  if (effPdfProd)
-    for (int k = 0; k < pdfTotalValues[0+indexComponents].size(); k++) {
-      for (Int_t i = 0; i < nProjVars; ++i)
-	obserVariables[i]->value = plottingGridData.getValue(obserVariables[i],k);
-      
-      fptype effDataCont = effDataset->getBinContent(effDataset->getBinNumber());
-      
-      pdfTotalValues[0+indexComponents][k] *= effDataCont;
-      if (bkgPhaseSpace) {
-	pdfTotalValues[1][k] *= effDataCont;
-	pdfTotalValues[2][k] *= effDataCont;
-      }
-
-    }
+  // if (effPdfProd)
+  //   for (int k = 0; k < pdfTotalValues[0+indexComponents].size(); k++) {
+  //     for (Int_t i = 0; i < nProjVars; ++i)
+	// obserVariables[i]->value = plottingGridData.getValue(obserVariables[i],k);
+  //
+  //     fptype effDataCont = effDataset->getBinContent(effDataset->getBinNumber());
+  //
+  //     pdfTotalValues[0+indexComponents][k] *= effDataCont;
+  //     if (bkgPhaseSpace) {
+	//         pdfTotalValues[1][k] *= effDataCont;
+	//         pdfTotalValues[2][k] *= effDataCont;
+  //     }
+  //
+  //   }
 
 
   //std::cout <<" Vector proj : " <<pdfTotalValues[0].size()/massKPi->numbins<<std::endl;
   for (int k = 0; k < pdfTotalValues[0+indexComponents].size(); k++) {
     //std::cout <<mkpTotalProjection[k]*events/sum<<std::endl;
+    if(effPdfProd) pdfTotalValues[0+indexComponents][k] *= effCorrection[k];
     sum += pdfTotalValues[0+indexComponents][k];
     if (bkgPhaseSpace) {
+      if(effPdfProd)
+      {
+        pdfTotalValues[1][k] *= effCorrection[k];
+        pdfTotalValues[2][k] *= effCorrection[k];
+      }
       sumSig += pdfTotalValues[1][k];
       sumBkg += pdfTotalValues[2][k];
     }
@@ -1988,7 +2081,7 @@ int main(int argc, char** argv) {
   }
 
   //fptype totalIntegral = totalPdf->normalise();
-  fptype totalSigIntegral = matrix->normalise();
+  fptype totalSigIntegral = matrixTotPlot->normalise();
   //fptype totalComponent = 0.;
   fptype compsIntegral = 0.0;
   std::cout <<"\nTotal Normalisation Factor = " <<totalSigIntegral <<std::endl;
@@ -2015,7 +2108,8 @@ int main(int argc, char** argv) {
   fitStat->SetShadowColor(0);
   fitStat->SetFillColor(0);
 
-  totalPdf->clearCurrentFit();
+  //totalPdf->clearCurrentFit();
+  matrixTotPlot->clearCurrentFit();
 
   legPlot->AddEntry(varHistos[0], "Generated data", "lpe");
   legPlot->AddEntry(&signalTotalPlot[0], "Total fit", "l");
@@ -2132,13 +2226,15 @@ int main(int argc, char** argv) {
 
     sprintf(bufferstring,"Kstars_signal_plot_%d",k);
     GooPdf* matrixPlot;
+    GooPdf* effHistPlot;
 
     if (b0Var)
-      matrixPlot = new MatrixPdf(bufferstring, massKPi, cosMuMu, massPsiPi, phi, b0Beauty, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
+      matrixPlot = new MatrixPdf(bufferstring, massKPi, cosMuMu, massPsiPi, phi, b0Beauty, Masses,Gammas,Spins,asPlot,bsPlot,psi_nS,dRadB0,dRadKs);
     else if (b0BarPdf)
-      matrixPlot = new MatrixPdf(bufferstring, Masses, Gammas, Spins, as,bs,psi_nS,dRadB0,dRadKs,massKPi, cosMuMu, massPsiPi, phi);
+      matrixPlot = new MatrixPdf(bufferstring, Masses, Gammas, Spins, asPlot,bsPlot,psi_nS,dRadB0,dRadKs,massKPi, cosMuMu, massPsiPi, phi);
     else
-      matrixPlot = new MatrixPdf(bufferstring, massKPi, cosMuMu, massPsiPi, phi,Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
+      matrixPlot = new MatrixPdf(bufferstring, massKPi, cosMuMu, massPsiPi, phi,Masses,Gammas,Spins,asPlot,bsPlot,psi_nS,dRadB0,dRadKs);
+
 
     matrixPlot->setData(&plottingGridData);
     matrixPlot->copyParams();
@@ -2165,8 +2261,15 @@ int main(int argc, char** argv) {
     */
     matrixPlot->clearCurrentFit();
 
+    // effHistPlot->setData(&plottingGridData);
+    // effHistPlot->copyParams();
+    // effHistPlot->getCompProbsAtDataPoints(effPdfValues);
+    // effHistPlot->clearCurrentFit();
+
     for (int i=0; i<pdfCompValues[0].size(); i++) {
       //std::cout <<" Bin : " <<i <<" pdf : " <<pdfCompValues[0][i] <<std::endl;
+      if(effPdfProd)
+        pdfCompValues[0][i] *= effCorrection[i];
       sum += pdfCompValues[0][i];
     }
 
