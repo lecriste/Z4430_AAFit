@@ -634,7 +634,6 @@ int main(int argc, char** argv) {
     if (effPdfProd ) {
       cout <<"  - With efficiency multiplication" <<endl;
       datasetName.Append("__withEff"); plotsName.Append("__withEff");
-      if (datasetName.Contains("InvEff")) plotsName.ReplaceAll("withEff","withInvEff");
     }
     if (b0Bar){
       cout <<"  - With B0Bar dataset" <<endl;
@@ -642,10 +641,15 @@ int main(int argc, char** argv) {
     }
   }
 
+  if (txtfile)
+    datasetName = inPath;
+
+  if (datasetName.Contains("InvEff")) // as of now this can only happens if (txtfile)
+    plotsName.ReplaceAll("withEff","withInvEff");
+
   fptype aMin = -aMax;
   fptype bMin = -bMax;
 
-  debug(__LINE__);
 
   //CANVAS
   TCanvas* canvas = new TCanvas("Canvas","Canvas",2000,1200);
@@ -671,7 +675,6 @@ int main(int argc, char** argv) {
   Variable mMuMu("mMuMu", massMuMu);
   const fptype smearing = 0. ;
   Variable smear("smear",smearing) ;
-  debug(__LINE__);
 
   //TH1F* dataHisto = new TH1F("data","data",BINS,massKPi.lowerlimit,massKPi.upperlimit);
   //TH1F pdfBkgHist ("bkg","bkg",BINS,massKPi.lowerlimit,massKPi.upperlimit);
@@ -687,7 +690,6 @@ int main(int argc, char** argv) {
   gettimeofday(&tp,NULL);
   ms = tp.tv_sec * 1000 + tp.tv_usec / 1000;
   TRandom ranGen(ms);
-  debug(__LINE__);
 
   std::vector<Variable*> Masses, Gammas, Spins, as, bs;
 
@@ -835,7 +837,7 @@ int main(int argc, char** argv) {
   // std::cout<<" - dataset with "<<dataset.getNumBins()<<" bins "<<std::endl;
   //std::cout<<" - efficiencyDatasetMasses with "<<efficiencyDatasetMasses->getNumBins()<<" bins "<<std::endl;
 
-  vector<TH1F*> varHistos, varHistos_effCorr;
+  vector<TH1F*> varHistos, varHistos_effCorr, varHistos_theory;
   for (Int_t iVar=0; iVar<nProjVars; ++iVar) {
     TString xTitle = varTitles[iVar];
     if (iVar <= 2) xTitle.Append(" [GeV]");
@@ -846,6 +848,11 @@ int main(int argc, char** argv) {
     TH1F* hist_effCorr = (TH1F*)hist->Clone(TString::Format("%s_effCorr",hist->GetName()));
     hist_effCorr->SetTitle(TString::Format("%s effCorr",hist->GetTitle()));
     varHistos_effCorr.push_back( hist_effCorr );
+
+    TH1F* hist_theory = (TH1F*)hist->Clone(TString::Format("%s_theory",hist->GetName()));
+    hist_theory->SetMarkerColor(kBlue);
+    hist_theory->SetTitle(TString::Format("%s theory",hist->GetTitle()));
+    varHistos_theory.push_back( hist_theory );
   }
 
   TString path;
@@ -853,6 +860,9 @@ int main(int argc, char** argv) {
     path = "/lustre/home/adrianodif/RootFiles/Z4430/";
   else
     path = "/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/TMVA/";
+
+  TString bdtCut = "0p00"; bdtCut = "-0p03";
+  TString fileName = path+"TMVApp__withBDTCutAt"+bdtCut+"_JPsi_2p0Sig_6p0to9p0SB.root";
 
   //datasetName = "dataGen_B0"; //datasetName = "dataGen_B0bar";
   //datasetName.Append("_B0massConstraint");
@@ -869,6 +879,9 @@ int main(int argc, char** argv) {
     //datasetName.Append(".txt");
     fullDatasetName = datasetName;
   }
+
+  TString end = fullDatasetName; Ssiz_t endPoint = end.Index("__", fullDatasetName.Length()-10); end.Remove(0,endPoint);
+  TString theory_datasetName = fullDatasetName; Ssiz_t startPoint = theory_datasetName.Index("__with"); theory_datasetName.Remove(startPoint); theory_datasetName.Append(end);
 
   if (txtfile) {
     ifstream dataTxt(fullDatasetName.Data());
@@ -887,15 +900,16 @@ int main(int argc, char** argv) {
 
       Int_t evt=0;
 
-      cout <<"\n- Reading " <<events <<" out of " <<totEvents <<" events from " <<datasetName <<" and filling variables histograms" <<endl;
+      cout <<"\n- Reading " <<events <<" out of " <<totEvents <<" events from " <<datasetName <<" and filling UnbinnedDataSet and variables histograms" <<endl;
       dataTxt.clear(); dataTxt.seekg (0, ios::beg);
+
+      ifstream theoryTxt(theory_datasetName.Data());
+      if ( theoryTxt.good() ) cout <<"\n- Reading also " <<events <<" events from " <<theory_datasetName <<" and filling corresponding variables histograms" <<endl;
+
       //while( (evt < events)  &&  (dataTxt >> var1 >> var2 >> var3 >> var4 >> var5) ) { // need to add a check for var5 and skip it if not present in the file
       while( (evt < events)  &&  (dataTxt >> var1 >> var2 >> var3 >> var4) ) {
 	evt++;
-	massKPi->value = var1;
-	massPsiPi->value = var2;
-	cosMuMu->value = var3;
-	phi->value = var4;
+	massKPi->value = var1; massPsiPi->value = var2; cosMuMu->value = var3; phi->value = var4;
 	if (b0Var)
 	  b0Beauty->value = var5;
 	else if (var5 < 0.0  &&  b0Flag)
@@ -909,14 +923,25 @@ int main(int argc, char** argv) {
 	}
 
 	dataTxt.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+
+	theoryTxt >> var1 >> var2 >> var3 >> var4;
+	massKPi->value = var1; massPsiPi->value = var2; cosMuMu->value = var3; phi->value = var4;
+	if (Dalitz_contour_host(massKPi->value, massPsiPi->value, kFALSE, (Int_t)psi_nS->value) ) {
+	  for (Int_t iVar=0; iVar<nProjVars; ++iVar)
+	    varHistos_theory[iVar]->Fill(obserVariables[iVar]->value);
+	}
+
+	theoryTxt.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
       }
-    }
+    } // if ( (dataTxt.good()) )
     dataTxt.close();
   } // if (txtfile)
   else {
     //TString dataFileName = "./datafiles/Data_JPsi_2p0Sig_6p0to9p0SB.root";
     //TString dataFileName = "./datafiles/TMVApp_withBDTCutAt0p00_JPsi_2p0Sig_6p0to9p0SB.root";
-    TString dataFileName = path+"TMVApp_data_withBDTCutAt0p00_JPsi_2p0Sig_6p0to9p0SB.root";
+    TString dataFileName = fileName; dataFileName.ReplaceAll("TMVApp_","TMVApp_data");
 
     TFile *inputFile = TFile::Open(dataFileName);
 
@@ -957,7 +982,6 @@ int main(int argc, char** argv) {
 	phi->value = obs4;
 
 	if (Dalitz_contour_host(massKPi->value, massPsiPi->value, kFALSE, (Int_t)psi_nS->value) ) {
-	  debug(__LINE__);
 	  dataset.addEvent();
 	  for (Int_t iVar=0; iVar<nProjVars; ++iVar)
 	    varHistos[iVar]->Fill(obserVariables[iVar]->value);
@@ -987,7 +1011,7 @@ int main(int argc, char** argv) {
     cout <<"No events added from "  <<fullDatasetName <<"\nReturning." <<endl;
     return 0;
   } else
-    std::cout <<"Added " <<dataset.getNumEvents() <<" events within Dalitz border to GooFit dataset" <<std::endl;
+    std::cout <<"\nAdded " <<dataset.getNumEvents() <<" events within Dalitz border to GooFit dataset" <<std::endl;
 
   events = dataset.getNumEvents();
 
@@ -1024,7 +1048,7 @@ int main(int argc, char** argv) {
     TString eff = "TMVApp_MC_withBDTCutAt0p00_JPsi_2p0Sig_6p0to9p0SB";
     TString effName = eff; effName.Append(".root");
 
-    TFile *effFile = TFile::Open(path+effName);
+    TFile *effFile = TFile::Open(effName);
     if (!effFile) {
       cout <<"ERROR! Unable to open efficiency file \"" <<effName <<"\".\nReturning" <<endl;
       return -1;
@@ -1033,7 +1057,7 @@ int main(int argc, char** argv) {
     //TString relEffNameMass = "RelEff_psi2SPi_vs_KPi_B0constr";
     TString relEffNameMass = "RelEff_psi2SPi_vs_KPi_B0constr_1B0";
     TString relEffNameAng = "RelEff_planesAngle_vs_cos_psi2S_helicityAngle";
-    relEffNameMass.Append("_BDTCutAt0p00"); relEffNameAng.Append("_BDTCutAt0p00");
+    relEffNameMass.Append("_BDTCutAt"+bdtCut); relEffNameAng.Append("_BDTCutAt"+bdtCut);
 
     relEffTH2Mass = (TH2F*)effFile->Get(relEffNameMass) ;
     relEffTH2Ang = (TH2F*)effFile->Get(relEffNameAng) ;
@@ -1145,7 +1169,6 @@ int main(int argc, char** argv) {
 
     }
 
-
     if (effPdfFlat) {
       //efficiencyHistMasses = new FlatHistoPdf("EfficiencyMassPdf",effDatasetMasses,obserVariables);
       //efficiencyHistAngles = new FlatHistoPdf("EfficiencyAnglesPdf",effDatasetAngles,obserVariables);
@@ -1256,7 +1279,7 @@ int main(int argc, char** argv) {
 
       // path = "./datafiles/";
       //TString bkgName = "Data_JPsi_2p0Sig_6p0to9p0SB.root";
-      TString bkgName = "TMVApp_data_withBDTCutAt0p00_JPsi_2p0Sig_6p0to9p0SB.root";
+      TString bkgName = fileName; bkgName.ReplaceAll("TMVApp_","TMVApp_data");
       TFile *bkgFile = TFile::Open(path+bkgName);
 
       TString bkgNameMass = "psi2SPi_vs_KPi_masses_sbs_BDT";
@@ -2395,6 +2418,7 @@ int main(int argc, char** argv) {
     multiGraphs[iVar]->SetMinimum(0.1);
     multiGraphs[iVar]->SetMaximum(1.4 * varHistos[iVar]->GetMaximum());
     varHistos[iVar]->Draw("Esame"); // if drawn without "same", varHistos[iVar]->SetMinimum(0.1) must be called as well
+    varHistos_theory[iVar]->Draw("Esame");
     if (bkgHistos[iVar]) bkgHistos[iVar]->Draw("same");
     if (iVar==0) { // it's enough on the m(KPi) plot only
       legPlot->Draw(); fitStat->Draw();
