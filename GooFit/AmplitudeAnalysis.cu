@@ -156,7 +156,6 @@ void printinstruction() {
             <<"\t-b2 <b2> \t\t Select binning for MassPsiPi (for normalisation & integration, default: " <<compBins <<")\n"
             <<"\t-b3 <b3> \t\t Select binning for CosMuMu (for normalisation & integration, default: " <<compBins <<")\n"
             <<"\t-b4 <b4> \t\t Select binning for Phi (for normalisation & integration, default: " <<compBins <<")\n"
-            <<"\t-hPlot  \t\t Draw p.d.f.s as histograms instead of continous lines \n"
             <<"\t-p1 <p> \t\t Select p.d.f. plotting binning finenness (default: " <<pdfBins <<") for MassKPi \n"
             <<"\t-p2 <p> \t\t Select p.d.f. plotting binning finenness (default: " <<pdfBins <<") for MassPsiPi \n"
             <<"\t-p3 <p> \t\t Select p.d.f. plotting binning finenness (default: " <<pdfBins <<") for CosMuMu \n"
@@ -221,6 +220,7 @@ int main(int argc, char** argv) {
   bool bkgHistMap = false;
   bool bkgHistInt = false;
 
+
   bool effPdfProd = false;
   bool effPdfInter = false;
   bool effPdfFlat = false;
@@ -229,8 +229,6 @@ int main(int argc, char** argv) {
 
   bool txtfile = false;
   bool outParams = false;
-
-  bool hPlots = false;
 
   bool ghostRead = false;
 
@@ -251,7 +249,6 @@ int main(int argc, char** argv) {
   std::string underscores = "__";
   TString plotsDir = "./plots";
   std::vector< std::string> kStarNames;
-  TString plotOption = "L";
 
   TH2F* relEffTH2Mass = 0 , *relEffTH2Ang = 0;
   TH2F relEffTH2[2], bkgTH2[2];
@@ -463,11 +460,6 @@ int main(int argc, char** argv) {
     else if (arg == "-b0BarPdf") {
 	b0BarPdf = true;
       }
-    else if (arg == "-hPlot")
-    {
-      hPlot = true;
-      plotOption = ""
-        }
     //     else if (arg == "-H")
     // {
     //   hesse = true;
@@ -1495,11 +1487,10 @@ int main(int argc, char** argv) {
       bkgHistPdfPlot->setData(bkgDataset);
 
       //bkgHistAngles->getValue();
-      TH1F* projBkgHistosInt[nProjVars], TH2F* bkgHistosInt[2];
       TH1F* projMassKPiHistoBkgInt, *projMassPsiPiHistoBkgInt, *projCosMuMuHistoBkgInt, *projPhiHistoBkgInt;
 
-      bkgHistosInt[0] = new TH2F("massesHistoBkgInt","massesHistoBkgInt", massKPi->numbins, massKPi->lowerlimit, massKPi->upperlimit,massPsiPi->numbins, massPsiPi->lowerlimit, massPsiPi->upperlimit);
-      bkgHistosInt[1] = new TH2F("anglesHistoBkgInt","anglesHistoBkgInt", cosMuMu->numbins, cosMuMu->lowerlimit, cosMuMu->upperlimit,phi->numbins, phi->lowerlimit, phi->upperlimit);
+      TH2F* massesHistoBkgInt = new TH2F("massesHistoBkgInt","massesHistoBkgInt", massKPi->numbins, massKPi->lowerlimit, massKPi->upperlimit,massPsiPi->numbins, massPsiPi->lowerlimit, massPsiPi->upperlimit);
+      TH2F* anglesHistoBkgInt = new TH2F("anglesHistoBkgInt","anglesHistoBkgInt", cosMuMu->numbins, cosMuMu->lowerlimit, cosMuMu->upperlimit,phi->numbins, phi->lowerlimit, phi->upperlimit);
 
       fptype massKPiStep = (massKPi->upperlimit-massKPi->lowerlimit)/(fptype)massKPi->numbins;
       fptype massPsiPiStep = (massPsiPi->upperlimit-massPsiPi->lowerlimit)/(fptype)massPsiPi->numbins;
@@ -1544,12 +1535,10 @@ int main(int argc, char** argv) {
               zval += pdfIntValues[0][j+i*massKPi->numbins+k*massKPi->numbins * massPsiPi->numbins];
 
             interpolationSum += zval;
-            bkgHistosInt[0]->SetBinContent(bkgHistosInt[0]->FindBin(xval,yval),zval);
+            massesHistoBkgInt->SetBinContent(massesHistoBkgInt->FindBin(xval,yval),zval);
 
           }
 
-      bkgHistosInt[0]->Scale(1.0/interpolationSum);
-      bkgHistosInt[0]->Scale(bkgTH2Mass->GetEntries());
 
       interpolationSum = .0;
       //PLOTTING ANGLES
@@ -1566,68 +1555,66 @@ int main(int argc, char** argv) {
               zval += pdfIntValues[0][j * massKPi->numbins * massPsiPi->numbins+ i * massKPi->numbins * massPsiPi->numbins * cosMuMu->numbins + k ];
 
             interpolationSum += zval;
-            bkgHistosInt[1]->SetBinContent(bkgHistosInt[1]->FindBin(xval,yval),zval);
+            anglesHistoBkgInt->SetBinContent(anglesHistoBkgInt->FindBin(xval,yval),zval);
 
           }
-
-      bkgHistosInt[1]->Scale(1.0/interpolationSum);
-      bkgHistosInt[1]->Scale(bkgTH2Ang->GetEntries());
-
-      std::cout<<"-Producing sidebands background plots"<<std::endl;
 
       TCanvas* canvasM = new TCanvas("mcanvas","mcanvas",2000,1200);
       canvasM->cd();
 
+      massesHistoBkgInt->Scale(1.0/interpolationSum);
+      massesHistoBkgInt->Scale(bkgTH2Mass->GetEntries());
+
+      projMassKPiHistoBkgInt = (TH1F*)massesHistoBkgInt->ProjectionX();
+      projMassKPiHistoBkgInt->Scale(1.0/projMassKPiHistoBkgInt->Integral());
+      projMassKPiHistoBkgInt->Scale(bkgTH2Mass->ProjectionX()->GetEntries());
+
+      projMassPsiPiHistoBkgInt  = (TH1F*)massesHistoBkgInt->ProjectionY();
+      projMassPsiPiHistoBkgInt->Scale(1.0/projMassPsiPiHistoBkgInt->Integral());
+      projMassPsiPiHistoBkgInt->Scale(bkgTH2Mass->ProjectionY()->GetEntries());
+
+      massesHistoBkgInt->Draw("LEGO");
+      canvasM->SaveAs("./plots/massesBkgInterpolation.png");
+      canvasM->Clear();
+      std::cout<<"-Producing sidebands background plots"<<std::endl;
+
       bkgTH2Mass->Draw("LEGO");
       canvasM->SaveAs("./plots/massesBkgHistogram.png");
       canvasM->Clear();
+      std::cout<<"-Producing sidebands background plots"<<std::endl;
 
-      bkgHistosInt[0]->Draw("SURF3");
+      massesHistoBkgInt->Draw("SURF3");
       bkgTH2Mass->Draw("same");
       canvasM->SaveAs("./plots/massesBkgHistogramInterpolation.png");
       canvasM->Clear();
+      std::cout<<"-Producing sidebands background plots"<<std::endl;
 
       projMassKPiHistoBkgInt->Draw("L");
       bkgTH2Mass->ProjectionX()->Draw("same");
       canvasM->SaveAs("./plots/massesBkgMKPiProjection.png");
       canvasM->Clear();
+      std::cout<<"-Producing sidebands background plots"<<std::endl;
 
+      projMassPsiPiHistoBkgInt->Draw("L");
+      bkgTH2Mass->ProjectionY()->Draw("same");
+      canvasM->SaveAs("./plots/massesBkgMPsiPiProjection.png");
+      canvasM->Clear();
+      std::cout<<"-Producing sidebands background plots"<<std::endl;
 
-      for (int y=0; y<nProjVars; y+=2) {
+      TCanvas* canvasA = new TCanvas("acanvas","acanvas",2000,1200);
+      canvasA->cd();
+      canvasA->Clear();
 
-        //std::cout <<"Vars " <<y <<" - " <<y+1 <<"histo index" <<y/2 <<std::endl;
-        projBkgHistosInt[y] = (TH1F*)bkgHistosInt[y/2]->ProjectionX();
-        projBkgHistosInt[y]->Scale(1.0/projBkgHistosInt[y]->Integral());
-        projBkgHistosInt[y]->Scale(bkgHistos[y]->GetEntries());
+      anglesHistoBkgInt->Scale(1.0/interpolationSum);
+      anglesHistoBkgInt->Scale(bkgTH2Ang->GetEntries());
 
-        projBkgHistosInt[y]->Draw("L");
-        bkgHistos[y]->Draw("same");
-        canvasM->SaveAs("./plots/massesBkgMKPiProjection.png");
-        canvasM->Clear();
+      projCosMuMuHistoBkgInt = (TH1F*)anglesHistoBkgInt->ProjectionX();
+      projCosMuMuHistoBkgInt->Scale(1.0/projCosMuMuHistoBkgInt->Integral());
+      projCosMuMuHistoBkgInt->Scale(bkgTH2Ang->ProjectionX()->GetEntries());
 
-        projBkgHistosInt[y+1] = (TH1F*)bkgHistosInt[y/2]->ProjectionY();
-        projBkgHistosInt[y+1]->Scale(1.0/projBkgHistosInt[y+1]->Integral());
-        projBkgHistosInt[y+1]->Scale(bkgHistos[y+1]->GetEntries());
-
-        projBkgHistosInt[y+1]->Draw("L");
-        bkgHistos[y+1]->Draw("same");
-        canvasM->SaveAs("./plots/massesBkgMPsiPiProjection.png");
-        canvasM->Clear();
-      }
-
-      //
-      // TCanvas* canvasA = new TCanvas("acanvas","acanvas",2000,1200);
-      // canvasA->cd();
-      // canvasA->Clear();
-      //
-      //
-      // projCosMuMuHistoBkgInt = (TH1F*)anglesHistoBkgInt->ProjectionX();
-      // projCosMuMuHistoBkgInt->Scale(1.0/projCosMuMuHistoBkgInt->Integral());
-      // projCosMuMuHistoBkgInt->Scale(bkgTH2Ang->ProjectionX()->GetEntries());
-      //
-      // projPhiHistoBkgInt = (TH1F*)anglesHistoBkgInt->ProjectionY();
-      // projPhiHistoBkgInt->Scale(1.0/projPhiHistoBkgInt->Integral());
-      // projPhiHistoBkgInt->Scale(bkgTH2Ang->ProjectionY()->GetEntries());
+      projPhiHistoBkgInt = (TH1F*)anglesHistoBkgInt->ProjectionY();
+      projPhiHistoBkgInt->Scale(1.0/projPhiHistoBkgInt->Integral());
+      projPhiHistoBkgInt->Scale(bkgTH2Ang->ProjectionY()->GetEntries());
 
       // //
       // anglesHistoBkgInt->Draw("LEGO");
@@ -1797,9 +1784,8 @@ int main(int argc, char** argv) {
 
   std::vector<std::vector<fptype> > totalProj(4), totalSigProj(4), totalBkgProj(4);
 
-  if(!hPlot)
-    for (Int_t iVar=0; iVar<nProjVars; ++iVar)
-      obserVariables[iVar]->numbins = plottingFine[iVar];
+  for (Int_t iVar=0; iVar<nProjVars; ++iVar)
+    obserVariables[iVar]->numbins = plottingFine[iVar];
 
   TString shortVarNames[] = {"MKPi","MPsiPi","CMM","Phi"}; // same order as varNames
   vector <fptype*> pointsXTot, pointsYTot, pointsYTotSig, pointsYTotBkg;
@@ -2377,7 +2363,7 @@ int main(int argc, char** argv) {
 	sprintf(bufferstring,"Events / (%.3f)",(obserVariables[iVar]->upperlimit - obserVariables[iVar]->lowerlimit)/obserVariables[iVar]->numbins);
 	signalCompPlot->GetYaxis()->SetTitle(bufferstring);
 	//signalCompPlot->Draw("");
-	multiGraphs[iVar]->Add(signalCompPlot,plotOption);
+	multiGraphs[iVar]->Add(signalCompPlot,"L");
 
 	if (iVar==0) {
 	  sprintf(bufferstring,"%s (%.2f %)",kStarNames[k].c_str(), compsIntegral/totalSigIntegral*100.);
@@ -2428,47 +2414,11 @@ int main(int argc, char** argv) {
     ////////////////////////////////////////////////////////////////////////////////
     // PLOTTING
     canvas->cd();
-    if(!hPlot)
-    {
-      multiGraphs[iVar]->Draw("AL");
-      multiGraphs[iVar]->SetMinimum(0.1);
-      multiGraphs[iVar]->SetMaximum(1.4 * varHistos[iVar]->GetMaximum());
-      varHistos[iVar]->Draw("Esame"); // if drawn without "same", varHistos[iVar]->SetMinimum(0.1) must be called as well
-      varHistos_theory[iVar]->Draw("Esame");
-    }else
-    {
-      varHistos[iVar]->SetMinimum(0.1);
-      varHistos[iVar]->Draw("E");
-      varHistos_theory[iVar]->Draw("Esame");
-
-      projHistos[iVar]->SetMarkerColor(kRed);
-      projHistos[iVar]->Draw("Esame");
-
-      if (bkgPhaseSpace)
-      {
-        projSigHistos[iVar]->SetMarkerColor(kRed);
-        projSigHistos[iVar]->Draw("Esame");
-
-        projBkgHistos[iVar]->SetMarkerColor(kBlue);
-        projBkgHistos[iVar]->Draw("Esame");
-
-      }
-      for (int k = 0; k < nKstars; ++k)
-      {
-        compHistos[iVar][k]->SetMarkerColor(KstarColor[k]);
-        compHistos[iVar][k]->Draw("ESame");
-      }
-
-      if(bkgHist)
-      {
-        projBkgHistosInt[iVar]-->Draw("ESame");
-
-      }
-      }
-
-
-
-    }
+    multiGraphs[iVar]->Draw("AL");
+    multiGraphs[iVar]->SetMinimum(0.1);
+    multiGraphs[iVar]->SetMaximum(1.4 * varHistos[iVar]->GetMaximum());
+    varHistos[iVar]->Draw("Esame"); // if drawn without "same", varHistos[iVar]->SetMinimum(0.1) must be called as well
+    varHistos_theory[iVar]->Draw("Esame");
     if (bkgHistos[iVar]) bkgHistos[iVar]->Draw("same");
     if (iVar==0) { // it's enough on the m(KPi) plot only
       legPlot->Draw(); fitStat->Draw();
