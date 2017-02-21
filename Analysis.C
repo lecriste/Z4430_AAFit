@@ -824,7 +824,7 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
   if (generating) {
 
     if(B0BarFlag)
-      B0Beauty.setVal(-1.1);
+      B0beauty.setVal(-1.1);
     else
       B0beauty.setVal(+1.1);
 
