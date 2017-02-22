@@ -564,7 +564,7 @@ int main(int argc, char** argv) {
   TString bdtCut = "0p00"; bdtCut  = "-0p03";
   TString fileName = "TMVApp__withBDTCutAt"+bdtCut+"_JPsi_2p0Sig_6p0to9p0SB.root";
 
-  Variable* massKPi = new Variable(massKPi_name.Data(),1.,massKPi_min-plotMargin,massKPi_max+plotMargin); massKPi->numbins = bin[0];
+  Variable* massKPi = new Variable(massKPi_name.Data(),1.,massKPi_min,massKPi_max); massKPi->numbins = bin[0];
   //Variable* massKPiEff = new Variable(massKPi_eff_name.Data(),1.,0.6,2.2); massKPiEff->numbins = bin[0];
   //Variable* massKPi = new Variable(massKPi_name.Data(),1.,0.6,1.67); massKPi->numbins = bin[0];
   Variable* massPsiPi = new Variable(massPsiPi_name.Data(),TMath::Sqrt(23),massPsiPi_min-plotMargin,massPsiPi_max+plotMargin); massPsiPi->numbins = bin[1];
@@ -2151,7 +2151,9 @@ int main(int argc, char** argv) {
   fitStat->SetFillColor(0);
 
   legPlot->AddEntry(varHistos[0], "Generated data", "lpe");
-  legPlot->AddEntry(varHistos_theory[0], "Theory data", "lpe");
+
+  if(!bkgHist)
+    legPlot->AddEntry(varHistos_theory[0], "Theory data", "lpe");
 
   if(!hPlots){
 
@@ -2453,7 +2455,8 @@ int main(int argc, char** argv) {
       multiGraphs[iVar]->SetMinimum(0.1);
       multiGraphs[iVar]->SetMaximum(2.2 * plotYMax[iVar]);
       varHistos[iVar]->Draw("Esame"); // if drawn without "same", varHistos[iVar]->SetMinimum(0.1) must be called as well
-      varHistos_theory[iVar]->Draw("Esame");
+      if(!bkgHist)
+        varHistos_theory[iVar]->Draw("Esame");
     }else
     {
       varHistos[iVar]->SetMinimum(0.1);
