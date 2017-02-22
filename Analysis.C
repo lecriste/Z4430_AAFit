@@ -164,13 +164,14 @@ void plotting(const RooDataHist* hist, const TString name, const RooRealVar* x, 
     TH2_proj[iProj]->SetMarkerStyle(20); TH2_proj[iProj]->SetTitleOffset(1);
     //TH2_proj[iProj]->SetMinimum(0);
     TH2_proj[iProj]->Draw();
-    pdf_proj[iProj]->Scale((1/pdf_proj[iProj]->Integral())*binDivision*(TH2_proj[iProj]->Integral())); pdf_proj[iProj]->SetLineColor(kRed); pdf_proj[iProj]->Draw("same");
+    pdf_proj[iProj]->Scale((1/pdf_proj[iProj]->Integral())*binDivision*(TH2_proj[iProj]->Integral()));
+    pdf_proj[iProj]->SetLineColor(kRed); pdf_proj[iProj]->Draw("same");
     gPad->SaveAs(TString::Format("%s/%s_%s%s",dir.Data(),TH2_proj[iProj]->GetName(),method.Data(),extension.Data()));
   }
 }
 
 
-void Analysis(Int_t nEvt = 100000,Bool_t generating = kFALSE, Bool_t bkgFlag = kFALSE,Bool_t effFlag = kFALSE,Bool_t B0BarFlag = kFALSE,Int_t bkgOrd = 1,Int_t effOrd = 1)
+void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = kFALSE, Bool_t effFlag = kFALSE, Bool_t B0BarFlag = kFALSE, Int_t bkgOrd = 1, Int_t effOrd = 1)
 {
   SysInfo_t* s = new SysInfo_t();
   gSystem->GetSysInfo(s);
@@ -323,7 +324,7 @@ void Analysis(Int_t nEvt = 100000,Bool_t generating = kFALSE, Bool_t bkgFlag = k
   TString inputFileName = "MC_K892_JPsi_Bd2MuMuKpi_B0massConstraint.root";
 
   path.Append("TMVA/");
-  TString bdtCut = "0p00"; bdtCut = "-0p03";
+  TString bdtCut = "0p00"; //bdtCut = "-0p03";
   inputFileName = "TMVApp_data_withBDTCutAt"+bdtCut+"_JPsi_2p0Sig_6p0to9p0SB.root";
 
   TString prefix = "", postfix = "";
@@ -460,7 +461,7 @@ void Analysis(Int_t nEvt = 100000,Bool_t generating = kFALSE, Bool_t bkgFlag = k
     cout <<"Building " <<sigPDF->GetTitle() <<endl;
     nSig.setVal( totEvents );
     model = (RooAbsPdf*)sigPDF;
-    if (bkgPDF) {
+    if (bkgPDF) { // in case of efficiency model will be overridden
       cout <<"\nAdding " <<bkgPDF->GetTitle() <<endl;
       nSig.setVal( totEvents/2 ); nBkg.setVal( totEvents/2 );
       model = (RooAbsPdf*) new RooAddPdf("","",RooArgList(*sigPDF,*bkgPDF),RooArgList(nSig,nBkg)) ;
@@ -562,13 +563,14 @@ void Analysis(Int_t nEvt = 100000,Bool_t generating = kFALSE, Bool_t bkgFlag = k
 	TString bkgtype = bkgType; bkgtype.Remove(0,1); bkgtype.Prepend(first);
 
 	TString pdfTitle = "bkg("+bkgtype+") pdf";
-	RooHistPdf* bkgHistPdf = new RooHistPdf(bkgName+"PDF", pdfTitle, *bkgVars, *bkgHist, 2) ;
-	//RooHistPdf* bkgHistPdf = new RooHistPdf(bkgName+"PDF", pdfTitle, *bkgVars, *bkgHist, 0) ;
+	TString method = "map";
+	if (bkgOrd) method = "interp"+TString::Itoa(bkgOrd,10);
+	RooHistPdf* bkgHistPdf = new RooHistPdf(bkgName+"PDF_"+method, pdfTitle, *bkgVars, *bkgHist, bkgOrd) ;
+	//RooHistPdf* bkgHistPdf = new RooHistPdf(bkgName+"PDF", pdfTitle, *bkgVars, *bkgHist, bkgOrd) ;
 	//If last argument is zero, the weight for the bin enclosing the coordinates contained in 'bin' is returned. For higher values, the result is interpolated in the real dimensions of the dataset with an order of interpolation equal to the value provided (more than ? does not work for Dalitz efficiencies, ? for masses efficiencies, ? for angles)
 	bkgHistPdf->setUnitNorm(kTRUE);
 
-	TString method = "";
-	sbPdf[iVars][iSb].first = bkgHistPdf; method = "interp";
+	sbPdf[iVars][iSb].first = bkgHistPdf;
 	Int_t xOrder = bkgHisto_names[iVars].first.second.second.first;
 	Int_t yOrder = bkgHisto_names[iVars].first.second.second.second;
 	// sbPdf[iVars][iSb].first = twoDFit(*x, *y, sbTH2, psi_nS.Atoi(), xOrder, yOrder, sbPdf[iVars][iSb].second); method = "ROOTfit"; // ROOT fit
@@ -612,16 +614,8 @@ void Analysis(Int_t nEvt = 100000,Bool_t generating = kFALSE, Bool_t bkgFlag = k
   */
   RooProdPdf* sbsModel = 0;
   if (sbsPdf[0] && sbsPdf[1])
-    sbsModel = new RooProdPdf("SbsPdf","sidebands p.d.f.",RooArgSet(*sbsPdf[0],*sbsPdf[1]));
+    sbsModel = new RooProdPdf(TString::Format("%s_X_%s",sbsPdf[0]->GetName(),sbsPdf[1]->GetName()),"sidebands p.d.f.",RooArgSet(*sbsPdf[0],*sbsPdf[1]));
   //return;
-
-  RooAddPdf* modelWithBkgHist = 0;
-
-  if (sbsModel) {
-    std::cout<<"\nAdding bkg to pdf" <<std::endl;
-    modelWithBkgHist = new RooAddPdf(modelName.Append("__withHistoBkg"),TString::Format("%s + Histo Bkg ",model->GetTitle()),*model,*sbsModel,fixSig) ;
-    model = modelWithBkgHist;
-  }
 
 
   // Masses and angles efficiencies
@@ -631,6 +625,8 @@ void Analysis(Int_t nEvt = 100000,Bool_t generating = kFALSE, Bool_t bkgFlag = k
   effFileName = path+"TMVApp_MC_withBDTCutAt"+bdtCut+"_JPsi_2p0Sig_6p0to9p0SB.root";
   cout <<"\nOpening \"" <<effFileName <<endl;
   TFile *effFile = TFile::Open(effFileName);
+  RooAbsPdf* pdfToCorrect = sigPDF;
+  TString pdfToCorr_name = pdfToCorrect->GetName();
   RooProdPdf* modelWithEff = 0;
   const Int_t m2KPi_order_relEff = 5, m2PsiPi_order_relEff = 4, cosMuMu_order_relEff = 5, phi_order_relEff = 5;
   const Int_t mKPi_order_relEff = 4, mPsiPi_order_relEff = 4, cosKstar_order_relEff = 4;
@@ -681,7 +677,9 @@ void Analysis(Int_t nEvt = 100000,Bool_t generating = kFALSE, Bool_t bkgFlag = k
       TString first = TString(effType,1); first.ToLower();
       TString efftype = effType; efftype.Remove(0,1); efftype.Prepend(first);
       TString pdfTitle = "#epsilon_{rel}("+efftype+") pdf";
-      RooHistPdf* relHistPdf = new RooHistPdf(effName+"PDF",pdfTitle, *effVars, *relEffHist, 9) ; //If last argument is zero, the weight for the bin enclosing the coordinates contained in 'bin' is returned. For higher values, the result is interpolated in the real dimensions of the dataset with an order of interpolation equal to the value provided (more than 10 does not work for Dalitz efficiencies, 9 for masses efficiencies, 10 for angles)
+      TString method = "map";
+      if (effOrd) method = "interp"+TString::Itoa(effOrd,10);
+      RooHistPdf* relHistPdf = new RooHistPdf(effName+"PDF_"+method,pdfTitle, *effVars, *relEffHist, effOrd) ; //If last argument is zero, the weight for the bin enclosing the coordinates contained in 'bin' is returned. For higher values, the result is interpolated in the real dimensions of the dataset with an order of interpolation equal to the value provided (more than 10 does not work for Dalitz efficiencies, 9 for masses efficiencies, 10 for angles)
       relHistPdf->setUnitNorm(kTRUE);
 
       /*
@@ -707,7 +705,7 @@ void Analysis(Int_t nEvt = 100000,Bool_t generating = kFALSE, Bool_t bkgFlag = k
       RooNDKeysPdf* relHistPdf = new RooNDKeysPdf("relHistPdf","relHistPdf", *effVars, *relEffSet, "amdv");
       */
 
-      effPdf[iEff].first = relHistPdf; TString method = "interp";
+      effPdf[iEff].first = relHistPdf;
       Int_t xOrder = effHisto_names[iEff].first.second.second.first;
       Int_t yOrder = effHisto_names[iEff].first.second.second.second;
       // effPdf[iEff].first = twoDFit(*x, *y, relEffTH2, psi_nS.Atoi(), xOrder, yOrder, effPdf[iEff].second); method = "ROOTfit";
@@ -790,17 +788,17 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
 	TH2F* massesEffPdf_fromDalitz_TH2 = (TH2F*)massesEffPdf_fromDalitz->createHistogram("", massKPi, Binning(1*xBins,massKPi_min,massKPi_max), YVar(massPsiPi, Binning(1*yBins,massPsiPi_min,massPsiPi_max)) ) ; massesEffPdf_fromDalitz_TH2->SetName("massesEffPdf_fromDalitz_TH2"); massesEffPdf_fromDalitz_TH2->SetTitleOffset(TH2_offset,"XY");
 	massesEffPdf_fromDalitz_TH2->Draw("LEGO");
 	gPad->SaveAs(TString::Format("%s/%s%s",dir.Data(),massesEffPdf_fromDalitz_TH2->GetName(),extension.Data()));
-	modelWithEff = new RooProdPdf(modelName.Append("__withMassesEff"),TString::Format("(%s)*#epsilon(masses)",model->GetTitle()),RooArgSet(*model,*massesEffPdf_fromDalitz)) ;
+	modelWithEff = new RooProdPdf(pdfToCorr_name.Append("__withMassesEff"),TString::Format("(%s)*#epsilon(masses)",pdfToCorrect->GetTitle()),RooArgSet(*pdfToCorrect,*massesEffPdf_fromDalitz)) ;
 	}
 	*/
 	//massKPi.setVal(2.); massPsiPi.setVal(4.);
 	//cout <<"massKPi = " <<massKPi.getVal() <<", mass2KPi = " <<mass2KPi.getVal() <<", massPsiPi = " <<massPsiPi.getVal() <<", mass2PsiPi = " <<mass2PsiPi.getVal() <<endl;
 	//cout <<"effPdf[iEff].first->getVal() = " <<effPdf[iEff].first->getVal() <<", effPdf[iEff].first->getValV() = " <<effPdf[iEff].first->getValV() <<endl;
-	//cout <<"model->getVal() = " <<model->getVal() <<", model->getValV() = " <<model->getValV() <<endl;
+	//cout <<"pdfToCorrect->getVal() = " <<pdfToCorrect->getVal() <<", pdfToCorrect->getValV() = " <<pdfToCorrect->getValV() <<endl;
 	//cout <<"massKPi = " <<massKPi.getVal() <<", mass2KPi = " <<mass2KPi.getVal() <<", massPsiPi = " <<massPsiPi.getVal() <<", mass2PsiPi = " <<mass2PsiPi.getVal() <<endl;
       } // if (iEff==0)
 
-      //modelWithEff = new RooProdPdf(modelName.Append("__with"+effType+"Eff"),TString::Format("%s * #epsilon("+efftype+")",model->GetTitle()),RooArgSet(*model,*effPdf[iEff].first)) ; model = modelWithEff; // replacing sigPdf * eff(M) * eff(A) with sigPdf * [eff(M) * eff(A)] seems to improve the generation time
+      //modelWithEff = new RooProdPdf(pdfToCorr_name.Append("__with"+effType+"Eff"),TString::Format("%s * #epsilon("+efftype+")",pdfToCorrect->GetTitle()),RooArgSet(*pdfToCorrect,*effPdf[iEff].first)) ; model = modelWithEff; // replacing sigPdf * eff(M) * eff(A) with sigPdf * [eff(M) * eff(A)] seems to improve the generation time
 
     } // for (Int_t iEff=0; iEff < 2; ++iEff)
   else
@@ -813,9 +811,18 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
     effModel = new RooProdPdf(TString::Format("%s_X_%s",effPdf[0].first->GetName(),effPdf[1].first->GetName()),TString::Format("%s * %s",effPdf[0].first->GetTitle(),effPdf[1].first->GetTitle()),RooArgSet(*effPdf[0].first,*effPdf[1].first));
 
   if ((model != modelWithEff) && effModel) {
-    std::cout<<"\nMultiplying " <<effModel->GetTitle() <<" to " <<model->GetTitle() <<std::endl;
-    modelWithEff = new RooProdPdf(TString::Format("%s__with__%s",modelName.Data(),effModel->GetName()),TString::Format("%s * (%s)",model->GetTitle(),effModel->GetTitle()),*model,*effModel) ;
+    std::cout<<"\nMultiplying " <<effModel->GetTitle() <<" to " <<pdfToCorrect->GetTitle() <<std::endl;
+    modelWithEff = new RooProdPdf(TString::Format("%s__with__%s",pdfToCorr_name.Data(),effModel->GetName()),TString::Format("%s * (%s)",pdfToCorrect->GetTitle(),effModel->GetTitle()),*pdfToCorrect,*effModel) ;
     model = modelWithEff;
+  }
+
+
+  // adding background
+  RooAddPdf* modelWithBkgHist = 0;
+  if (sbsModel) {
+    std::cout<<"\nAdding bkg to pdf" <<std::endl;
+    modelWithBkgHist = new RooAddPdf(TString::Format("%s__with_%s",model->GetName(),sbsModel->GetName()),TString::Format("%s + %s",model->GetTitle(),sbsModel->GetTitle()),*model,*sbsModel,fixSig) ;
+    model = modelWithBkgHist;
   }
 
 
@@ -823,7 +830,7 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
 
   if (generating) {
 
-    if(B0BarFlag)
+    if (B0BarFlag)
       B0beauty.setVal(-1.1);
     else
       B0beauty.setVal(+1.1);
@@ -839,7 +846,7 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
     TString dataGenName = "Generated_data_from_PDF"; TString dataGen_Name = dataGenName;
 
     RooDataSet* dataGenPDF = model->generate(kinematicVars, nEvents.getVal(), Verbose(kTRUE), Name(dataGenName)) ; dataGenPDF->SetTitle(dataGenName.ReplaceAll("_"," "));
-    RooDataSet* dataGenPDFB0 = model->generate(kinematicVars_withBeauty, nEvents.getVal(), Verbose(kTRUE), Name(dataGenName)) ; dataGenPDF->SetTitle(dataGenName.ReplaceAll("_"," "));
+    //RooDataSet* dataGenPDFB0 = model->generate(kinematicVars_withBeauty, nEvents.getVal(), Verbose(kTRUE), Name(dataGenName)) ; dataGenPDFB0->SetTitle(dataGenName.ReplaceAll("_"," "));
 
     // RooArgSet genSet = kinematicVars; genSet = kinematicVars_withBeauty;
     // RooDataSet* dataGenPDF = model->generate(genSet, nEvents.getVal(), Verbose(kTRUE), Name(dataGenName)) ; dataGenPDF->SetTitle(dataGenName.ReplaceAll("_"," "));
@@ -857,15 +864,12 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
     //if (nEvents.getVal() > 100000)
     // dataGenPDF->write(TString::Format("%s/%s.txt",datasetsPath.Data(),model->GetName()));
 
-    if(B0BarFlag)
-    {
-      dataGenPDF->write(TString::Format("%s/B0Bar/%s.txt",datasetsPath.Data(),model->GetName()));
-      dataGenPDFB0->write(TString::Format("%s/B0Bar/%s__B0Flag.txt",datasetsPath.Data(),model->GetName()));
-    }
-    else
-    {
+    if (B0BarFlag) {
+      dataGenPDF->write(TString::Format("%s/B0bar/%s.txt",datasetsPath.Data(),model->GetName()));
+      //dataGenPDFB0->write(TString::Format("%s/B0Bar/%s__B0Flag.txt",datasetsPath.Data(),model->GetName()));
+    } else {
       dataGenPDF->write(TString::Format("%s/B0/%s.txt",datasetsPath.Data(),model->GetName()));
-      dataGenPDFB0->write(TString::Format("%s/B0/%s__B0Flag.txt",datasetsPath.Data(),model->GetName()));
+      //dataGenPDFB0->write(TString::Format("%s/B0/%s__B0Flag.txt",datasetsPath.Data(),model->GetName()));
     }
 
     return;

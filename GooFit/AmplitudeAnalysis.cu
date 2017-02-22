@@ -64,8 +64,6 @@ tms startProc, stopProc;
 
 const fptype M892e = 0.8961 ; const fptype G892e = 0.0507; // From EvtGen
 
-const fptype TMATH_PI = TMath::Pi();
-
 std::string migrad("MIGRAD"); std::string m("M");
 std::string hesse("HESSE");   std::string h("H");
 std::string minos("MINOS");   std::string n("N");
@@ -1035,14 +1033,15 @@ int main(int argc, char** argv) {
   //Efficiencies
 
   //GooPdf* efficiencyHistMasses, *efficiencyHistAngles;
-  GooPdf* effHist, *effHistAng, *effHistMas;
+  GooPdf* effHist;
+  //GooPdf* effHistAng, *effHistMas;
   //GooPdf* effHistPlot;
 
   BinnedDataSet* effDataset, *effDatasetMasses, *effDatasetAngles;
 
   ////////////////////////////////////
   //Backgrounds
-  GooPdf* bkgHistMasses, *bkgHistAngles;
+  //GooPdf* bkgHistMasses, *bkgHistAngles;
   GooPdf* bkgHistPdf;
   GooPdf* bkgHistPdfPlot;
 
@@ -1199,15 +1198,15 @@ int main(int argc, char** argv) {
     }
 
     if (effPdfFlat) {
-      effHistAng = new FlatHistoPdf("EfficienciesPdfAng",effDatasetAngles,obserVariables);
-      effHistMas = new FlatHistoPdf("EfficienciesPdfMas",effDatasetMasses,obserVariables);
+      //effHistAng = new FlatHistoPdf("EfficienciesPdfAng",effDatasetAngles,obserVariables);
+      //effHistMas = new FlatHistoPdf("EfficienciesPdfMas",effDatasetMasses,obserVariables);
       effHist = new FlatHistoPdf("EfficienciesPdf",effDataset,obserVariables);
       //effHistPlot = new FlatHistoPdf("EfficienciesPdf",effDataset,obserVariables);
-    } else if (effPdfInter)
-      {
-         effHistAng = new BiDimHistoPdf("EfficienciesPdfAng",effDatasetAngles,obserVariables);
-         effHistMas = new BiDimHistoPdf("EfficienciesPdfMas",effDatasetMasses,obserVariables);
-	       effHist = new BiDimHistoPdf("EfficienciesPdf",effDataset,obserVariables);
+    }
+    else if (effPdfInter) {
+	//effHistAng = new BiDimHistoPdf("EfficienciesPdfAng",effDatasetAngles,obserVariables);
+	//effHistMas = new BiDimHistoPdf("EfficienciesPdfMas",effDatasetMasses,obserVariables);
+	effHist = new BiDimHistoPdf("EfficienciesPdf",effDataset,obserVariables);
       }
     //efficiencyHistMasses = new BiDimHistoPdf ("EfficiencyPdf",effDatasetMasses,massVars,1);
     // UnbinnedDataSet plottingGridMasses(massVars);
@@ -1224,14 +1223,14 @@ int main(int argc, char** argv) {
     //     }
     // }
 
-    for (int y=0; y<nProjVars;++y){
-        obserVariables[y]->lowerlimit = lowerL[y];
-        obserVariables[y]->upperlimit = upperL[y];
+    for (int y=0; y<nProjVars;++y) {
+      obserVariables[y]->lowerlimit = lowerL[y];
+      obserVariables[y]->upperlimit = upperL[y];
     }
-
+    
     for (Int_t iVar=0; iVar<nProjVars; ++iVar)
-        obserVariables[iVar]->numbins = plottingFine[iVar];
-
+      obserVariables[iVar]->numbins = plottingFine[iVar];
+    
     UnbinnedDataSet plottingGridDataFirst(obserVariables);
 
     if (b0Var)
@@ -1274,7 +1273,8 @@ int main(int argc, char** argv) {
 
 
   //PDFs
-  GooPdf* matrix, *background, *sumPdf, *totalPdf,*prodPdf;
+  GooPdf* matrix, *background, *totalPdf,*prodPdf;
+  //GooPdf *sumPdf;
 
   vector<PdfBase*> pdfComponents;
   vector<Variable*> pdfYield;
@@ -1434,13 +1434,13 @@ int main(int argc, char** argv) {
 	std::cout<<"Mass histo : " <<bkgTH2Mass->GetEntries()<<" Angles histo : " <<bkgTH2Ang->GetEntries() <<std::endl;
       */
       if (bkgHistMap) {
-        bkgHistMasses = new FlatHistoPdf("bkgHistMasses",bkgDatasetMasses,obserVariables);
-        bkgHistAngles = new FlatHistoPdf("bkgHistAngles",bkgDatasetAngles,obserVariables);
+        //bkgHistMasses = new FlatHistoPdf("bkgHistMasses",bkgDatasetMasses,obserVariables);
+        //bkgHistAngles = new FlatHistoPdf("bkgHistAngles",bkgDatasetAngles,obserVariables);
         bkgHistPdf    = new FlatHistoPdf("bkgHistPdf",bkgDataset,obserVariables);
       }
       else if (bkgHistInt) {
-        bkgHistMasses = new BiDimHistoPdf("bkgHistMasses",bkgDatasetMasses,obserVariables);
-        bkgHistAngles = new BiDimHistoPdf("bkgHistAngles",bkgDatasetAngles,obserVariables);
+        //bkgHistMasses = new BiDimHistoPdf("bkgHistMasses",bkgDatasetMasses,obserVariables);
+        //bkgHistAngles = new BiDimHistoPdf("bkgHistAngles",bkgDatasetAngles,obserVariables);
         bkgHistPdf    = new BiDimHistoPdf("bkgHistPdf",bkgDataset,obserVariables);
       }
 
@@ -1456,7 +1456,7 @@ int main(int argc, char** argv) {
 
       //bkgHistAngles->getValue();
       TH2F* bkgHistosInt[2];
-      TH1F* projMassKPiHistoBkgInt, *projMassPsiPiHistoBkgInt, *projCosMuMuHistoBkgInt, *projPhiHistoBkgInt;
+      //TH1F* projMassKPiHistoBkgInt, *projMassPsiPiHistoBkgInt, *projCosMuMuHistoBkgInt, *projPhiHistoBkgInt;
 
       bkgHistosInt[0] = new TH2F("bkgHistosInt[0]","bkgHistosInt[0]", massKPi->numbins, massKPi->lowerlimit, massKPi->upperlimit,massPsiPi->numbins, massPsiPi->lowerlimit, massPsiPi->upperlimit);
       bkgHistosInt[1] = new TH2F("bkgHistosInt[1]","bkgHistosInt[1]", cosMuMu->numbins, cosMuMu->lowerlimit, cosMuMu->upperlimit,phi->numbins, phi->lowerlimit, phi->upperlimit);
@@ -1741,7 +1741,8 @@ int main(int argc, char** argv) {
 
   totalPdf->clearCurrentFit();
 
-  GooPdf* matrixTotPlot, *bkgHistPlot;
+  GooPdf* matrixTotPlot;
+  //GooPdf* bkgHistPlot;
 
   if (b0Var)
     matrixTotPlot = new MatrixPdf("Signal Pdf Plot", massKPi, cosMuMu, massPsiPi, phi, b0Beauty, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
@@ -1801,8 +1802,8 @@ int main(int argc, char** argv) {
   }
 
   fptype sum = 0.0;
-  fptype sumSig = 0.0;
-  fptype sumBkg = 0.0;
+  //fptype sumSig = 0.0;
+  //fptype sumBkg = 0.0;
 
   std::cout <<"\n- Starting plotting cycle" ;
   std::cout <<"\n- Plotting generated dataset" <<std::endl;
@@ -1837,13 +1838,13 @@ int main(int argc, char** argv) {
   ///// TOTAL PDF PLOT
   ////////////////////////////////////////////////////////////////////////////////
 
-  Double_t plotYMax[nProjVars],plotXMax[nProjVars],plotXMin[nProjVars];
+  Double_t plotYMax[nProjVars];
+  //Double_t plotXMax[nProjVars],plotXMin[nProjVars];
 
-  for (Int_t iVar = 0; iVar < nProjVars; ++iVar)
-  {
+  for (Int_t iVar = 0; iVar < nProjVars; ++iVar) {
     plotYMax[iVar] = varHistos[iVar]->GetMaximum();
-    plotXMax[iVar] = varHistos[iVar]->GetXaxis()->GetBinLowEdge(1);
-    plotXMin[iVar] = varHistos[iVar]->GetXaxis()->GetBinUpEdge(varHistos[iVar]->GetNbinsX());
+    //plotXMax[iVar] = varHistos[iVar]->GetXaxis()->GetBinLowEdge(1);
+    //plotXMin[iVar] = varHistos[iVar]->GetXaxis()->GetBinUpEdge(varHistos[iVar]->GetNbinsX());
   }
 
   Float_t xMax = 0.95, yMax = 0.9;
@@ -2088,8 +2089,8 @@ int main(int argc, char** argv) {
     projBkgHistos[iVar]->SetMarkerStyle(kFullSquare);
 
     plotYMax[iVar] = TMath::Max(projHistos[iVar]->GetMaximum(),plotYMax[iVar]);
-    plotXMax[iVar] = TMath::Max(projHistos[iVar]->GetXaxis()->GetBinUpEdge(projHistos[iVar]->GetNbinsX()),plotYMax[iVar]);
-    plotXMin[iVar] = -TMath::Max(-projHistos[iVar]->GetXaxis()->GetBinLowEdge(1),-plotYMax[iVar]);
+    //plotXMax[iVar] = TMath::Max(projHistos[iVar]->GetXaxis()->GetBinUpEdge(projHistos[iVar]->GetNbinsX()),plotYMax[iVar]);
+    //plotXMin[iVar] = -TMath::Max(-projHistos[iVar]->GetXaxis()->GetBinLowEdge(1),-plotYMax[iVar]);
 
     // Filling projection histograms and TGraphs
     for (int j=0; j < obserVariables[iVar]->numbins; ++j) {
@@ -2281,6 +2282,7 @@ int main(int argc, char** argv) {
 
     sprintf(bufferstring,"Kstars_signal_plot_%d",k);
     GooPdf* matrixPlot;
+    //GooPdf* effHistPlot;
 
     if (b0Var)
       matrixPlot = new MatrixPdf(bufferstring, massKPi, cosMuMu, massPsiPi, phi, b0Beauty, Masses,Gammas,Spins,asPlot,bsPlot,psi_nS,dRadB0,dRadKs);
@@ -2384,14 +2386,19 @@ int main(int argc, char** argv) {
   compHistos[iVar][k]->SetLineColor(KstarColor[k]);
   compHistos[iVar][k]->SetMarkerStyle(KstarMarker[k]);
 
-	// Filling components projections graphs
-	TGraph* signalCompPlot = new TGraph(obserVariables[iVar]->numbins, pointsXComp, pointsYComp);
-	signalCompPlot->SetLineColor(KstarColor[k]); signalCompPlot->SetLineWidth(3); signalCompPlot->SetLineStyle(kDashed);
-	signalCompPlot->GetXaxis()->SetTitle( varHistos[iVar]->GetXaxis()->GetTitle() );
-	sprintf(bufferstring,"Events / (%.3f)",(obserVariables[iVar]->upperlimit - obserVariables[iVar]->lowerlimit)/obserVariables[iVar]->numbins);
-	signalCompPlot->GetYaxis()->SetTitle(bufferstring);
-	//signalCompPlot->Draw("");
-	multiGraphs[iVar]->Add(signalCompPlot,"L");
+  plotYMax[iVar] = TMath::Max(compHistos[iVar][k]->GetMaximum(),plotYMax[iVar]);
+  // std::cout<<compHistos[iVar][k]->GetMaximum()<<" "<<plotYMax[iVar]<<std::endl;
+  //plotXMax[iVar] = TMath::Max(compHistos[iVar][k]->GetXaxis()->GetBinUpEdge(compHistos[iVar][k]->GetNbinsX()),plotYMax[iVar]);
+  //plotXMin[iVar] = -TMath::Max(-compHistos[iVar][k]->GetXaxis()->GetBinLowEdge(1),-plotYMax[iVar]);
+
+  // Filling components projections graphs
+  TGraph* signalCompPlot = new TGraph(obserVariables[iVar]->numbins, pointsXComp, pointsYComp);
+  signalCompPlot->SetLineColor(KstarColor[k]); signalCompPlot->SetLineWidth(3); signalCompPlot->SetLineStyle(kDashed);
+  signalCompPlot->GetXaxis()->SetTitle( varHistos[iVar]->GetXaxis()->GetTitle() );
+  sprintf(bufferstring,"Events / (%.3f)",(obserVariables[iVar]->upperlimit - obserVariables[iVar]->lowerlimit)/obserVariables[iVar]->numbins);
+  signalCompPlot->GetYaxis()->SetTitle(bufferstring);
+  //signalCompPlot->Draw("");
+  multiGraphs[iVar]->Add(signalCompPlot,"L");
 
   if (iVar==0) {
 	  sprintf(bufferstring,"%s (%.2f %)",kStarNames[k].c_str(), compsIntegral/totalSigIntegral*100.);
