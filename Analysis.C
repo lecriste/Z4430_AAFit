@@ -215,14 +215,14 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
   Kstar_spin.push_back( make_pair("1430_2", make_pair(M1430_2,G1430_2) ) ) ;
   helJ_map["1430_2_0"] = make_pair(4.66,-0.32); helJ_map["1430_2_p1"] = make_pair(4.65,-3.05); helJ_map["1430_2_m1"] = make_pair(1.26,-1.92);
   /*
-  cout <<"Adding K*(1780)_3..." <<endl;
-  Kstar_spin.push_back( make_pair("1780_3", make_pair(M1780_3,G1780_3) ) ) ;
-  helJ_map["1780_3_0"] = make_pair(16.8,-1.43); helJ_map["1780_3_p1"] = make_pair(19.1,2.03); helJ_map["1780_3_m1"] = make_pair(10.2,1.55);
+    cout <<"Adding K*(1780)_3..." <<endl;
+    Kstar_spin.push_back( make_pair("1780_3", make_pair(M1780_3,G1780_3) ) ) ;
+    helJ_map["1780_3_0"] = make_pair(16.8,-1.43); helJ_map["1780_3_p1"] = make_pair(19.1,2.03); helJ_map["1780_3_m1"] = make_pair(10.2,1.55);
   *//*
-  cout <<"Adding K*(2380)_5..." <<endl;
-  Kstar_spin.push_back( make_pair("2380_5", make_pair(M2380_5,G2380_5) ) ) ;
-  helJ_map["2380_5_0"] = make_pair(1.,0.); helJ_map["2380_5_p1"] = make_pair(0.,0.); helJ_map["2380_5_m1"] = make_pair(0.,0.);
-  */
+      cout <<"Adding K*(2380)_5..." <<endl;
+      Kstar_spin.push_back( make_pair("2380_5", make_pair(M2380_5,G2380_5) ) ) ;
+      helJ_map["2380_5_0"] = make_pair(1.,0.); helJ_map["2380_5_p1"] = make_pair(0.,0.); helJ_map["2380_5_m1"] = make_pair(0.,0.);
+    */
   TString Hel = ""; //Hel = "_hel0"; //Hel = "_noHel0";
   if (Hel.Contains("_hel0"))
     cout <<"with helicity=0 amplitude only\n" <<endl;
@@ -358,9 +358,9 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
     cout <<"\nImported TTree with " <<data_B0bar->numEntries() <<" B0bar" <<endl ;
     data_B0bar->write(TString::Format("%s/%s.txt",datasetsPath.Data(),data_B0bar->GetName()));
     /*
-    RooRealVar testVar = phi;
-    RooPlot* test_frame = testVar.frame(Name(testVar.getTitle()+"_frame"),Title("Projection of "+testVar.getTitle())) ;
-    data_B0->plotOn(test_frame); data_B0bar->plotOn(test_frame, LineColor(kRed)); test_frame->Draw() ; return;
+      RooRealVar testVar = phi;
+      RooPlot* test_frame = testVar.frame(Name(testVar.getTitle()+"_frame"),Title("Projection of "+testVar.getTitle())) ;
+      data_B0->plotOn(test_frame); data_B0bar->plotOn(test_frame, LineColor(kRed)); test_frame->Draw() ; return;
     */
     dataToFit = data;
     //dataToFit = data_B0;
@@ -372,8 +372,8 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
 
   myPDF* sigPDF = 0;
   /*
-  sigPDF = new myPDF("signal_pdf","Signal pdf", massKPi, cosMuMu, cosKstar, phi,
-                     a892m1, b892m1, a892z, b892z, a892p1, b892p1) ;
+    sigPDF = new myPDF("signal_pdf","Signal pdf", massKPi, cosMuMu, cosKstar, phi,
+    a892m1, b892m1, a892z, b892z, a892p1, b892p1) ;
   */
   TString psi_nS = "1"; //psi_nS = "2";
 
@@ -608,9 +608,9 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
   RooConstVar half = RooConstVar("half", "half", 0.5);
   RooConstVar fixSig = RooConstVar("half", "half", 0.7);
   /*
-  for (Int_t iVar=0; iVar<2; ++iVar) // this to use leftSb + rightSb instead of totalSbs pdf
+    for (Int_t iVar=0; iVar<2; ++iVar) // this to use leftSb + rightSb instead of totalSbs pdf
     if (sbPdf[iVar][1].first && sbPdf[iVar][2].first)
-      sbsPdf[iVar] = new RooAddPdf("sbs"+sbsName[iVar]+"Pdf","sidebands "+sbsName[iVar]+" p.d.f.",*sbPdf[iVar][1].first,*sbPdf[iVar][2].first,half) ;
+    sbsPdf[iVar] = new RooAddPdf("sbs"+sbsName[iVar]+"Pdf","sidebands "+sbsName[iVar]+" p.d.f.",*sbPdf[iVar][1].first,*sbPdf[iVar][2].first,half) ;
   */
   RooProdPdf* sbsModel = 0;
   if (sbsPdf[0] && sbsPdf[1])
@@ -733,29 +733,29 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
 
       plotting(relEffHist, effName, x, y, xRooBinning, yRooBinning, effPdf[iEff].first, pdfTitle, xOrder, effHisto_names[iEff].second.second.first.first, effHisto_names[iEff].second.second.first.second, yOrder, effHisto_names[iEff].second.second.second.first, effHisto_names[iEff].second.second.second.second, chi2N, method, dir+"/eff", extension);
       /*
-      x->setVal(4.75); y->setVal(16.);
-      cout <<"\neffPdf[iEff].first->getVal(" <<x->getVal() <<", " <<y->getVal() <<") = " <<effPdf[iEff].first->getVal() <<endl;
-      cout <<"with relHistPdf->haveUnitNorm() = " <<relHistPdf->haveUnitNorm() <<endl;
-      if (relHistPdf->haveUnitNorm()) {
+	x->setVal(4.75); y->setVal(16.);
+	cout <<"\neffPdf[iEff].first->getVal(" <<x->getVal() <<", " <<y->getVal() <<") = " <<effPdf[iEff].first->getVal() <<endl;
+	cout <<"with relHistPdf->haveUnitNorm() = " <<relHistPdf->haveUnitNorm() <<endl;
+	if (relHistPdf->haveUnitNorm()) {
 	relHistPdf->setUnitNorm(kFALSE);
 	cout <<"\neffPdf[iEff].first->getVal(" <<x->getVal() <<"," <<y->getVal() <<") = " <<effPdf[iEff].first->getVal() <<endl;
 	cout <<"with relHistPdf->haveUnitNorm() = " <<relHistPdf->haveUnitNorm() <<endl;
-      } else {
+	} else {
 	relHistPdf->setUnitNorm(kTRUE);
 	cout <<"\neffPdf[iEff].first->getVal(" <<x->.getVal() <<"," <<y->getVal() <<") = " <<effPdf[iEff].first->getVal() <<endl;
 	cout <<"with relHistPdf->haveUnitNorm() = " <<relHistPdf->haveUnitNorm() <<endl;
-      }
+	}
       */
 
       if (iEff==0) {
  	if (effVars != &massVars) {
           method = "derivedFromFit";
-/*
-void deriveMassesPdf(const RooArgSet* massVars, const TString massKPi_name, const TString massPsiPi_name, RooAbsPdf& *pdf, const TString thName, const Int_t xOrder, const TString xName, const TString xTitle, const Int_t yOrder, const TString yName, const TString yTitle, const Float_t chi2N, const TString method, const TString dir, const TString extension) {}
+	  /*
+	    void deriveMassesPdf(const RooArgSet* massVars, const TString massKPi_name, const TString massPsiPi_name, RooAbsPdf& *pdf, const TString thName, const Int_t xOrder, const TString xName, const TString xTitle, const Int_t yOrder, const TString yName, const TString yTitle, const Float_t chi2N, const TString method, const TString dir, const TString extension) {}
 
-TString massesTH_name = "RelEff_psi2SPi_vs_KPi_B0constr";
-deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, const TString xName, const TString xTitle, yOrder, const TString yName, const TString yTitle, chi2N, method, dir, extension);
-*/
+	    TString massesTH_name = "RelEff_psi2SPi_vs_KPi_B0constr";
+	    deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, const TString xName, const TString xTitle, yOrder, const TString yName, const TString yTitle, chi2N, method, dir, extension);
+	  */
 
 	  if (kTRUE) { // insert effVars == (m2(K Pi),cos(theta(K*))) check)
 	    x = (RooRealVar*)(massVars.find(massKPi_name));
@@ -776,7 +776,7 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
 	    }
 	  } else {
 
-	// do the same for effVars == (m2(K Pi),m2(J/psi Pi))
+	    // do the same for effVars == (m2(K Pi),m2(J/psi Pi))
 	  }
 	} // if (effVars != &massVars)
 
@@ -1051,8 +1051,8 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
       toMinimize.add( penalty );
     }
     /*
-    RooAddition nllp("nllp","nllp",toMinimize);
-    RooMinuit m(nllp); m.setVerbose();
+      RooAddition nllp("nllp","nllp",toMinimize);
+      RooMinuit m(nllp); m.setVerbose();
     */
     timeval fitModelTime;
     gettimeofday(&start, NULL);
@@ -1109,10 +1109,10 @@ deriveMassesPdf(&massVars, massKPi_name, massPsiPi_name, massesTH_name, xOrder, 
     // [3] MIGRAD FAILS TO FIND IMPROVEMENT. MIGRAD TERMINATED WITHOUT CONVERGENCE.
     // [4] COVARIANCE MATRIX CALCULATION and ERR MATRIX NOT POS-DEF
     /*
-    m.migrad() ;
-    m.hesse() ;
-    //m.minos() ;
-    */
+      m.migrad() ;
+      m.hesse() ;
+      //m.minos() ;
+      */
     //
     stopCPU = times(&stopProc);
     gettimeofday(&stop, NULL);

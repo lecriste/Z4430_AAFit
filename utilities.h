@@ -68,3 +68,12 @@ Bool_t Dalitz_contour_host(const Double_t mKP, const Double_t mPsiP, const Bool_
 
 }
 
+Bool_t angles_contour_host(const Double_t cos, const Double_t phi) {
+
+  if ( (fabs(cos) > 1) || (fabs(phi) > TMath::Pi()) )
+    return kFALSE;
+  else  
+    return kTRUE ;
+
+}
+

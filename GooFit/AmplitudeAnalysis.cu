@@ -118,23 +118,23 @@ void printCodes()
 
 int checkGPU()
 {
-    int deviceCount, device;
-    int gpuDeviceCount = 0;
-    struct cudaDeviceProp properties;
-    cudaError_t cudaResultCode = cudaGetDeviceCount(&deviceCount);
-    if (cudaResultCode != cudaSuccess)
-        deviceCount = 0;
-    for (device = 0; device < deviceCount; ++device) {
-        cudaGetDeviceProperties(&properties, device);
-        if (properties.major != 9999) /* 9999 means emulation only */
-            ++gpuDeviceCount;
-    }
-    printf("%d GPU CUDA device(s) found\n", gpuDeviceCount);
+  int deviceCount, device;
+  int gpuDeviceCount = 0;
+  struct cudaDeviceProp properties;
+  cudaError_t cudaResultCode = cudaGetDeviceCount(&deviceCount);
+  if (cudaResultCode != cudaSuccess)
+    deviceCount = 0;
+  for (device = 0; device < deviceCount; ++device) {
+    cudaGetDeviceProperties(&properties, device);
+    if (properties.major != 9999) /* 9999 means emulation only */
+      ++gpuDeviceCount;
+  }
+  printf("%d GPU CUDA device(s) found\n", gpuDeviceCount);
 
-    if (gpuDeviceCount > 0)
-        return 0; /* success */
-    else
-        return 1; /* failure */
+  if (gpuDeviceCount > 0)
+    return 0; /* success */
+  else
+    return 1; /* failure */
 }
 
 void printinstruction() {
@@ -147,8 +147,8 @@ void printinstruction() {
             <<"\t-BkgMap \t\t Add Phase Space Background Map \n"
             <<"\t-BkgMapInt \t\t Add Phase Space Background Interpolation Map \n"
             <<"\t-BkgPHSP \t\t Add Phase Space Background to p.d.f.\n"
-            //<<"\t-effH <4-dig-code> \t Perform the product of the pdf by the efficiency histogram ()\n"
-            //<<"\t\t\t\t\t\t - code1 ()\n"
+    //<<"\t-effH <4-dig-code> \t Perform the product of the pdf by the efficiency histogram ()\n"
+    //<<"\t\t\t\t\t\t - code1 ()\n"
 	    <<"\t-n <events> \t\t Specify the number of events to use\n"
 	    <<"\t-r <path> \t\t Read Generated Events from txt in <path>\n"
             <<"\t-o <path> \t\t Write estimated parameters in \" parameters.txt \" file in <path> (default . )\n"
@@ -188,10 +188,10 @@ int main(int argc, char** argv) {
   gStyle->SetOptStat(000000000);
 
   if(checkGPU())
-  {
-    std::cerr<<"NO Cuda capable device found. Returning.\n"<<std::endl;
-    return 1;
-  }
+    {
+      std::cerr<<"NO Cuda capable device found. Returning.\n"<<std::endl;
+      return 1;
+    }
 
   debug(__LINE__);
 
@@ -389,27 +389,27 @@ int main(int argc, char** argv) {
       ++nKstars;
     }
     else if (arg == "-BkgPHSP") {
-	bkgPhaseSpace = true;
-	bkgFlag = true;
-      }
+      bkgPhaseSpace = true;
+      bkgFlag = true;
+    }
     else if (arg == "-BkgMap") {
-	bkgHistMap = true;
-	bkgHist = true;
-	bkgFlag = true;
-      }
+      bkgHistMap = true;
+      bkgHist = true;
+      bkgFlag = true;
+    }
     else if (arg == "-BkgMapInt") {
-	bkgHistInt = true;
-	bkgHist = true;
-	bkgFlag = true;
-      }
+      bkgHistInt = true;
+      bkgHist = true;
+      bkgFlag = true;
+    }
     else if (arg == "-effH") {
-	effPdfProd = true;
-	effPdfFlat = true;
-      }
+      effPdfProd = true;
+      effPdfFlat = true;
+    }
     else if (arg == "-effHInt") {
-	effPdfProd = true;
-	effPdfInter = true;
-      }
+      effPdfProd = true;
+      effPdfInter = true;
+    }
     else if (arg == "-d1") {
       if (i + 1 < argc) { // Make sure we aren't at the end of argv!
 	i++;
@@ -443,95 +443,95 @@ int main(int argc, char** argv) {
 	  exit(1); }
       } }
     else if (arg == "-o") {
-	outParams = true;
-	if (i + 1 < argc) { // Make sure we aren't at the end of argv!
-	    i++;
-	    outPath = argv[i];
-	  } }
+      outParams = true;
+      if (i + 1 < argc) { // Make sure we aren't at the end of argv!
+	i++;
+	outPath = argv[i];
+      } }
     else if (arg == "-local") {
-	localRead = true;
-      }
+      localRead = true;
+    }
     else if (arg == "-b0Var") {
-	b0Var = true;
+      b0Var = true;
 
-      }
+    }
     else if (arg == "-debug") {
-	debugging = true;
-      }
+      debugging = true;
+    }
     else if (arg == "-b0Flag") {
-	b0Flag = true;
-      }
+      b0Flag = true;
+    }
     else if (arg == "-b0Bar") {
-	b0Bar = true;
-      }
+      b0Bar = true;
+    }
     else if (arg == "-b0BarPdf") {
-	b0BarPdf = true;
+      b0BarPdf = true;
+    }
+    else if (arg == "-hPlots")
+      {
+	hPlots = true;
       }
-      else if (arg == "-hPlots")
-    {
-      hPlots = true;
-        }
     //     else if (arg == "-H")
     // {
     //   hesse = true;
     // }
     else if (arg == "-algos") {
-	algos.clear();
-	if (i + 1 < argc) { // Make sure we aren't at the end of argv!
-	  i++;
+      algos.clear();
+      if (i + 1 < argc) { // Make sure we aren't at the end of argv!
+	i++;
 
-	  std::string algosInput= argv[i];
-	  std::size_t found = algosInput.find(m);
+	std::string algosInput= argv[i];
+	std::size_t found = algosInput.find(m);
 
-	  if (found == std::string::npos)
-	    {
-	      std::cout <<"Minimisation algorithms invalid input : MIGRAD to be called at least once \n";
-	      exit(1);
-	    }
-	  std::cout <<"- Minimisation algorithms sequence : "<<std::endl;
+	if (found == std::string::npos)
+	  {
+	    std::cout <<"Minimisation algorithms invalid input : MIGRAD to be called at least once \n";
+	    exit(1);
+	  }
+	std::cout <<"- Minimisation algorithms sequence : "<<std::endl;
 
-	  for (std::string::size_type l = 0; l < algosInput.length(); ++l)
-	    {
-	      std::string::value_type algo = algosInput[l];
+	for (std::string::size_type l = 0; l < algosInput.length(); ++l)
+	  {
+	    std::string::value_type algo = algosInput[l];
 
-	      if (algo==m)
-		{
-		  algos.push_back(migrad);
-		  std::cout<<"  - MIGRAD "<<std::endl;
-		}
-	      else if (algo==h)
-		{
-		  algos.push_back(hesse);
-		  std::cout<<"  - HESSE "<<std::endl;
-		}
-	      else if (algo==n)
-		{
-		  algos.push_back(minos);
-		  std::cout<<"  - MINOS "<<std::endl;
-		}
-	      else std:: cout<<"  - \""<<algo<<"\" invalid input, ignored "<<std::endl;
-	    }
+	    if (algo==m)
+	      {
+		algos.push_back(migrad);
+		std::cout<<"  - MIGRAD "<<std::endl;
+	      }
+	    else if (algo==h)
+	      {
+		algos.push_back(hesse);
+		std::cout<<"  - HESSE "<<std::endl;
+	      }
+	    else if (algo==n)
+	      {
+		algos.push_back(minos);
+		std::cout<<"  - MINOS "<<std::endl;
+	      }
+	    else std:: cout<<"  - \""<<algo<<"\" invalid input, ignored "<<std::endl;
+	  }
 
-	} }
+      } }
 
     else if (arg == "-fixA") {
-	aFix = true;
+      aFix = true;
 
-	if (i + 1 < argc) { // Make sure we aren't at the end of argv!
-	    i++;
-	    aFixCode = argv[i];
-	  } }
-    else if (arg == "-fixB") {
-	bFix = true;
-
-	if (i + 1 < argc) { // Make sure we aren't at the end of argv!
-	    i++;
-	    bFixCode = argv[i];
-	  } }
-    else if (arg == "-fixH") {
+      if (i + 1 < argc) { // Make sure we aren't at the end of argv!
 	i++;
-	printCodes();
-      }
+	aFixCode = argv[i];
+      } }
+    else if (arg == "-fixB") {
+      bFix = true;
+
+      if (i + 1 < argc) { // Make sure we aren't at the end of argv!
+	i++;
+	bFixCode = argv[i];
+      } }
+    else if (arg == "-fixH") {
+      i++;
+      printCodes();
+    }
   }
 
   if (b0BarPdf && b0Var) {
@@ -613,7 +613,7 @@ int main(int argc, char** argv) {
     for (Int_t iVar=0; iVar<nProjVars; ++iVar)
       obserVariables[iVar]->numbins = dataPoints[iVar];
 
- UnbinnedDataSet plottingGridData(obserVariables);
+  UnbinnedDataSet plottingGridData(obserVariables);
 
   if (b0Var)
     b0Beauty->value = 1.0;
@@ -1132,22 +1132,22 @@ int main(int argc, char** argv) {
     relEffTH2[1] = *relEffTH2Ang;
 
     std::cout<<"Masses efficiency TH2 read with bin massKPi ("
-    <<relEffTH2Mass->GetXaxis()->GetBinLowEdge(1)<<" ; "
-    <<relEffTH2Mass->GetXaxis()->GetBinLowEdge(relEffTH2Mass->GetNbinsX())<<") = "
-    <<relEffTH2Mass->GetNbinsX()
-    <<" and bin massPsiPi ("
-    <<relEffTH2Mass->GetYaxis()->GetBinLowEdge(1)<<" ; "
-    <<relEffTH2Mass->GetYaxis()->GetBinLowEdge(relEffTH2Mass->GetNbinsY())<<") = "
-    <<relEffTH2Mass->GetNbinsY() <<std::endl;
+	     <<relEffTH2Mass->GetXaxis()->GetBinLowEdge(1)<<" ; "
+	     <<relEffTH2Mass->GetXaxis()->GetBinLowEdge(relEffTH2Mass->GetNbinsX())<<") = "
+	     <<relEffTH2Mass->GetNbinsX()
+	     <<" and bin massPsiPi ("
+	     <<relEffTH2Mass->GetYaxis()->GetBinLowEdge(1)<<" ; "
+	     <<relEffTH2Mass->GetYaxis()->GetBinLowEdge(relEffTH2Mass->GetNbinsY())<<") = "
+	     <<relEffTH2Mass->GetNbinsY() <<std::endl;
 
     std::cout<<"Angles efficiency TH2 read with bin cosMuMu ("
-    <<relEffTH2Ang->GetXaxis()->GetBinLowEdge(1)<<" ; "
-    <<relEffTH2Ang->GetXaxis()->GetBinLowEdge(relEffTH2Ang->GetNbinsX())
-    <<") = " <<relEffTH2Ang->GetNbinsX()
-    <<" and bin phi ("
-    <<relEffTH2Ang->GetYaxis()->GetBinLowEdge(1)<<" ; "
-    <<relEffTH2Ang->GetYaxis()->GetBinLowEdge(relEffTH2Ang->GetNbinsY())
-    <<") = " <<relEffTH2Ang->GetNbinsY() <<std::endl;
+	     <<relEffTH2Ang->GetXaxis()->GetBinLowEdge(1)<<" ; "
+	     <<relEffTH2Ang->GetXaxis()->GetBinLowEdge(relEffTH2Ang->GetNbinsX())
+	     <<") = " <<relEffTH2Ang->GetNbinsX()
+	     <<" and bin phi ("
+	     <<relEffTH2Ang->GetYaxis()->GetBinLowEdge(1)<<" ; "
+	     <<relEffTH2Ang->GetYaxis()->GetBinLowEdge(relEffTH2Ang->GetNbinsY())
+	     <<") = " <<relEffTH2Ang->GetNbinsY() <<std::endl;
 
     for (int y=0; y<nProjVars; y+=2) {
       //std::cout <<"Vars " <<y <<" - " <<y+1 <<"histo index" <<y/2 <<std::endl;
@@ -1248,10 +1248,10 @@ int main(int argc, char** argv) {
       //effHistPlot = new FlatHistoPdf("EfficienciesPdf",effDataset,obserVariables);
     }
     else if (effPdfInter) {
-	//effHistAng = new BiDimHistoPdf("EfficienciesPdfAng",effDatasetAngles,obserVariables);
-	//effHistMas = new BiDimHistoPdf("EfficienciesPdfMas",effDatasetMasses,obserVariables);
-	effHist = new BiDimHistoPdf("EfficienciesPdf",effDataset,obserVariables);
-      }
+      //effHistAng = new BiDimHistoPdf("EfficienciesPdfAng",effDatasetAngles,obserVariables);
+      //effHistMas = new BiDimHistoPdf("EfficienciesPdfMas",effDatasetMasses,obserVariables);
+      effHist = new BiDimHistoPdf("EfficienciesPdf",effDataset,obserVariables);
+    }
     //efficiencyHistMasses = new BiDimHistoPdf ("EfficiencyPdf",effDatasetMasses,massVars,1);
     // UnbinnedDataSet plottingGridMasses(massVars);
     //
@@ -1280,20 +1280,20 @@ int main(int argc, char** argv) {
     //     obserVariables[iVar]->numbins = dataPoints[iVar];
     //
 
-      std::vector<std::vector<fptype> > effPdfValues;
+    std::vector<std::vector<fptype> > effPdfValues;
 
-      // effHist->setData(&plottingGridDataFirst);
-      effHist->setData(&plottingGridData);
-      effHist->getCompProbsAtDataPoints(effPdfValues);
+    // effHist->setData(&plottingGridDataFirst);
+    effHist->setData(&plottingGridData);
+    effHist->getCompProbsAtDataPoints(effPdfValues);
 
-      for (size_t i = 0; i < effPdfValues[0].size(); i++) {
-        effCorrection.push_back(effPdfValues[0][i]);
-      }
+    for (size_t i = 0; i < effPdfValues[0].size(); i++) {
+      effCorrection.push_back(effPdfValues[0][i]);
+    }
 
-      effFile->Close();
+    effFile->Close();
 
-      for (Int_t iVar=0; iVar<nProjVars; ++iVar)
-          obserVariables[iVar]->numbins = holdBinVar[iVar];
+    for (Int_t iVar=0; iVar<nProjVars; ++iVar)
+      obserVariables[iVar]->numbins = holdBinVar[iVar];
 
   } // if (effPdfProd)
 
@@ -1334,11 +1334,11 @@ int main(int argc, char** argv) {
 
       // pdfComponents.push_back(efficiencyHistMasses);
       // pdfComponents.push_back(efficiencyHistAngles);
-      }
-    else
-    {
-      totalPdf     = new AddPdf("Kstars_signal + PhaseSpace", sFrac, matrix,background);
     }
+    else
+      {
+	totalPdf     = new AddPdf("Kstars_signal + PhaseSpace", sFrac, matrix,background);
+      }
 
   }
   else {
@@ -1470,8 +1470,8 @@ int main(int argc, char** argv) {
         bkgHistPdf    = new BiDimHistoPdf("bkgHistPdf",bkgDataset,obserVariables);
       }
 
-	  bkgHistos[0] = bkgTH2Mass->ProjectionX(); bkgHistos[1] = bkgTH2Mass->ProjectionY();
-	  bkgHistos[2] = bkgTH2Ang->ProjectionX(); bkgHistos[3] = bkgTH2Ang->ProjectionY();
+      bkgHistos[0] = bkgTH2Mass->ProjectionX(); bkgHistos[1] = bkgTH2Mass->ProjectionY();
+      bkgHistos[2] = bkgTH2Ang->ProjectionX(); bkgHistos[3] = bkgTH2Ang->ProjectionY();
 
       if (bkgHistInt)
         bkgHistPdfPlot = new BiDimHistoPdf("bkgHistPdf",bkgDataset,obserVariables);
@@ -1601,19 +1601,19 @@ int main(int argc, char** argv) {
       }
 
       for (Int_t iVar=0; iVar<nProjVars; ++iVar)
-      {
-        projBkgHistosInt[iVar]->SetMarkerStyle(kFullSquare);
-        projBkgHistosInt[iVar]->SetMarkerColor(kBlue);
+	{
+	  projBkgHistosInt[iVar]->SetMarkerStyle(kFullSquare);
+	  projBkgHistosInt[iVar]->SetMarkerColor(kBlue);
 
-      }
+	}
 
 
       canvas->cd();
 
 
       for (int y=0; y<nProjVars;++y){
-          obserVariables[y]->lowerlimit = lowerL[y];
-          obserVariables[y]->upperlimit = upperL[y];
+	obserVariables[y]->lowerlimit = lowerL[y];
+	obserVariables[y]->upperlimit = upperL[y];
       }
 
       // if(!hPlots)
@@ -1647,28 +1647,28 @@ int main(int argc, char** argv) {
       //       }
       //     }
 
-        std::vector<std::vector<fptype> > bkgPdfValues;
-        fptype bkgSumPdf = 0.0;
+      std::vector<std::vector<fptype> > bkgPdfValues;
+      fptype bkgSumPdf = 0.0;
 
-        // bkgHistPdf->setData(&plottingGridDataSecond);
-        bkgHistPdf->setData(&plottingGridData);
-        bkgHistPdf->getCompProbsAtDataPoints(bkgPdfValues);
+      // bkgHistPdf->setData(&plottingGridDataSecond);
+      bkgHistPdf->setData(&plottingGridData);
+      bkgHistPdf->getCompProbsAtDataPoints(bkgPdfValues);
 
-        for (size_t i = 0; i < bkgPdfValues[0].size(); i++) {
-          bkgAddition.push_back(bkgPdfValues[0][i]);
-        }
+      for (size_t i = 0; i < bkgPdfValues[0].size(); i++) {
+	bkgAddition.push_back(bkgPdfValues[0][i]);
+      }
 
-        for (int k = 0; k < bkgAddition.size(); k++) {
-          //std::cout <<mkpTotalProjection[k]*events/sum<<std::endl;
-          bkgSumPdf += bkgAddition[k];
-        }
+      for (int k = 0; k < bkgAddition.size(); k++) {
+	//std::cout <<mkpTotalProjection[k]*events/sum<<std::endl;
+	bkgSumPdf += bkgAddition[k];
+      }
 
-        for (int k = 0; k < bkgAddition.size(); k++) {
-          //std::cout <<mkpTotalProjection[k]*events/sum<<std::endl;
-          bkgAddition[k] /= bkgSumPdf;
-        }
+      for (int k = 0; k < bkgAddition.size(); k++) {
+	//std::cout <<mkpTotalProjection[k]*events/sum<<std::endl;
+	bkgAddition[k] /= bkgSumPdf;
+      }
 
-        // bkgFile->Close();
+      // bkgFile->Close();
 
       for (int y=0; y<nProjVars; ++y)
         obserVariables[y]->numbins = holdBinVar[y];
@@ -1697,15 +1697,15 @@ int main(int argc, char** argv) {
     } // if (bkgHist)
     else {
       if (effPdfProd) {
-	      pdfComponents.push_back(matrix);
+	pdfComponents.push_back(matrix);
         pdfComponents.push_back(effHist);
-	      //pdfComponents.push_back(efficiencyHistMasses);
-	      //pdfComponents.push_back(efficiencyHistAngles);
-	      totalPdf = new ProdPdf("Kstars_signal * efficiency",pdfComponents);
-	      //totalPdf = matrix;
+	//pdfComponents.push_back(efficiencyHistMasses);
+	//pdfComponents.push_back(efficiencyHistAngles);
+	totalPdf = new ProdPdf("Kstars_signal * efficiency",pdfComponents);
+	//totalPdf = matrix;
       }
       else
-	     totalPdf = matrix;
+	totalPdf = matrix;
     }
   } // if (bkgPhaseSpace) else {
 
@@ -1903,8 +1903,8 @@ int main(int argc, char** argv) {
       if(effPdfProd) pdfTotalValues[0][k] *= effCorrection[k];
 
       // if (bkgPhaseSpace) {
-	    //    pdfTotalValues[1][k] *= effDataCont;
-	    //     pdfTotalValues[2][k] *= effDataCont;
+      //    pdfTotalValues[1][k] *= effDataCont;
+      //     pdfTotalValues[2][k] *= effDataCont;
       // }
 
     }
@@ -2313,15 +2313,15 @@ int main(int argc, char** argv) {
     matrixPlot->getCompProbsAtDataPoints(pdfCompValues);
 
     /* // not working for the moment
-    if (effPdfProd)
-      for (int k = 0; k < pdfCompValues[0].size(); k++)
-	{
-	  for (Int_t i = 0; i < nProjVars; ++i)
-	    obserVariables[i]->value = plottingGridData.getValue(obserVariables[i],k);
+       if (effPdfProd)
+       for (int k = 0; k < pdfCompValues[0].size(); k++)
+       {
+       for (Int_t i = 0; i < nProjVars; ++i)
+       obserVariables[i]->value = plottingGridData.getValue(obserVariables[i],k);
 
-	  fptype effDataCont = effDataset->getBinContent(effDataset->getBinNumber());
-	  pdfCompValues[0][k] *= effDataCont;
-	}
+       fptype effDataCont = effDataset->getBinContent(effDataset->getBinNumber());
+       pdfCompValues[0][k] *= effDataCont;
+       }
     */
     matrixPlot->clearCurrentFit();
 
@@ -2329,7 +2329,7 @@ int main(int argc, char** argv) {
     for (int i=0; i<pdfCompValues[0].size(); i++) {
       //std::cout <<" Bin : " <<i <<" pdf : " <<pdfCompValues[0][i] <<std::endl;
       if(effPdfProd)
-         pdfCompValues[0][i] *= effCorrection[i];
+	pdfCompValues[0][i] *= effCorrection[i];
 
       sum += pdfCompValues[0][i];
     }
@@ -2394,30 +2394,30 @@ int main(int argc, char** argv) {
 	  pointsYComp[l] = compHistos[iVar][k]->GetBinContent(l+1);
 	}
 
-  compHistos[iVar][k]->SetMarkerColor(KstarColor[k]);
-  compHistos[iVar][k]->SetLineColor(KstarColor[k]);
-  compHistos[iVar][k]->SetMarkerStyle(KstarMarker[k]);
+	compHistos[iVar][k]->SetMarkerColor(KstarColor[k]);
+	compHistos[iVar][k]->SetLineColor(KstarColor[k]);
+	compHistos[iVar][k]->SetMarkerStyle(KstarMarker[k]);
 
-  plotYMax[iVar] = TMath::Max(compHistos[iVar][k]->GetMaximum(),plotYMax[iVar]);
-  // std::cout<<compHistos[iVar][k]->GetMaximum()<<" "<<plotYMax[iVar]<<std::endl;
-  //plotXMax[iVar] = TMath::Max(compHistos[iVar][k]->GetXaxis()->GetBinUpEdge(compHistos[iVar][k]->GetNbinsX()),plotYMax[iVar]);
-  //plotXMin[iVar] = -TMath::Max(-compHistos[iVar][k]->GetXaxis()->GetBinLowEdge(1),-plotYMax[iVar]);
+	plotYMax[iVar] = TMath::Max(compHistos[iVar][k]->GetMaximum(),plotYMax[iVar]);
+	// std::cout<<compHistos[iVar][k]->GetMaximum()<<" "<<plotYMax[iVar]<<std::endl;
+	//plotXMax[iVar] = TMath::Max(compHistos[iVar][k]->GetXaxis()->GetBinUpEdge(compHistos[iVar][k]->GetNbinsX()),plotYMax[iVar]);
+	//plotXMin[iVar] = -TMath::Max(-compHistos[iVar][k]->GetXaxis()->GetBinLowEdge(1),-plotYMax[iVar]);
 
-  // Filling components projections graphs
-  TGraph* signalCompPlot = new TGraph(obserVariables[iVar]->numbins, pointsXComp, pointsYComp);
-  signalCompPlot->SetLineColor(KstarColor[k]); signalCompPlot->SetLineWidth(3); signalCompPlot->SetLineStyle(kDashed);
-  signalCompPlot->GetXaxis()->SetTitle( varHistos[iVar]->GetXaxis()->GetTitle() );
-  sprintf(bufferstring,"Events / (%.3f)",(obserVariables[iVar]->upperlimit - obserVariables[iVar]->lowerlimit)/obserVariables[iVar]->numbins);
-  signalCompPlot->GetYaxis()->SetTitle(bufferstring);
-  //signalCompPlot->Draw("");
-  multiGraphs[iVar]->Add(signalCompPlot,"L");
+	// Filling components projections graphs
+	TGraph* signalCompPlot = new TGraph(obserVariables[iVar]->numbins, pointsXComp, pointsYComp);
+	signalCompPlot->SetLineColor(KstarColor[k]); signalCompPlot->SetLineWidth(3); signalCompPlot->SetLineStyle(kDashed);
+	signalCompPlot->GetXaxis()->SetTitle( varHistos[iVar]->GetXaxis()->GetTitle() );
+	sprintf(bufferstring,"Events / (%.3f)",(obserVariables[iVar]->upperlimit - obserVariables[iVar]->lowerlimit)/obserVariables[iVar]->numbins);
+	signalCompPlot->GetYaxis()->SetTitle(bufferstring);
+	//signalCompPlot->Draw("");
+	multiGraphs[iVar]->Add(signalCompPlot,"L");
 
-  if (iVar==0) {
+	if (iVar==0) {
 	  sprintf(bufferstring,"%s (%.2f %)",kStarNames[k].c_str(), compsIntegral/totalSigIntegral*100.);
-    if(!hPlots)
-      legPlot->AddEntry(signalCompPlot,bufferstring,"l");
-    else
-      legPlot->AddEntry(compHistos[iVar][k],bufferstring, "lpe");
+	  if(!hPlots)
+	    legPlot->AddEntry(signalCompPlot,bufferstring,"l");
+	  else
+	    legPlot->AddEntry(compHistos[iVar][k],bufferstring, "lpe");
 	}
       }
     } // if (bkgFlag  ||  (nKstars > 1  &&  plotSingleKstars))
@@ -2467,35 +2467,35 @@ int main(int argc, char** argv) {
     canvas->Clear();
 
     if(!hPlots)
-    {
-      multiGraphs[iVar]->Draw("AL");
-      multiGraphs[iVar]->SetMinimum(0.1);
-      multiGraphs[iVar]->SetMaximum(2.5 * plotYMax[iVar]);
-      varHistos[iVar]->Draw("Esame"); // if drawn without "same", varHistos[iVar]->SetMinimum(0.1) must be called as well
-      if(!bkgHist)
-        varHistos_theory[iVar]->Draw("Esame");
-    }else
-    {
-      varHistos[iVar]->SetMinimum(0.1);
-      varHistos[iVar]->SetMaximum(2.5 * plotYMax[iVar]);
-      varHistos[iVar]->Draw("E");
-      varHistos_theory[iVar]->Draw("ESAME");
-
-      projHistos[iVar]->SetMarkerColor(kRed);
-      projHistos[iVar]->SetMarkerStyle(kFullCircle);
-      projHistos[iVar]->Draw("ESAME");
-
-      if (bkgPhaseSpace)
       {
-        projSigHistos[iVar]->Draw("ESAME");
-        projBkgHistos[iVar]->Draw("PESAME");
+	multiGraphs[iVar]->Draw("AL");
+	multiGraphs[iVar]->SetMinimum(0.1);
+	multiGraphs[iVar]->SetMaximum(2.5 * plotYMax[iVar]);
+	varHistos[iVar]->Draw("Esame"); // if drawn without "same", varHistos[iVar]->SetMinimum(0.1) must be called as well
+	if(!bkgHist)
+	  varHistos_theory[iVar]->Draw("Esame");
+      }else
+      {
+	varHistos[iVar]->SetMinimum(0.1);
+	varHistos[iVar]->SetMaximum(2.5 * plotYMax[iVar]);
+	varHistos[iVar]->Draw("E");
+	varHistos_theory[iVar]->Draw("ESAME");
 
-      }
-      for (int k = 0; k < nKstars; ++k)
-        compHistos[iVar][k]->Draw("PESAME");
+	projHistos[iVar]->SetMarkerColor(kRed);
+	projHistos[iVar]->SetMarkerStyle(kFullCircle);
+	projHistos[iVar]->Draw("ESAME");
 
-      if(bkgHist)
-        projBkgHistosInt[iVar]->Draw("PESAME");
+	if (bkgPhaseSpace)
+	  {
+	    projSigHistos[iVar]->Draw("ESAME");
+	    projBkgHistos[iVar]->Draw("PESAME");
+
+	  }
+	for (int k = 0; k < nKstars; ++k)
+	  compHistos[iVar][k]->Draw("PESAME");
+
+	if(bkgHist)
+	  projBkgHistosInt[iVar]->Draw("PESAME");
       }
 
     if (bkgHistos[iVar]) bkgHistos[iVar]->Draw("same");
