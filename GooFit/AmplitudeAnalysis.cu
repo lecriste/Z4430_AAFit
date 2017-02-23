@@ -604,6 +604,42 @@ int main(int argc, char** argv) {
   TString plotsName = "";
   TString extension = "eps"; extension = "png";
 
+  std::cout <<"\n- Generating plotting dataset" <<std::endl;
+
+  if(!hPlots)
+    for (Int_t iVar=0; iVar<nProjVars; ++iVar)
+      obserVariables[iVar]->numbins = plottingFine[iVar];
+  else
+    for (Int_t iVar=0; iVar<nProjVars; ++iVar)
+      obserVariables[iVar]->numbins = dataPoints[iVar];
+
+ UnbinnedDataSet plottingGridData(obserVariables);
+
+  if (b0Var)
+    b0Beauty->value = 1.0;
+
+  for (int k = 0; k < phi->numbins; ++k) {
+    phi->value = phi->lowerlimit + (phi->upperlimit - phi->lowerlimit)*(k + 0.5) / phi->numbins;
+    //std::cout <<"Phi : " <<k <<std::endl;
+    for (int j = 0; j < cosMuMu->numbins; ++j) {
+      cosMuMu->value = cosMuMu->lowerlimit + (cosMuMu->upperlimit - cosMuMu->lowerlimit)*(j + 0.5) / cosMuMu->numbins;
+      //std::cout <<"CosMu : " <<j <<std::endl;
+      for (int a = 0; a < massPsiPi->numbins; ++a) {
+        massPsiPi->value = massPsiPi->lowerlimit + (massPsiPi->upperlimit - massPsiPi->lowerlimit)*(a + 0.5) / massPsiPi->numbins;
+        //std::cout <<"CosK : " <<a <<std::endl;
+        for (int i = 0; i < massKPi->numbins; ++i) {
+          //std::vector<std::vector<fptype> > tempValues;
+          //UnbinnedDataSet tempData(obserVariables);
+          massKPi->value = massKPi->lowerlimit + (massKPi->upperlimit - massKPi->lowerlimit)*(i + 0.5) / massKPi->numbins;
+          plottingGridData.addEvent();
+        }
+      }
+    }
+  }
+
+  for (Int_t iVar=0; iVar<nProjVars; ++iVar)
+    obserVariables[iVar]->numbins = dataPoints[iVar];
+
   if (!nKstars) {
     cout <<"No K* selected (K892,K800,K1410,K1430) please see instructions below" <<endl;
     printinstruction();
@@ -671,7 +707,7 @@ int main(int argc, char** argv) {
 
 
   //CANVAS
-  TCanvas* canvas = new TCanvas("Canvas","Canvas",2000,1200);
+  TCanvas* canvas = new TCanvas("Canvas","Canvas",2500,1500);
 
   Variable* dRadB0  = new Variable("dRadB0",5.0);
   Variable* dRadKs  = new Variable("dRadKs",1.5);
@@ -821,25 +857,33 @@ int main(int argc, char** argv) {
 
   Int_t nHelAmps = as.size();
 
-  if (nHelAmps!=aFixCode.size() && aFix)
+  if (nHelAmps!=aFixCode.size() && aFix && aFixCode.size()!=1)
     {
       std::cout<<aFixCode.size()<<"-digits code provided for amplitude fix and "<<nHelAmps<<" amplitudes provided. \n Not matching, returning."<<std::endl;
       return -1;
     }
-  if (nHelAmps!=bFixCode.size() && bFix)
+  if (nHelAmps!=bFixCode.size() && bFix && bFixCode.size()!=1)
     {
       std::cout<<bFixCode.size()<<"-digits code provided for phase fix and "<<nHelAmps<<" phase provided. \n Not matching, returning."<<std::endl;
       return -1;
     }
 
   if (aFix)
-    for (Int_t i = 0; i < nHelAmps; i++)
-      if (aFixCode.data()[i]=='1') as[i]->fixed = true;
+    if(aFixCode.size()==1)
+      for (Int_t i = 0; i < nHelAmps; i++)
+        as[i]->fixed = true;
+    else
+      for (Int_t i = 0; i < nHelAmps; i++)
+        if (aFixCode.data()[i]=='1') as[i]->fixed = true;
 
 
   if (bFix)
-    for (Int_t i = 0; i < nHelAmps; i++)
-      if (bFixCode.data()[i]=='1') bs[i]->fixed = true;
+    if(bFixCode.size()==1)
+      for (Int_t i = 0; i < nHelAmps; i++)
+        bs[i]->fixed = true;
+    else
+      for (Int_t i = 0; i < nHelAmps; i++)
+        if (bFixCode.data()[i]=='1') bs[i]->fixed = true;
 
   fptype ratios[nProjVars];
   for (Int_t iVar=0; iVar<nProjVars; ++iVar)
@@ -1227,37 +1271,19 @@ int main(int argc, char** argv) {
       obserVariables[y]->lowerlimit = lowerL[y];
       obserVariables[y]->upperlimit = upperL[y];
     }
-    
-    for (Int_t iVar=0; iVar<nProjVars; ++iVar)
-      obserVariables[iVar]->numbins = plottingFine[iVar];
-    
-    UnbinnedDataSet plottingGridDataFirst(obserVariables);
 
-    if (b0Var)
-      b0Beauty->value = 1.0;
+    if(!hPlots)
+      for (Int_t iVar=0; iVar<nProjVars; ++iVar)
+        obserVariables[iVar]->numbins = plottingFine[iVar];
+    else
+      for (Int_t iVar=0; iVar<nProjVars; ++iVar)
+        obserVariables[iVar]->numbins = dataPoints[iVar];
 
-      for (int k = 0; k < phi->numbins; ++k) {
-          phi->value = phi->lowerlimit + (phi->upperlimit - phi->lowerlimit)*(k + 0.5) / phi->numbins;
-          //std::cout <<"Phi : " <<k <<std::endl;
-          for (int j = 0; j < cosMuMu->numbins; ++j) {
-            cosMuMu->value = cosMuMu->lowerlimit + (cosMuMu->upperlimit - cosMuMu->lowerlimit)*(j + 0.5) / cosMuMu->numbins;
-            //std::cout <<"CosMu : " <<j <<std::endl;
-            for (int a = 0; a < massPsiPi->numbins; ++a) {
-              massPsiPi->value = massPsiPi->lowerlimit + (massPsiPi->upperlimit - massPsiPi->lowerlimit)*(a + 0.5) / massPsiPi->numbins;
-              //std::cout <<"CosK : " <<a <<std::endl;
-              for (int i = 0; i < massKPi->numbins; ++i) {
-                //std::vector<std::vector<fptype> > tempValues;
-                //UnbinnedDataSet tempData(obserVariables);
-                massKPi->value = massKPi->lowerlimit + (massKPi->upperlimit - massKPi->lowerlimit)*(i + 0.5) / massKPi->numbins;
-                plottingGridDataFirst.addEvent();
-              }
-            }
-          }
-        }
 
       std::vector<std::vector<fptype> > effPdfValues;
 
-      effHist->setData(&plottingGridDataFirst);
+      // effHist->setData(&plottingGridDataFirst);
+      effHist->setData(&plottingGridData);
       effHist->getCompProbsAtDataPoints(effPdfValues);
 
       for (size_t i = 0; i < effPdfValues[0].size(); i++) {
@@ -1590,37 +1616,42 @@ int main(int argc, char** argv) {
           obserVariables[y]->upperlimit = upperL[y];
       }
 
-      for (Int_t iVar=0; iVar<nProjVars; ++iVar)
+      if(!hPlots)
+        for (Int_t iVar=0; iVar<nProjVars; ++iVar)
           obserVariables[iVar]->numbins = plottingFine[iVar];
+      else
+        for (Int_t iVar=0; iVar<nProjVars; ++iVar)
+          obserVariables[iVar]->numbins = dataPoints[iVar];
 
-      UnbinnedDataSet plottingGridDataSecond(obserVariables);
-
-      if (b0Var)
-        b0Beauty->value = 1.0;
-
-        for (int k = 0; k < phi->numbins; ++k) {
-            phi->value = phi->lowerlimit + (phi->upperlimit - phi->lowerlimit)*(k + 0.5) / phi->numbins;
-            //std::cout <<"Phi : " <<k <<std::endl;
-            for (int j = 0; j < cosMuMu->numbins; ++j) {
-              cosMuMu->value = cosMuMu->lowerlimit + (cosMuMu->upperlimit - cosMuMu->lowerlimit)*(j + 0.5) / cosMuMu->numbins;
-              //std::cout <<"CosMu : " <<j <<std::endl;
-              for (int a = 0; a < massPsiPi->numbins; ++a) {
-                massPsiPi->value = massPsiPi->lowerlimit + (massPsiPi->upperlimit - massPsiPi->lowerlimit)*(a + 0.5) / massPsiPi->numbins;
-                //std::cout <<"CosK : " <<a <<std::endl;
-                for (int i = 0; i < massKPi->numbins; ++i) {
-                  //std::vector<std::vector<fptype> > tempValues;
-                  //UnbinnedDataSet tempData(obserVariables);
-                  massKPi->value = massKPi->lowerlimit + (massKPi->upperlimit - massKPi->lowerlimit)*(i + 0.5) / massKPi->numbins;
-                  plottingGridDataSecond.addEvent();
-                }
-              }
-            }
-          }
+      // UnbinnedDataSet plottingGridDataSecond(obserVariables);
+      //
+      // if (b0Var)
+      //   b0Beauty->value = 1.0;
+      //
+      //   for (int k = 0; k < phi->numbins; ++k) {
+      //       phi->value = phi->lowerlimit + (phi->upperlimit - phi->lowerlimit)*(k + 0.5) / phi->numbins;
+      //       //std::cout <<"Phi : " <<k <<std::endl;
+      //       for (int j = 0; j < cosMuMu->numbins; ++j) {
+      //         cosMuMu->value = cosMuMu->lowerlimit + (cosMuMu->upperlimit - cosMuMu->lowerlimit)*(j + 0.5) / cosMuMu->numbins;
+      //         //std::cout <<"CosMu : " <<j <<std::endl;
+      //         for (int a = 0; a < massPsiPi->numbins; ++a) {
+      //           massPsiPi->value = massPsiPi->lowerlimit + (massPsiPi->upperlimit - massPsiPi->lowerlimit)*(a + 0.5) / massPsiPi->numbins;
+      //           //std::cout <<"CosK : " <<a <<std::endl;
+      //           for (int i = 0; i < massKPi->numbins; ++i) {
+      //             //std::vector<std::vector<fptype> > tempValues;
+      //             //UnbinnedDataSet tempData(obserVariables);
+      //             massKPi->value = massKPi->lowerlimit + (massKPi->upperlimit - massKPi->lowerlimit)*(i + 0.5) / massKPi->numbins;
+      //             plottingGridDataSecond.addEvent();
+      //           }
+      //         }
+      //       }
+      //     }
 
         std::vector<std::vector<fptype> > bkgPdfValues;
         fptype bkgSumPdf = 0.0;
 
-        bkgHistPdf->setData(&plottingGridDataSecond);
+        // bkgHistPdf->setData(&plottingGridDataSecond);
+        bkgHistPdf->setData(&plottingGridData);
         bkgHistPdf->getCompProbsAtDataPoints(bkgPdfValues);
 
         for (size_t i = 0; i < bkgPdfValues[0].size(); i++) {
@@ -1754,7 +1785,7 @@ int main(int argc, char** argv) {
   gettimeofday(&startTime, NULL);
   startC = times(&startProc);
   //
-  UnbinnedDataSet plottingGridData(obserVariables);
+  // UnbinnedDataSet plottingGridData(obserVariables);
 
   std::vector<UnbinnedDataSet> compData;
   std::vector<std::vector<fptype> > pdfTotalValues, pdfTotalSigValues, pdfTotalBkgValues;
@@ -1775,10 +1806,6 @@ int main(int argc, char** argv) {
   else
     for (Int_t iVar=0; iVar<nProjVars; ++iVar)
       obserVariables[iVar]->numbins = dataPoints[iVar];
-
-
-  for (Int_t iVar=0; iVar<nProjVars; ++iVar)
-    obserVariables[iVar]->numbins = plottingFine[iVar];
 
   TString shortVarNames[] = {"MKPi","MPsiPi","CMM","Phi"}; // same order as varNames
   vector <fptype*> pointsXTot, pointsYTot, pointsYTotSig, pointsYTotBkg;
@@ -1806,29 +1833,7 @@ int main(int argc, char** argv) {
   //fptype sumBkg = 0.0;
 
   std::cout <<"\n- Starting plotting cycle" ;
-  std::cout <<"\n- Plotting generated dataset" <<std::endl;
 
-  if (b0Var)
-    b0Beauty->value = 1.0;
-
-  for (int k = 0; k < phi->numbins; ++k) {
-    phi->value = phi->lowerlimit + (phi->upperlimit - phi->lowerlimit)*(k + 0.5) / phi->numbins;
-    //std::cout <<"Phi : " <<k <<std::endl;
-    for (int j = 0; j < cosMuMu->numbins; ++j) {
-      cosMuMu->value = cosMuMu->lowerlimit + (cosMuMu->upperlimit - cosMuMu->lowerlimit)*(j + 0.5) / cosMuMu->numbins;
-      //std::cout <<"CosMu : " <<j <<std::endl;
-      for (int a = 0; a < massPsiPi->numbins; ++a) {
-        massPsiPi->value = massPsiPi->lowerlimit + (massPsiPi->upperlimit - massPsiPi->lowerlimit)*(a + 0.5) / massPsiPi->numbins;
-        //std::cout <<"CosK : " <<a <<std::endl;
-        for (int i = 0; i < massKPi->numbins; ++i) {
-          //std::vector<std::vector<fptype> > tempValues;
-          //UnbinnedDataSet tempData(obserVariables);
-          massKPi->value = massKPi->lowerlimit + (massKPi->upperlimit - massKPi->lowerlimit)*(i + 0.5) / massKPi->numbins;
-          plottingGridData.addEvent();
-        }
-      }
-    }
-  }
   //
   stopC = times(&stopProc);
   gettimeofday(&stopTime, NULL);
@@ -1938,6 +1943,8 @@ int main(int argc, char** argv) {
       fptype signal = pdfTotalValues[0][i];
       fptype backg = bkgAddition[i];
       pdfTotalValues[0][i] = sFrac->value*signal + (1-sFrac->value)*backg;
+      // std::cout<<i<<" "<<signal<<" "<<backg<<std::endl;
+
     }
 
   for (int k = 0; k<pdfTotalValues[0].size(); ++k) {
@@ -2152,7 +2159,9 @@ int main(int argc, char** argv) {
   fitStat->SetFillColor(0);
 
   legPlot->AddEntry(varHistos[0], "Generated data", "lpe");
-  legPlot->AddEntry(varHistos_theory[0], "Theory data", "lpe");
+
+  if(!bkgHist)
+    legPlot->AddEntry(varHistos_theory[0], "Theory data", "lpe");
 
   if(!hPlots){
 
@@ -2319,6 +2328,9 @@ int main(int argc, char** argv) {
 
     for (int i=0; i<pdfCompValues[0].size(); i++) {
       //std::cout <<" Bin : " <<i <<" pdf : " <<pdfCompValues[0][i] <<std::endl;
+      if(effPdfProd)
+         pdfCompValues[0][i] *= effCorrection[i];
+
       sum += pdfCompValues[0][i];
     }
 
@@ -2458,13 +2470,14 @@ int main(int argc, char** argv) {
     {
       multiGraphs[iVar]->Draw("AL");
       multiGraphs[iVar]->SetMinimum(0.1);
-      multiGraphs[iVar]->SetMaximum(2.2 * plotYMax[iVar]);
+      multiGraphs[iVar]->SetMaximum(2.5 * plotYMax[iVar]);
       varHistos[iVar]->Draw("Esame"); // if drawn without "same", varHistos[iVar]->SetMinimum(0.1) must be called as well
-      varHistos_theory[iVar]->Draw("Esame");
+      if(!bkgHist)
+        varHistos_theory[iVar]->Draw("Esame");
     }else
     {
       varHistos[iVar]->SetMinimum(0.1);
-      varHistos[iVar]->SetMaximum(2.2 * plotYMax[iVar]);
+      varHistos[iVar]->SetMaximum(2.5 * plotYMax[iVar]);
       varHistos[iVar]->Draw("E");
       varHistos_theory[iVar]->Draw("ESAME");
 
