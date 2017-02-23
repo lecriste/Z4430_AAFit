@@ -1272,13 +1272,13 @@ int main(int argc, char** argv) {
       obserVariables[y]->upperlimit = upperL[y];
     }
 
-    if(!hPlots)
-      for (Int_t iVar=0; iVar<nProjVars; ++iVar)
-        obserVariables[iVar]->numbins = plottingFine[iVar];
-    else
-      for (Int_t iVar=0; iVar<nProjVars; ++iVar)
-        obserVariables[iVar]->numbins = dataPoints[iVar];
-
+    // if(!hPlots)
+    //   for (Int_t iVar=0; iVar<nProjVars; ++iVar)
+    //     obserVariables[iVar]->numbins = plottingFine[iVar];
+    // else
+    //   for (Int_t iVar=0; iVar<nProjVars; ++iVar)
+    //     obserVariables[iVar]->numbins = dataPoints[iVar];
+    //
 
       std::vector<std::vector<fptype> > effPdfValues;
 
@@ -1616,12 +1616,12 @@ int main(int argc, char** argv) {
           obserVariables[y]->upperlimit = upperL[y];
       }
 
-      if(!hPlots)
-        for (Int_t iVar=0; iVar<nProjVars; ++iVar)
-          obserVariables[iVar]->numbins = plottingFine[iVar];
-      else
-        for (Int_t iVar=0; iVar<nProjVars; ++iVar)
-          obserVariables[iVar]->numbins = dataPoints[iVar];
+      // if(!hPlots)
+      //   for (Int_t iVar=0; iVar<nProjVars; ++iVar)
+      //     obserVariables[iVar]->numbins = plottingFine[iVar];
+      // else
+      //   for (Int_t iVar=0; iVar<nProjVars; ++iVar)
+      //     obserVariables[iVar]->numbins = dataPoints[iVar];
 
       // UnbinnedDataSet plottingGridDataSecond(obserVariables);
       //
