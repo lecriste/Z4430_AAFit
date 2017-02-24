@@ -116,8 +116,7 @@ void printCodes()
   std::cerr <<"Codes" <<std::endl;
 }
 
-int checkGPU()
-{
+int checkGPU() {
   int deviceCount, device;
   int gpuDeviceCount = 0;
   struct cudaDeviceProp properties;
@@ -187,11 +186,10 @@ int main(int argc, char** argv) {
 
   gStyle->SetOptStat(000000000);
 
-  if(checkGPU())
-    {
-      std::cerr<<"NO Cuda capable device found. Returning.\n"<<std::endl;
-      return 1;
-    }
+  if (checkGPU()) {
+    std::cerr<<"NO Cuda capable device found. Returning.\n"<<std::endl;
+    return 1;
+  }
 
   debug(__LINE__);
 
@@ -549,18 +547,22 @@ int main(int argc, char** argv) {
   varTitles.push_back(massKPi_title); varTitles.push_back(massPsiPi_title); varTitles.push_back(cosMuMu_title); varTitles.push_back(phi_title);
 
   //Defining minimums and maximums
-  fptype plotMargin = 0.1;
+  fptype plotMargin = 0.05;
   fptype massKPi_min = 0.6, massKPi_max = 2.2;
   fptype massPsiPi_min = 3.2, massPsiPi_max = 4.9;
+
+  TString fileName = "Data_JPsi_2p0Sig_6p0to9p0SB.root"; Bool_t tmva = kFALSE;
+  TString bdtCut = "0p00"; //bdtCut  = "-0p03";
+  //fileName = "TMVApp__withBDTCutAt"+bdtCut+"_JPsi_2p0Sig_6p0to9p0SB.root";
+  if (fileName.Contains("TMVA")) tmva = kTRUE;
 
   TString path;
   if (localRead)
     path = "./rootfiles/"; //path = "/lustre/home/adrianodif/RootFiles/Z4430/TMVA/";
-  else
-    path = "/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/TMVA/";
-
-  TString bdtCut = "0p00"; bdtCut  = "-0p03";
-  TString fileName = "TMVApp__withBDTCutAt"+bdtCut+"_JPsi_2p0Sig_6p0to9p0SB.root";
+  else {
+    path = "/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/";
+    if (tmva) path.Append("TMVA/");
+      }
 
   Variable* massKPi = new Variable(massKPi_name.Data(),1.,massKPi_min-plotMargin,massKPi_max+plotMargin); massKPi->numbins = bin[0];
   //Variable* massKPiEff = new Variable(massKPi_eff_name.Data(),1.,0.6,2.2); massKPiEff->numbins = bin[0];
@@ -606,7 +608,7 @@ int main(int argc, char** argv) {
 
   std::cout <<"\n- Generating plotting dataset" <<std::endl;
 
-  if(!hPlots)
+  if (!hPlots)
     for (Int_t iVar=0; iVar<nProjVars; ++iVar)
       obserVariables[iVar]->numbins = plottingFine[iVar];
   else
@@ -869,7 +871,7 @@ int main(int argc, char** argv) {
     }
 
   if (aFix)
-    if(aFixCode.size()==1)
+    if (aFixCode.size()==1)
       for (Int_t i = 0; i < nHelAmps; i++)
         as[i]->fixed = true;
     else
@@ -878,7 +880,7 @@ int main(int argc, char** argv) {
 
 
   if (bFix)
-    if(bFixCode.size()==1)
+    if (bFixCode.size()==1)
       for (Int_t i = 0; i < nHelAmps; i++)
         bs[i]->fixed = true;
     else
@@ -997,17 +999,17 @@ int main(int argc, char** argv) {
     dataTxt.close();
   } // if (txtfile)
   else {
-    //TString dataFileName = "./datafiles/Data_JPsi_2p0Sig_6p0to9p0SB.root";
-    //TString dataFileName = "./datafiles/TMVApp_withBDTCutAt0p00_JPsi_2p0Sig_6p0to9p0SB.root";
-    //TString dataFileName = fileName; dataFileName.ReplaceAll("TMVApp_","TMVApp_data");
-    TString dataFileName = path+fileName; dataFileName.ReplaceAll("TMVApp_","TMVApp_data");
+    TString dataFileName = path+fileName;
+    if (tmva) {
+      dataFileName.ReplaceAll("TMVApp_","TMVApp_data");
+    }
     TFile *inputFile = TFile::Open(dataFileName);
 
     if (!inputFile) {
       cout <<"Warning: unable to open data file \"" <<dataFileName <<"\"" <<endl;
     } else {
 
-      TString dataTreeName = "AA_vars";
+      TString dataTreeName = "AA_recoVars";
       TNtupleD* dataNTuple = (TNtupleD*)inputFile->Get(dataTreeName);
 
       if (!(dataNTuple)){
@@ -1015,8 +1017,7 @@ int main(int argc, char** argv) {
       	return -1;
       }
 
-      Double_t obs1,obs2,obs3,obs4;
-
+      Double_t obs1, obs2, obs3, obs4;
       dataNTuple->SetBranchAddress("massKPi",&obs1);
       dataNTuple->SetBranchAddress("massMuMuPi",&obs2);
       dataNTuple->SetBranchAddress("cosMuMu",&obs3);
@@ -1102,19 +1103,26 @@ int main(int argc, char** argv) {
     //int outCounter = 0;
 
     // path = "./effFiles/";
-    //TString effName = "officialMC_noPtEtaCuts_JPsi_Bd2MuMuKPi_2p0Sig_4p0to6p0SB.root";
-    TString effName = path + fileName; effName.ReplaceAll("TMVApp_","TMVApp_MC");
+    TString effName = path + "officialMC_noPtEtaCuts_JPsi_Bd2MuMuKPi_2p0Sig_6p0to9p0SB.root";
+    if (tmva) {
+      effName = path + fileName; effName.ReplaceAll("TMVApp_","TMVApp_MC");
+    }
 
     TFile *effFile = TFile::Open(effName);
     if (!effFile) {
       cout <<"ERROR! Unable to open efficiency file \"" <<effName <<"\".\nReturning" <<endl;
       return -1;
-    }
+    } else
+      cout <<"\nUsing \"" <<effName <<"\" to compute efficiency correction" <<endl;
 
     //TString relEffNameMass = "RelEff_psi2SPi_vs_KPi_B0constr";
     TString relEffNameMass = "RelEff_psi2SPi_vs_KPi_B0constr_1B0";
     TString relEffNameAng = "RelEff_planesAngle_vs_cos_psi2S_helicityAngle";
-    relEffNameMass.Append("_BDTCutAt"+bdtCut); relEffNameAng.Append("_BDTCutAt"+bdtCut);
+    if (tmva) {
+      relEffNameMass.Append("_BDTCutAt"+bdtCut); relEffNameAng.Append("_BDTCutAt"+bdtCut);
+    } else {
+      relEffNameMass.ReplaceAll("B0constr_1B0","hardCuts_1B0"); relEffNameAng.Append("_hardCuts_1B0");
+    }
 
     relEffTH2Mass = (TH2F*)effFile->Get(relEffNameMass) ;
     relEffTH2Ang = (TH2F*)effFile->Get(relEffNameAng) ;
@@ -1272,7 +1280,7 @@ int main(int argc, char** argv) {
       obserVariables[y]->upperlimit = upperL[y];
     }
 
-    // if(!hPlots)
+    // if (!hPlots)
     //   for (Int_t iVar=0; iVar<nProjVars; ++iVar)
     //     obserVariables[iVar]->numbins = plottingFine[iVar];
     // else
@@ -1308,7 +1316,9 @@ int main(int argc, char** argv) {
   std::string p = "phasespace";
 
   //Variable* sFrac = new Variable("sFrac",0.5,0.,1.0);
-  Variable* sFrac = new Variable("sFrac",0.7);
+  Variable* sFrac = new Variable("sFrac",0.8);
+  if (tmva)
+    sFrac->value = 0.75;
   //Variable* halfFrac = new Variable("halfFrac",0.25);
 
   if (b0Var)
@@ -1330,7 +1340,7 @@ int main(int argc, char** argv) {
       pdfComponents.push_back(effHist);
 
       prodPdf  = new ProdPdf("(Kstars_signal + phaseSpace) * efficiency",pdfComponents);
-      totalPdf = new AddPdf("Kstars_signal + PhaseSpace", sFrac, prodPdf,background);
+      totalPdf = new AddPdf("Kstars_signal + PhaseSpace", sFrac, prodPdf, background);
 
       // pdfComponents.push_back(efficiencyHistMasses);
       // pdfComponents.push_back(efficiencyHistAngles);
@@ -1349,12 +1359,19 @@ int main(int argc, char** argv) {
       fptype lowerL[nProjVars], upperL[nProjVars];
 
       // path = "./datafiles/";
-      //TString bkgName = "Data_JPsi_2p0Sig_6p0to9p0SB.root";
-      TString bkgName = fileName; bkgName.ReplaceAll("TMVApp_","TMVApp_data");
+      TString bkgName = fileName;
+      if (tmva) {
+	bkgName = fileName; bkgName.ReplaceAll("TMVApp_","TMVApp_data");
+      }
       TFile *bkgFile = TFile::Open(path+bkgName);
 
-      TString bkgNameMass = "psi2SPi_vs_KPi_masses_sbs_BDT";
-      TString bkgNameAng = "planesAngle_vs_cos_psi2S_helicityAngle_sbs_BDT";
+      TString bkgNameMass = "psi2SPi_vs_KPi";
+      TString bkgNameAng = "planesAngle_vs_cos_psi2S_helicityAngle";
+      if (tmva) {
+	bkgNameMass.Append("_masses_sbs_BDT"); bkgNameAng.Append("_sbs_BDT");
+      } else {
+	bkgNameMass.Append("_hardCuts_1B0_sidebands_B0massC"); bkgNameAng.Append("_hardCuts_1B0_sidebands_B0massC");
+      }
 
       bkgTH2Mass = (TH2F*)bkgFile->Get(bkgNameMass) ;
       bkgTH2Ang = (TH2F*)bkgFile->Get(bkgNameAng) ;
@@ -1462,12 +1479,12 @@ int main(int argc, char** argv) {
       if (bkgHistMap) {
         //bkgHistMasses = new FlatHistoPdf("bkgHistMasses",bkgDatasetMasses,obserVariables);
         //bkgHistAngles = new FlatHistoPdf("bkgHistAngles",bkgDatasetAngles,obserVariables);
-        bkgHistPdf    = new FlatHistoPdf("bkgHistPdf",bkgDataset,obserVariables);
+        bkgHistPdf = new FlatHistoPdf("bkgHistPdf",bkgDataset,obserVariables);
       }
       else if (bkgHistInt) {
         //bkgHistMasses = new BiDimHistoPdf("bkgHistMasses",bkgDatasetMasses,obserVariables);
         //bkgHistAngles = new BiDimHistoPdf("bkgHistAngles",bkgDatasetAngles,obserVariables);
-        bkgHistPdf    = new BiDimHistoPdf("bkgHistPdf",bkgDataset,obserVariables);
+        bkgHistPdf = new BiDimHistoPdf("bkgHistPdf",bkgDataset,obserVariables);
       }
 
       bkgHistos[0] = bkgTH2Mass->ProjectionX(); bkgHistos[1] = bkgTH2Mass->ProjectionY();
@@ -1519,27 +1536,23 @@ int main(int argc, char** argv) {
 
       //MASSES PLOT
       for (int j = 0; j < massKPi->numbins; ++j)
-        for (int i = 0; i < massPsiPi->numbins; ++i)
-          {
-            fptype xval   = massKPi->lowerlimit + j*massKPiStep +0.5*massKPiStep;
-            fptype yval   = massPsiPi->lowerlimit + i*massPsiPiStep +0.5*massPsiPiStep;
-
-            fptype zval = 0.0;
-
-            for (int k = 0; k < phi->numbins * cosMuMu->numbins; ++k)
-              zval += pdfIntValues[0][j+i*massKPi->numbins+k*massKPi->numbins * massPsiPi->numbins];
-
-            interpolationSum += zval;
-            bkgHistosInt[0]->SetBinContent(bkgHistosInt[0]->FindBin(xval,yval),zval);
-          }
-
+        for (int i = 0; i < massPsiPi->numbins; ++i) {
+	  fptype xval   = massKPi->lowerlimit + j*massKPiStep +0.5*massKPiStep;
+	  fptype yval   = massPsiPi->lowerlimit + i*massPsiPiStep +0.5*massPsiPiStep;
+	  
+	  fptype zval = 0.0;
+	  
+	  for (int k = 0; k < phi->numbins * cosMuMu->numbins; ++k)
+	    zval += pdfIntValues[0][j+i*massKPi->numbins+k*massKPi->numbins * massPsiPi->numbins];
+	  
+	  interpolationSum += zval;
+	  bkgHistosInt[0]->SetBinContent(bkgHistosInt[0]->FindBin(xval,yval),zval);
+	}
 
       interpolationSum = .0;
       //PLOTTING ANGLES
       for (int j = 0; j < cosMuMu->numbins; ++j)
-        for (int i = 0; i < phi->numbins; ++i)
-          {
-
+        for (int i = 0; i < phi->numbins; ++i) {
             fptype xval   = cosMuMu->lowerlimit + j*cosMuMuStep + 0.5*cosMuMuStep;
             fptype yval   = phi->lowerlimit + i*phiStep + 0.5*phiStep;
 
@@ -1550,8 +1563,7 @@ int main(int argc, char** argv) {
 
             interpolationSum += zval;
             bkgHistosInt[1]->SetBinContent(bkgHistosInt[1]->FindBin(xval,yval),zval);
-
-          }
+	}
 
       TCanvas* canvasM = new TCanvas("mcanvas","mcanvas",2000,1200);
       canvasM->cd();
@@ -1579,7 +1591,6 @@ int main(int argc, char** argv) {
       std::cout<<"-Producing sidebands background plots"<<std::endl;
 
       for (Int_t y=0; y<nProjVars; y+=2) {
-
         //std::cout <<"Vars " <<y <<" - " <<y+1 <<"histo index" <<y/2 <<std::endl;
         projBkgHistosInt[y] = (TH1F*)bkgHistosInt[y/2]->ProjectionX();
         projBkgHistosInt[y]->Scale(1.0/projBkgHistosInt[y]->Integral());
@@ -1600,23 +1611,20 @@ int main(int argc, char** argv) {
         canvasM->Clear();
       }
 
-      for (Int_t iVar=0; iVar<nProjVars; ++iVar)
-	{
-	  projBkgHistosInt[iVar]->SetMarkerStyle(kFullSquare);
-	  projBkgHistosInt[iVar]->SetMarkerColor(kBlue);
-
-	}
-
+      for (Int_t iVar=0; iVar<nProjVars; ++iVar) {
+	projBkgHistosInt[iVar]->SetMarkerStyle(kFullSquare);
+	projBkgHistosInt[iVar]->SetMarkerColor(kBlue);
+      }
 
       canvas->cd();
 
 
-      for (int y=0; y<nProjVars;++y){
+      for (int y=0; y<nProjVars;++y) {
 	obserVariables[y]->lowerlimit = lowerL[y];
 	obserVariables[y]->upperlimit = upperL[y];
       }
 
-      // if(!hPlots)
+      // if (!hPlots)
       //   for (Int_t iVar=0; iVar<nProjVars; ++iVar)
       //     obserVariables[iVar]->numbins = plottingFine[iVar];
       // else
@@ -1800,7 +1808,7 @@ int main(int argc, char** argv) {
 
   std::vector<std::vector<fptype> > totalProj(4), totalSigProj(4), totalBkgProj(4);
 
-  if(!hPlots)
+  if (!hPlots)
     for (Int_t iVar=0; iVar<nProjVars; ++iVar)
       obserVariables[iVar]->numbins = plottingFine[iVar];
   else
@@ -1852,10 +1860,10 @@ int main(int argc, char** argv) {
     //plotXMin[iVar] = varHistos[iVar]->GetXaxis()->GetBinUpEdge(varHistos[iVar]->GetNbinsX());
   }
 
-  Float_t xMax = 0.95, yMax = 0.9;
+  Float_t xMax = 0.95, yMax = 0.95;
   Float_t legLeft = 0.6, legWidth = 0.15;
   TLegend *legPlot = new TLegend(legLeft, 0.6, legLeft+legWidth, yMax); // 0.6 will be replaced later
-  TPaveText *fitStat = new TPaveText(legPlot->GetX2(), 0.4, xMax, yMax, "NDC");
+  TPaveText *fitStat = new TPaveText(legPlot->GetX2(), 0.4, xMax, yMax, "NDC"); // 0.4 will be replaced later
 
   std::cout <<"\n- Evaluating the total p.d.f." <<std::endl;
   matrixTotPlot->setData(&plottingGridData);
@@ -1900,7 +1908,7 @@ int main(int argc, char** argv) {
   if (effPdfProd)
     for (int k = 0; k < pdfTotalValues[0].size(); k++) {
 
-      if(effPdfProd) pdfTotalValues[0][k] *= effCorrection[k];
+      if (effPdfProd) pdfTotalValues[0][k] *= effCorrection[k];
 
       // if (bkgPhaseSpace) {
       //    pdfTotalValues[1][k] *= effDataCont;
@@ -2160,10 +2168,10 @@ int main(int argc, char** argv) {
 
   legPlot->AddEntry(varHistos[0], "Generated data", "lpe");
 
-  if(!bkgHist)
+  if (!bkgHist)
     legPlot->AddEntry(varHistos_theory[0], "Theory data", "lpe");
 
-  if(!hPlots){
+  if (!hPlots){
 
     legPlot->AddEntry(&signalTotalPlot[0], "Total fit", "l");
 
@@ -2328,7 +2336,7 @@ int main(int argc, char** argv) {
 
     for (int i=0; i<pdfCompValues[0].size(); i++) {
       //std::cout <<" Bin : " <<i <<" pdf : " <<pdfCompValues[0][i] <<std::endl;
-      if(effPdfProd)
+      if (effPdfProd)
 	pdfCompValues[0][i] *= effCorrection[i];
 
       sum += pdfCompValues[0][i];
@@ -2414,7 +2422,7 @@ int main(int argc, char** argv) {
 
 	if (iVar==0) {
 	  sprintf(bufferstring,"%s (%.2f %)",kStarNames[k].c_str(), compsIntegral/totalSigIntegral*100.);
-	  if(!hPlots)
+	  if (!hPlots)
 	    legPlot->AddEntry(signalCompPlot,bufferstring,"l");
 	  else
 	    legPlot->AddEntry(compHistos[iVar][k],bufferstring, "lpe");
@@ -2466,37 +2474,33 @@ int main(int argc, char** argv) {
     canvas->cd();
     canvas->Clear();
 
-    if(!hPlots)
-      {
-	multiGraphs[iVar]->Draw("AL");
-	multiGraphs[iVar]->SetMinimum(0.1);
-	multiGraphs[iVar]->SetMaximum(2.5 * plotYMax[iVar]);
-	varHistos[iVar]->Draw("Esame"); // if drawn without "same", varHistos[iVar]->SetMinimum(0.1) must be called as well
-	if(!bkgHist)
-	  varHistos_theory[iVar]->Draw("Esame");
-      }else
-      {
-	varHistos[iVar]->SetMinimum(0.1);
-	varHistos[iVar]->SetMaximum(2.5 * plotYMax[iVar]);
-	varHistos[iVar]->Draw("E");
-	varHistos_theory[iVar]->Draw("ESAME");
-
-	projHistos[iVar]->SetMarkerColor(kRed);
-	projHistos[iVar]->SetMarkerStyle(kFullCircle);
-	projHistos[iVar]->Draw("ESAME");
-
-	if (bkgPhaseSpace)
-	  {
-	    projSigHistos[iVar]->Draw("ESAME");
-	    projBkgHistos[iVar]->Draw("PESAME");
-
-	  }
-	for (int k = 0; k < nKstars; ++k)
-	  compHistos[iVar][k]->Draw("PESAME");
-
-	if(bkgHist)
-	  projBkgHistosInt[iVar]->Draw("PESAME");
+    if (!hPlots) {
+      multiGraphs[iVar]->Draw("AL");
+      multiGraphs[iVar]->SetMinimum(0.1);
+      multiGraphs[iVar]->SetMaximum(1.3 * plotYMax[iVar]);
+      varHistos[iVar]->Draw("Esame"); // if drawn without "same", varHistos[iVar]->SetMinimum(0.1) must be called as well
+      if (!bkgHist)
+	varHistos_theory[iVar]->Draw("Esame");
+    } else {
+      varHistos[iVar]->SetMinimum(0.1);
+      varHistos[iVar]->SetMaximum(1.3 * plotYMax[iVar]);
+      varHistos[iVar]->Draw("E");
+      varHistos_theory[iVar]->Draw("ESAME");
+      
+      projHistos[iVar]->SetMarkerColor(kRed);
+      projHistos[iVar]->SetMarkerStyle(kFullCircle);
+      projHistos[iVar]->Draw("ESAME");
+      
+      if (bkgPhaseSpace) {
+	projSigHistos[iVar]->Draw("ESAME");
+	projBkgHistos[iVar]->Draw("PESAME");
       }
+      for (int k = 0; k < nKstars; ++k)
+	compHistos[iVar][k]->Draw("PESAME");
+      
+      if (bkgHist)
+	projBkgHistosInt[iVar]->Draw("PESAME");
+    }
 
     if (bkgHistos[iVar]) bkgHistos[iVar]->Draw("same");
     if (iVar==0) { // it's enough on the m(KPi) plot only

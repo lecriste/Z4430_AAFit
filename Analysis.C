@@ -320,13 +320,18 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
   // not accessible on cmssusyX
   TString path = "/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/";
   //path = "/lustre/home/adrianodif/RootFiles/Z4430/";
-  //TString inputFileName = "MC_K892_JPsi_Bd2MuMuKpi_2p0Sig_4p0to6p0SB.root";
-  TString inputFileName = "MC_K892_JPsi_Bd2MuMuKpi_B0massConstraint.root";
+  //TString inputFileName = "MC_K892_JPsi_Bd2MuMuKpi_2p0Sig_4p0to6p0SB.root"; Bool_t tmva = kFALSE;
+  TString inputFileName = "MC_K892_JPsi_Bd2MuMuKpi_B0massConstraint.root"; Bool_t tmva = kFALSE;
+  inputFileName = "Data_JPsi_2p0Sig_6p0to9p0SB.root"; tmva = kFALSE;
 
-  path.Append("TMVA/");
+
   TString bdtCut = "0p00"; //bdtCut = "-0p03";
-  inputFileName = "TMVApp_data_withBDTCutAt"+bdtCut+"_JPsi_2p0Sig_6p0to9p0SB.root";
-
+  TString bdtCut_long = "withBDTCutAt"+bdtCut;
+  //inputFileName = "TMVApp_data_"+bdtCut_long+"_JPsi_2p0Sig_6p0to9p0SB.root"; 
+  if (inputFileName.Contains("TMVA")) {
+    tmva = kTRUE;
+    path.Append("TMVA/");
+  }
   TString prefix = "", postfix = "";
   if (inputFileName.Contains("MC")) {
     prefix = "Generated "; postfix = "Gen";
@@ -449,7 +454,8 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
   //totEvents /= 2; totEvents /= 100;
   RooRealVar nSig("nSig", "n_{SIG}", 0, 0, 1E6);
   //nSig.setVal( 10*nSig.getVal() ); // Does not work on the fly
-  Float_t purity = 0.75;
+  Float_t purity = 0.8;
+  if (tmva) purity = 0.75;
   RooRealVar nBkg("nBkg", "n_{BKG}", nSig.getVal() * (1-purity), 0, 1E6);
   //RooExtendPdf *extendedBkgPDF = new RooExtendPdf("extendedBkgPDF", "Signal 0 PDF", *bkgPDF, nBkg) ;
   //RooPlot* test_frame = massKPi.frame() ; test_frame->SetTitle( "Projection of "+massKPi.getTitle() ); extendedBkgPDF->plotOn(test_frame) ; test_frame->Draw() ; return;
@@ -508,7 +514,8 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
   //TString bkgFileName = path+"Data_JPsi_2p0Sig_4p0to6p0SB.root";
   //TString bkgFileName = path+"Data_JPsi_2p0Sig_5p0to9p0SB.root";
   TString bkgFileName = path+"Data_JPsi_2p0Sig_6p0to9p0SB.root";
-  bkgFileName = path+"TMVApp_data_withBDTCutAt"+bdtCut+"_JPsi_2p0Sig_6p0to9p0SB.root";
+  if (tmva)
+    bkgFileName = path+"TMVApp_data_"+bdtCut_long+"_JPsi_2p0Sig_6p0to9p0SB.root";
   cout <<"\nOpening \"" <<bkgFileName <<endl;
   TFile *bkgFile = TFile::Open(bkgFileName);
   const Int_t nVars = 2;
@@ -539,7 +546,14 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
       //x->printMultiline(cout,99); y->printMultiline(cout,99); //return;
 
       for (Int_t iSb=0; iSb < 1; ++iSb) {
-	TString histName = bkgHisto_names[iVars].first.first+"_"+sb_name[iSb]; histName.Append("_BDT");
+	TString histName = bkgHisto_names[iVars].first.first+"_"+sb_name[iSb];
+	if (tmva) histName.Append("_BDT");
+	else {
+	  histName.ReplaceAll("_masses","");
+	  histName.ReplaceAll(sb_name[iSb],"");
+	  histName.Append("hardCuts_1B0_sidebands_B0massC");
+	}
+
 	const TH2F* sbTH2 = (TH2F*)bkgFile->Get( histName ) ;
 	if (!sbTH2) {
 	  cout <<"WARNING! No TH2F \"" <<histName <<"\" found in TFile \"" <<bkgFile->GetName() <<"\".\nSkipping " <<histName <<" evaluation" <<endl;
@@ -622,7 +636,7 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
   //TString effFileName = path+"officialMC_noPtEtaCuts_JPsi_Bd2MuMuKPi_2p0Sig_4p0to6p0SB.root";
   //TString effFileName = path+"officialMC_noPtEtaCuts_JPsi_Bd2MuMuKPi_2p0Sig_5p0to9p0SB.root";
   TString effFileName = path+"officialMC_noPtEtaCuts_JPsi_Bd2MuMuKPi_2p0Sig_6p0to9p0SB.root";
-  effFileName = path+"TMVApp_MC_withBDTCutAt"+bdtCut+"_JPsi_2p0Sig_6p0to9p0SB.root";
+  if (tmva) effFileName = path+"TMVApp_MC_"+bdtCut_long+"_JPsi_2p0Sig_6p0to9p0SB.root";
   cout <<"\nOpening \"" <<effFileName <<endl;
   TFile *effFile = TFile::Open(effFileName);
   RooAbsPdf* pdfToCorrect = sigPDF;
@@ -633,7 +647,7 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
   pair< pair<TString, pair<RooArgSet*,pair<Int_t,Int_t> > >, pair<TString,pair< pair<TString,TString>,pair<TString,TString> > > > effHisto_names[] = {make_pair( make_pair("RelEff_psi2SPi_vs_KPi_B0constr_Dalitz",make_pair(&mass2Vars,make_pair(m2KPi_order_relEff,m2PsiPi_order_relEff))), make_pair("relEffDalitz",make_pair(make_pair("m2KPi",mass2KPi_title),make_pair("m2PsiPi",mass2PsiPi_title)))), make_pair(make_pair("RelEff_"+anglesScatt_name,make_pair(&angleVars,make_pair(cosMuMu_order_relEff,phi_order_relEff))), make_pair("relEffAngles",make_pair(make_pair("cosMuMu",cosMuMu_title),make_pair("phi",phi_title))))}; DalitzEff = kTRUE;
   // if you use &mass2Fors you get "ERROR:InputArguments -- RooAbsDataStore::initialize(RelEff_psi2SPi_vs_KPi_B0constr): Data set cannot contain non-fundamental types"
   //effHisto_names[0] = make_pair(make_pair("RelEff_psi2SPi_vs_KPi_B0constr",make_pair(&massVars,make_pair(mKPi_order_relEff,mPsiPi_order_relEff))), make_pair("relEffMasses",make_pair(make_pair("mKPi",massKPi_title),make_pair("mPsiPi",massPsiPi_title)))); DalitzEff = kFALSE;
-  effHisto_names[0] = make_pair(make_pair("RelEff_psi2SPi_vs_KPi_B0constr_1B0",make_pair(&massVars,make_pair(mKPi_order_relEff,mPsiPi_order_relEff))), make_pair("relEffMasses",make_pair(make_pair("mKPi",massKPi_title),make_pair("mPsiPi",massPsiPi_title)))); DalitzEff = kFALSE;
+  effHisto_names[0] = make_pair(make_pair("RelEff_psi2SPi_vs_KPi",make_pair(&massVars,make_pair(mKPi_order_relEff,mPsiPi_order_relEff))), make_pair("relEffMasses",make_pair(make_pair("mKPi",massKPi_title),make_pair("mPsiPi",massPsiPi_title)))); DalitzEff = kFALSE;
   //effHisto_names[0] = make_pair(make_pair("RelEff_cos_Kstar_helicityAngle_vs_KPiSq_varBins",make_pair(&sqDalitz,make_pair(m2KPi_order_relEff,cosKstar_order_relEff))), make_pair("relEffSqDalitz",make_pair(make_pair("m2KPi",mass2KPi_title),make_pair("cosKstar",cosKstar_title)))); DalitzEff = kTRUE;
 
   pair<RooAbsPdf*, Float_t> effPdf[] = {make_pair(null,0.),make_pair(null,0.)};
@@ -643,7 +657,8 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
     for (Int_t iEff=0; iEff <2 ; ++iEff) {
       TString effName = effHisto_names[iEff].second.first;
       TString histName = effHisto_names[iEff].first.first;
-      histName.Append("_BDTCutAt"+bdtCut);
+      if (tmva) histName.Append("_"+bdtCut_long);
+      else histName.Append("_hardCuts_1B0");
       //histName.ReplaceAll("RelEff","RelEffInv"); effName.ReplaceAll("relEff","relInvEff");
       const TH2F* relEffTH2 = (TH2F*)effFile->Get( histName ) ;
       if (!relEffTH2) {
@@ -828,6 +843,9 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
 
   Int_t nLegendEntries = 0;
 
+  TString selection = "cutBased";
+  if (tmva) selection = bdtCut_long;
+
   if (generating) {
 
     if (B0BarFlag)
@@ -865,11 +883,11 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
     // dataGenPDF->write(TString::Format("%s/%s.txt",datasetsPath.Data(),model->GetName()));
 
     if (B0BarFlag) {
-      dataGenPDF->write(TString::Format("%s/B0bar/%s.txt",datasetsPath.Data(),model->GetName()));
-      //dataGenPDFB0->write(TString::Format("%s/B0Bar/%s__B0Flag.txt",datasetsPath.Data(),model->GetName()));
+      dataGenPDF->write(TString::Format("%s/B0bar/%s__%s.txt",datasetsPath.Data(),model->GetName(),selection.Data()));
+      //dataGenPDFB0->write(TString::Format("%s/B0Bar/%s__%s__B0Flag.txt",datasetsPath.Data(),model->GetName(),selection.Data()));
     } else {
-      dataGenPDF->write(TString::Format("%s/B0/%s.txt",datasetsPath.Data(),model->GetName()));
-      //dataGenPDFB0->write(TString::Format("%s/B0/%s__B0Flag.txt",datasetsPath.Data(),model->GetName()));
+      dataGenPDF->write(TString::Format("%s/B0/%s__%s.txt",datasetsPath.Data(),model->GetName(),selection.Data()));
+      //dataGenPDFB0->write(TString::Format("%s/B0/%s__%s__B0Flag.txt",datasetsPath.Data(),model->GetName(),selection.Data()));
     }
 
     return;
