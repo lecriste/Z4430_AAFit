@@ -481,35 +481,30 @@ int main(int argc, char** argv) {
 	std::string algosInput= argv[i];
 	std::size_t found = algosInput.find(m);
 
-	if (found == std::string::npos)
-	  {
-	    std::cout <<"Minimisation algorithms invalid input : MIGRAD to be called at least once \n";
-	    exit(1);
-	  }
+	if (found == std::string::npos) {
+	  std::cout <<"Minimisation algorithms invalid input : MIGRAD to be called at least once \n";
+	  exit(1);
+	}
 	std::cout <<"- Minimisation algorithms sequence : "<<std::endl;
 
-	for (std::string::size_type l = 0; l < algosInput.length(); ++l)
-	  {
-	    std::string::value_type algo = algosInput[l];
-
-	    if (algo==m)
-	      {
-		algos.push_back(migrad);
-		std::cout<<"  - MIGRAD "<<std::endl;
-	      }
-	    else if (algo==h)
-	      {
-		algos.push_back(hesse);
-		std::cout<<"  - HESSE "<<std::endl;
-	      }
-	    else if (algo==n)
-	      {
-		algos.push_back(minos);
-		std::cout<<"  - MINOS "<<std::endl;
-	      }
-	    else std:: cout<<"  - \""<<algo<<"\" invalid input, ignored "<<std::endl;
+	for (std::string::size_type l = 0; l < algosInput.length(); ++l) {
+	  std::string::value_type algo = algosInput[l];
+	  
+	  if (algo == m) {
+	    algos.push_back(migrad);
+	    std::cout<<"  - MIGRAD "<<std::endl;
 	  }
-
+	  else if (algo == h) {
+	    algos.push_back(hesse);
+	    std::cout<<"  - HESSE "<<std::endl;
+	  }
+	  else if (algo == n) {
+	    algos.push_back(minos);
+	    std::cout<<"  - MINOS "<<std::endl;
+	  }
+	  else std:: cout<<"  - \""<<algo<<"\" invalid input, ignored "<<std::endl;
+	}
+	
       } }
 
     else if (arg == "-fixA") {
@@ -562,7 +557,7 @@ int main(int argc, char** argv) {
   else {
     path = "/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/";
     if (tmva) path.Append("TMVA/");
-      }
+  }
 
   Variable* massKPi = new Variable(massKPi_name.Data(),1.,massKPi_min-plotMargin,massKPi_max+plotMargin); massKPi->numbins = bin[0];
   //Variable* massKPiEff = new Variable(massKPi_eff_name.Data(),1.,0.6,2.2); massKPiEff->numbins = bin[0];
@@ -711,21 +706,21 @@ int main(int argc, char** argv) {
   //CANVAS
   TCanvas* canvas = new TCanvas("Canvas","Canvas",2500,1500);
 
-  Variable* dRadB0  = new Variable("dRadB0",5.0);
-  Variable* dRadKs  = new Variable("dRadKs",1.5);
-  Variable* psi_nS  = new Variable("psi_nS",1.0);
+  Variable* dRadB0 = new Variable("dRadB0",5.0);
+  Variable* dRadKs = new Variable("dRadKs",1.5);
+  Variable* psi_nS = new Variable("psi_nS",1.0);
 
   //std::vector<Variable* > amplitudeGooVars;
   //std::vector<Variable*> KParams;
 
   //GooFit
-  Variable mBd("mBd", 5.27961) ;
-  Variable mKaon("mKaon", 0.493677) ;
-  Variable mPion("mPion", 0.13957018) ;
+  Variable mBd("mBd", MBd) ;
+  Variable mKaon("mKaon", MKaon) ;
+  Variable mPion("mPion", MPion) ;
 
   fptype massMuMu = 0. ;
-  if (psi_nS->value == 1.0) massMuMu = 3.096916 ;
-  else if (psi_nS->value == 2.0) massMuMu = 3.686109 ;
+  if (psi_nS->value == 1.0) massMuMu = MJpsi ;
+  else if (psi_nS->value == 2.0) massMuMu = MPsi2S ;
   else {
     cout <<"psi_nS is neither 1 nor 2, please check it." <<endl;
     return 1; }
@@ -759,10 +754,19 @@ int main(int argc, char** argv) {
       Spins.push_back(new Variable("K_892_Spin_0",1.0));
       as.push_back(new Variable("a_K_892_0",1.0));//,aMin,aMax) );
       bs.push_back(new Variable("b_K_892_0",0.0));//,bMin,bMax) );
+      
+      // Belle values
       as.push_back(new Variable("a_K_892_p1",0.844,aMin,aMax) );
       bs.push_back(new Variable("b_K_892_p1",3.14,bMin,bMax) );
       as.push_back(new Variable("a_K_892_m1",0.196,aMin,aMax));
       bs.push_back(new Variable("b_K_892_m1",-1.7,bMin,bMax));
+      /*
+      // data fit with -k800 -k892 -k1410 -k1430_0 -k1430_2 -effHInt -BkgMapInt -n 1000000
+      as.push_back(new Variable("a_K_892_p1",0.709,aMin,aMax) );
+      bs.push_back(new Variable("b_K_892_p1",-30.9945,bMin,bMax) );
+      as.push_back(new Variable("a_K_892_m1",-0.1,aMin,aMax));
+      bs.push_back(new Variable("b_K_892_m1",-1.722,bMin,bMax));
+      */
     } else {
       Masses.push_back(new Variable("K_892_Mass_0",M892e));
       Gammas.push_back(new Variable("K_892_Gamma_0",G892e));
@@ -782,12 +786,18 @@ int main(int argc, char** argv) {
 
   if (k800Star) {
     cout <<"Adding K*(800) ..." <<endl;
-
     Masses.push_back(new Variable("K_800_Mass_0",M800));
     Gammas.push_back(new Variable("K_800_Gamma_0",G800));
     Spins.push_back(new Variable("K_800_Spin_0",0.0));
+    
+    // Belle values
     as.push_back(new Variable("a_K_800_0",1.12,aMin,aMax) );
     bs.push_back(new Variable("b_K_800_0",2.3,bMin,bMax) );
+    /*
+    // data fit with -k800 -k892 -k1410 -k1430_0 -k1430_2 -effHInt -BkgMapInt -n 1000000
+    as.push_back(new Variable("a_K_800_0",1.46,aMin,aMax) );
+    bs.push_back(new Variable("b_K_800_0",2.24,bMin,bMax) );
+    */
   }
 
   if (k1410Star) {
@@ -796,17 +806,25 @@ int main(int argc, char** argv) {
     Masses.push_back(new Variable("K_1410_Mass_0",M1410));
     Gammas.push_back(new Variable("K_1410_Gamma_0",G1410));
     Spins.push_back(new Variable("K_1410_Spin_0",1.0));
+    
+    // Belle values
     as.push_back(new Variable("a_K_1410_0",0.119,aMin,aMax) );
     bs.push_back(new Variable("b_K_1410_0",0.81,bMin,bMax) );
-
     //as.push_back(new Variable("a_K_1410_0",0.844));
     //bs.push_back(new Variable("b_K_1410_0",3.14,bMin,bMax));
-
     as.push_back(new Variable("a_K_1410_p1",0.123,aMin,aMax) );
     bs.push_back(new Variable("b_K_1410_p1",-1.04,bMin,bMax) );
-
     as.push_back(new Variable("a_K_1410_m1",0.036,aMin,aMax));
     bs.push_back(new Variable("b_K_1410_m1",0.67,bMin,bMax));
+    /*
+    // data fit with -k800 -k892 -k1410 -k1430_0 -k1430_2 -effHInt -BkgMapInt -n 1000000
+    as.push_back(new Variable("a_K_1410_0",0.4111,aMin,aMax) );
+    bs.push_back(new Variable("b_K_1410_0",0.775,bMin,bMax) );
+    as.push_back(new Variable("a_K_1410_p1",0.49457,aMin,aMax) );
+    bs.push_back(new Variable("b_K_1410_p1",-2.519,bMin,bMax) );
+    as.push_back(new Variable("a_K_1410_m1",0.036,aMin,aMax));
+    bs.push_back(new Variable("b_K_1410_m1",0.67,bMin,bMax));
+    */
   }
 
   if (k1430Star0) {
