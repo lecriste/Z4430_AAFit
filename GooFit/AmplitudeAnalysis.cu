@@ -487,29 +487,24 @@ int main(int argc, char** argv) {
                                 std::string algosInput= argv[i];
                                 std::size_t found = algosInput.find(m);
 
-                                if (found == std::string::npos)
-                                {
+                                if (found == std::string::npos) {
                                   std::cout <<"Minimisation algorithms invalid input : MIGRAD to be called at least once \n";
                                   exit(1);
                                 }
                                 std::cout <<"- Minimisation algorithms sequence : "<<std::endl;
 
-                                for (std::string::size_type l = 0; l < algosInput.length(); ++l)
-                                {
+                                for (std::string::size_type l = 0; l < algosInput.length(); ++l) {
                                   std::string::value_type algo = algosInput[l];
 
-                                  if (algo==m)
-                                  {
+                                  if (algo == m) {
                                     algos.push_back(migrad);
                                     std::cout<<"  - MIGRAD "<<std::endl;
                                   }
-                                  else if (algo==h)
-                                  {
+                                  else if (algo == h) {
                                     algos.push_back(hesse);
                                     std::cout<<"  - HESSE "<<std::endl;
                                   }
-                                  else if (algo==n)
-                                  {
+                                  else if (algo == n) {
                                     algos.push_back(minos);
                                     std::cout<<"  - MINOS "<<std::endl;
                                   }
@@ -580,7 +575,7 @@ int main(int argc, char** argv) {
                             // cosine of the K* helicity angle
                             //Variable* massPsiPi = new Variable(massPsiPi_name.Data(),0.,-1,1); massPsiPi->numbins = bin[2];
                             // angle between decay planesd
-                            Variable* phi = new Variable(phi_name.Data(),0.25,-devPi-plotMargin,devPi+plotMargin); phi->numbins = bin[3];
+                            Variable* phi = new Variable(phi_name.Data(),0.25,-TMATH_PI-plotMargin,TMATH_PI+plotMargin); phi->numbins = bin[3];
                             Variable* b0Beauty;
                             if (b0Var)
                             b0Beauty = new Variable("B0beauty",0.,-2,+2);
@@ -690,11 +685,11 @@ int main(int argc, char** argv) {
                                       cout <<"  - Three Bodies Phase-space background" <<endl;
                                       datasetName.Append("__plus__BdToPsiPiK_PHSP"); plotsName.Append("_PHSP");
                                     }
-                                    if (bkgPdfHist) {
+                                    if (bkgHist) {
                                       cout <<"  - Combinatorial background" <<endl;
                                       datasetName.Append("__withHistoBkg"); plotsName.Append("__withHistoBkg");
                                     }
-                                    if (effPdfHist ) {
+                                    if (effPdfProd ) {
                                       cout <<"  - With efficiency multiplication" <<endl;
                                       datasetName.Append("__withEff"); plotsName.Append("__withEff");
                                     }
@@ -717,21 +712,21 @@ int main(int argc, char** argv) {
                                   //CANVAS
                                   TCanvas* canvas = new TCanvas("Canvas","Canvas",2500,1500);
 
-                                  Variable* dRadB0  = new Variable("dRadB0",5.0);
-                                  Variable* dRadKs  = new Variable("dRadKs",1.5);
-                                  Variable* psi_nS  = new Variable("psi_nS",1.0);
+                                  Variable* dRadB0 = new Variable("dRadB0",5.0);
+                                  Variable* dRadKs = new Variable("dRadKs",1.5);
+                                  Variable* psi_nS = new Variable("psi_nS",1.0);
 
                                   //std::vector<Variable* > amplitudeGooVars;
                                   //std::vector<Variable*> KParams;
 
                                   //GooFit
-                                  Variable mBd("mBd", 5.27961) ;
-                                  Variable mKaon("mKaon", 0.493677) ;
-                                  Variable mPion("mPion", 0.13957018) ;
+                                  Variable mBd("mBd", MBd) ;
+                                  Variable mKaon("mKaon", MKaon) ;
+                                  Variable mPion("mPion", MPion) ;
 
                                   fptype massMuMu = 0. ;
-                                  if (psi_nS->value == 1.0) massMuMu = 3.096916 ;
-                                  else if (psi_nS->value == 2.0) massMuMu = 3.686109 ;
+                                  if (psi_nS->value == 1.0) massMuMu = MJpsi ;
+                                  else if (psi_nS->value == 2.0) massMuMu = MPsi2S ;
                                   else {
                                     cout <<"psi_nS is neither 1 nor 2, please check it." <<endl;
                                     return 1; }
