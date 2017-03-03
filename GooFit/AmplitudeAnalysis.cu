@@ -575,7 +575,7 @@ int main(int argc, char** argv) {
                             // cosine of the K* helicity angle
                             //Variable* massPsiPi = new Variable(massPsiPi_name.Data(),0.,-1,1); massPsiPi->numbins = bin[2];
                             // angle between decay planesd
-                            Variable* phi = new Variable(phi_name.Data(),0.25,-TMATH_PI-plotMargin,TMATH_PI+plotMargin); phi->numbins = bin[3];
+                            Variable* phi = new Variable(phi_name.Data(),0.25,-devPi-plotMargin,devPi+plotMargin); phi->numbins = bin[3];
                             Variable* b0Beauty;
                             if (b0Var)
                             b0Beauty = new Variable("B0beauty",0.,-2,+2);
@@ -685,11 +685,11 @@ int main(int argc, char** argv) {
                                       cout <<"  - Three Bodies Phase-space background" <<endl;
                                       datasetName.Append("__plus__BdToPsiPiK_PHSP"); plotsName.Append("_PHSP");
                                     }
-                                    if (bkgHist) {
+                                    if (bkgPdfHist) {
                                       cout <<"  - Combinatorial background" <<endl;
                                       datasetName.Append("__withHistoBkg"); plotsName.Append("__withHistoBkg");
                                     }
-                                    if (effPdfProd ) {
+                                    if (effPdfHist ) {
                                       cout <<"  - With efficiency multiplication" <<endl;
                                       datasetName.Append("__withEff"); plotsName.Append("__withEff");
                                     }
