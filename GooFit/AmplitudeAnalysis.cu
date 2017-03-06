@@ -1281,7 +1281,7 @@ int main(int argc, char** argv) {
                                       else if (effHistInt) {
                                         //effHistAng = new BiDimHistoPdf("EfficienciesPdfAng",effDatasetAngles,obserVariables);
                                         //effHistMas = new BiDimHistoPdf("EfficienciesPdfMas",effDatasetMasses,obserVariables);
-                                        effHist = new BiDimHistoPdf("EfficienciesPdf",effDataset,obserVariables);
+                                        effHist = new QuadDimHistoKStarPdf("EfficienciesPdf",effDataset,obserVariables);
                                       }
 
 
@@ -1469,11 +1469,11 @@ int main(int argc, char** argv) {
                                     //Variable* halfFrac = new Variable("halfFrac",0.25);
 
                                     if (b0Var)
-                                    matrix = new MatrixPdf("Kstars_signal", massKPi, cosMuMu, massPsiPi, phi, b0Beauty, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
+                                    matrix = new MatrixPdf("Kstars_signal", massKPi, massPsiPi, cosMuMu,phi, b0Beauty, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
                                     else if (b0BarPdf)
-                                    matrix = new MatrixPdf("Kstars_signal", Masses, Gammas, Spins, as,bs,psi_nS,dRadB0,dRadKs,massKPi, cosMuMu, massPsiPi, phi);
+                                    matrix = new MatrixPdf("Kstars_signal", Masses, Gammas, Spins, as,bs,psi_nS,dRadB0,dRadKs,massKPi, massPsiPi, cosMuMu,phi);
                                     else
-                                    matrix = new MatrixPdf("Kstars_signal", massKPi, cosMuMu, massPsiPi, phi,Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
+                                    matrix = new MatrixPdf("Kstars_signal", massKPi,massPsiPi, cosMuMu,phi,Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
 
                                     //effFile->Close();
 
@@ -2023,6 +2023,7 @@ int main(int argc, char** argv) {
                                       startC = times(&startProc);
                                       //
                                       matrixTotPlot->getCompProbsAtDataPoints(pdfTotalValues);
+                                      matrixTotPlot->clearCurrentFit();
                                       int indexComponents = 0;
 
                                       //std::cout <<" Vector size : " <<pdfTotalValues.size() <<std::endl;
