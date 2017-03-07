@@ -1915,11 +1915,11 @@ int main(int argc, char** argv) {
   //GooPdf* bkgHistPlot;
 
   if (b0Var)
-    matrixTotPlot = new MatrixPdf("Signal Pdf Plot", massKPi, cosMuMu, massPsiPi, phi, b0Beauty, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
+    matrixTotPlot = new MatrixPdf("Signal Pdf Plot", massKPi, massPsiPi, cosMuMu, phi, b0Beauty, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
   else if (b0BarPdf)
-    matrixTotPlot = new MatrixPdf("Signal Pdf Plot", Masses, Gammas, Spins, as,bs,psi_nS,dRadB0,dRadKs,massKPi, cosMuMu, massPsiPi, phi);
+    matrixTotPlot = new MatrixPdf("Signal Pdf Plot", Masses, Gammas, Spins, as,bs,psi_nS,dRadB0,dRadKs, massKPi, massPsiPi, cosMuMu, phi);
   else
-    matrixTotPlot = new MatrixPdf("Signal Pdf Plot", massKPi, cosMuMu, massPsiPi, phi,Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
+    matrixTotPlot = new MatrixPdf("Signal Pdf Plot", massKPi, massPsiPi, cosMuMu, phi, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
 
   gettimeofday(&startTime, NULL);
   startC = times(&startProc);
