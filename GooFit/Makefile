@@ -8,6 +8,8 @@ CUDALIBDIR=lib64
 CXXFLAGS    += -Xcompiler -fPIC -Xlinker -fPIE
 #CXXFLAGS    += -Xcompiler -Xlinker
 #CXXFLAGS    += -XLinker -fPIE
+# -std=c++11 or -std=gnu++11
+CXXFLAGS += -std=c++11
 
 UNAME=$(shell uname)
 ifeq ($(UNAME), Darwin)
@@ -38,13 +40,16 @@ endif
 CUDAHEADERS = $(CUDALOCATION)/include/
 GOOFITDIR = $(GOOFITDIRECTORY)
 
-INCLUDES += -I$(CUDALOCATION)/samples/common/inc/ -I$(CUDAHEADERS) -I$(GOOFITDIR) -I$(GOOFITDIR)/rootstuff/ -I$(GOOFITDIR)/rootstuff/Math -I$(GOOFITDIR)/PDFs/
+INCLUDES += -I$(CUDALOCATION)/samples/common/inc/ -I$(CUDAHEADERS) -I$(GOOFITDIR) -I$(GOOFITDIR)/rootstuff/ -I$(GOOFITDIR)/PDFs/
+# not there
+#INCLUDES += -I$(GOOFITDIR)/rootstuff/Math
 LIBS += -L$(CUDALOCATION)/$(CUDALIBDIR) -lcuda -lcudart -L$(GOOFITDIR)/rootstuff/ -lRootUtils
 
 # These are for user-level programs that want access to the ROOT plotting stuff,
 # not just the fitting stuff included in the GooFit-local ripped library.
 ROOT_INCLUDES = -I$(ROOTSYS)/include/ -I$(ROOTSYS)/include/Math
-ROOT_LIBS     = -L$(ROOTSYS)/lib/ -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lMatrix -lPhysics -lMathCore -pthread -lThread -lMinuit -lFoam # -lRooFit -lRooFitCore  -lRooStats -lRootAuth
+ROOT_LIBS     = -L$(ROOTSYS)/lib/ -lCore -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lMatrix -lPhysics -lMathCore -pthread -lThread -lMinuit -lFoam # -lRooFit -lRooFitCore  -lRooStats -lRootAuth
+#ROOT_LIBS += -lCint
 WRKDIR = $(GOOFITDIR)/wrkdir/
 
 THRUSTO         = $(WRKDIR)/Variable.o $(WRKDIR)/FitManager.o $(WRKDIR)/GooPdfCUDA.o $(WRKDIR)/Faddeeva.o $(WRKDIR)/FitControl.o $(WRKDIR)/PdfBase.o $(WRKDIR)/DataSet.o $(WRKDIR)/BinnedDataSet.o $(WRKDIR)/UnbinnedDataSet.o $(WRKDIR)/FunctorWriter.o
