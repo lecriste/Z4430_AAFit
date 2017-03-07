@@ -999,35 +999,6 @@ int main(int argc, char** argv) {
                                         }
                                       } // if ( (dataTxt.good()) )
                                       dataTxt.close();
-
-                                      if(bkgHistPdf){
-                                      inputFile = TFile::Open(dataFileName);
-
-                                      if (!inputFile) {
-                                        cout <<"Warning: unable to open data file \"" <<dataFileName <<"\"" <<endl;
-                                      } else {
-                                        TString bkgNameMass = "psi2SPi_vs_KPi";
-                                        TString bkgNameAng = "planesAngle_vs_cos_psi2S_helicityAngle";
-                                        if (tmva) {
-                                          bkgNameMass.Append("_masses_sbs_BDT"); bkgNameAng.Append("_sbs_BDT");
-                                        } else {
-                                          bkgNameMass.Append("_hardCuts_1B0_sidebands_B0massC"); bkgNameAng.Append("_hardCuts_1B0_sidebands_B0massC");
-                                        }
-
-                                        bkgTH2Mass = (TH2F*)inputFile->Get(bkgNameMass) ;
-
-                                        bkgTH2Ang = (TH2F*)inputFile->Get(bkgNameAng) ;
-
-                                        if (!(bkgTH2Mass)) {
-                                          std::cout<<"Efficiency TH2 named \'"<<bkgNameMass<<"\' NOT FOUND in found in TFile \'" <<bkgFile->GetName() <<"\'.\nReturning."<<std::endl;
-                                          return -1;
-                                        }
-                                        if (!(bkgTH2Ang)) {
-                                          std::cout<<"Efficiency TH2 named \'"<<bkgNameAng<<"\' NOT FOUND in found in TFile \'" <<bkgFile->GetName() <<"\'.\nReturning."<<std::endl;
-                                          return -1;
-                                        }
-                                      }
-                                      }
                                     } // if (txtfile)
                                     else {
                                       TString dataFileName = path+fileName;
@@ -1964,11 +1935,11 @@ int main(int argc, char** argv) {
                                       //GooPdf* bkgHistPlot;
 
                                       if (b0Var)
-                                      matrixTotPlot = new MatrixPdf("Signal Pdf Plot", massKPi, massPsiPi, cosMuMu,phi, b0Beauty, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
+                                      matrixTotPlot = new MatrixPdf("Signal Pdf Plot", massKPi, cosMuMu, massPsiPi, phi, b0Beauty, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
                                       else if (b0BarPdf)
-                                      matrixTotPlot = new MatrixPdf("Signal Pdf Plot", Masses, Gammas, Spins, as,bs,psi_nS,dRadB0,dRadKs,massKPi, massPsiPi,cosMuMu, phi);
+                                      matrixTotPlot = new MatrixPdf("Signal Pdf Plot", Masses, Gammas, Spins, as,bs,psi_nS,dRadB0,dRadKs,massKPi, cosMuMu, massPsiPi, phi);
                                       else
-                                      matrixTotPlot = new MatrixPdf("Signal Pdf Plot", massKPi, massPsiPi, cosMuMu,phi,Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
+                                      matrixTotPlot = new MatrixPdf("Signal Pdf Plot", massKPi, cosMuMu, massPsiPi, phi,Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
 
                                       gettimeofday(&startTime, NULL);
                                       startC = times(&startProc);
