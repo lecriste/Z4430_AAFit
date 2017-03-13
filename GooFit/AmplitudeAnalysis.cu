@@ -538,6 +538,7 @@ int main(int argc, char** argv) {
     printinstruction();
     return 1;
   }
+
   TString massKPi_name = "massKPi", cosMuMu_name = "cosMuMu", massPsiPi_name = "massPsiPi", phi_name = "phi";
   vector <TString> varNames; // this order must be followed hereafter
   varNames.push_back(massKPi_name); varNames.push_back(massPsiPi_name); varNames.push_back(cosMuMu_name); varNames.push_back(phi_name);
@@ -547,35 +548,27 @@ int main(int argc, char** argv) {
   vector <TString> varTitles; // same order as varNames
   varTitles.push_back(massKPi_title); varTitles.push_back(massPsiPi_title); varTitles.push_back(cosMuMu_title); varTitles.push_back(phi_title);
 
-  //Defining minimums and maximums
-  fptype plotMargin = 0.05;
+  // Defining minimums and maximums of variables
   fptype massKPi_min = 0.6, massKPi_max = 2.2;
   fptype massPsiPi_min = 3.2, massPsiPi_max = 4.9;
+  fptype cosMuMu_min = -1.1, cosMuMu_max = -cosMuMu_min;
+  fptype phi_min = -3.25, phi_max = -phi_min;
 
-  TString fileName = "Data_JPsi_2p0Sig_6p0to9p0SB.root"; Bool_t tmva = kFALSE;
-  TString bdtCut = "0p00"; //bdtCut  = "-0p03";
-  //fileName = "TMVApp__withBDTCutAt"+bdtCut+"_JPsi_2p0Sig_6p0to9p0SB.root";
-  if (fileName.Contains("TMVA")) tmva = kTRUE;
+  // The fit is very sensitive to the ranges below, be aware when changing them 
+  fptype fitMargin = 0.1;
+  pair<fptype,fptype> fitRange[] = {make_pair(massKPi_min-fitMargin,massKPi_max+fitMargin), make_pair(massPsiPi_min-fitMargin,massPsiPi_max+fitMargin), make_pair(cosMuMu_min,cosMuMu_max), make_pair(phi_min,phi_max)};
 
-  TString path;
-  if (localRead)
-    path = "./rootfiles/"; //path = "/lustre/home/adrianodif/RootFiles/Z4430/TMVA/";
-  else {
-    path = "/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/";
-    if (tmva) path.Append("TMVA/");
-  }
-
-  Variable* massKPi = new Variable(massKPi_name.Data(),1.,massKPi_min-plotMargin,massKPi_max+plotMargin); massKPi->numbins = bin[0];
-  //Variable* massKPiEff = new Variable(massKPi_eff_name.Data(),1.,0.6,2.2); massKPiEff->numbins = bin[0];
-  //Variable* massKPi = new Variable(massKPi_name.Data(),1.,0.6,1.67); massKPi->numbins = bin[0];
-  Variable* massPsiPi = new Variable(massPsiPi_name.Data(),TMath::Sqrt(23),massPsiPi_min-plotMargin,massPsiPi_max+plotMargin); massPsiPi->numbins = bin[1];
-  //Variable* massPsiPiEff = new Variable(massPsiPi_eff_name.Data(),TMath::Sqrt(23),3.2,4.9); massPsiPiEff->numbins = bin[1];
+  Variable* massKPi = new Variable(massKPi_name.Data(),1.,fitRange[0].first,fitRange[0].second); massKPi->numbins = bin[0];
+  //Variable* massKPiEff = new Variable(massKPi_eff_name.Data(),1.,massKPi_min,massKPi_max); massKPiEff->numbins = bin[0];
+  //Variable* massKPi = new Variable(massKPi_name.Data(),1.,massKPi_min,1.67); massKPi->numbins = bin[0];
+  Variable* massPsiPi = new Variable(massPsiPi_name.Data(),TMath::Sqrt(23),fitRange[1].first,fitRange[1].second); massPsiPi->numbins = bin[1];
+  //Variable* massPsiPiEff = new Variable(massPsiPi_eff_name.Data(),TMath::Sqrt(23),massPsiPi_min,massPsiPi_max); massPsiPiEff->numbins = bin[1];
   // cosine of the psi(nS) helicity angle
-  Variable* cosMuMu = new Variable(cosMuMu_name.Data(),0.,-1-plotMargin,1+plotMargin); cosMuMu->numbins = bin[2];
+  Variable* cosMuMu = new Variable(cosMuMu_name.Data(),0.,fitRange[2].first,fitRange[2].second); cosMuMu->numbins = bin[2];
   // cosine of the K* helicity angle
-  //Variable* massPsiPi = new Variable(massPsiPi_name.Data(),0.,-1,1); massPsiPi->numbins = bin[2];
+  //Variable* massPsiPi = new Variable(massPsiPi_name.Data(),0.,cosMuMu_min,cosMuMu_max); massPsiPi->numbins = bin[2];
   // angle between decay planesd
-  Variable* phi = new Variable(phi_name.Data(),0.25,-devPi-plotMargin,devPi+plotMargin); phi->numbins = bin[3];
+  Variable* phi = new Variable(phi_name.Data(),0.25,fitRange[3].first,fitRange[3].second); phi->numbins = bin[3];
   Variable* b0Beauty;
   if (b0Var)
     b0Beauty = new Variable("B0beauty",0.,-2,+2);
@@ -828,7 +821,6 @@ int main(int argc, char** argv) {
     Spins.push_back(new Variable("K_1430_2_Spin_0",2.0));
     as.push_back(new Variable("a_K_1430_2_0",4.66,aMin,aMax) );
     bs.push_back(new Variable("b_K_1430_2_0",-0.32,bMin,bMax) );
-
     //as.push_back(new Variable("a_K_1430_2_0",0.844));
     //bs.push_back(new Variable("b_K_1430_2_0",3.14,bMin,bMax));
 
@@ -847,7 +839,6 @@ int main(int argc, char** argv) {
     Spins.push_back(new Variable("K_1780_3_Spin_0",3.0));
     as.push_back(new Variable("a_K_1780_3_0",16.8,aMin,aMax) );
     bs.push_back(new Variable("b_K_1780_3_0",-1.43,bMin,bMax) );
-
     //as.push_back(new Variable("a_K_1780_3_0",0.844));
     //bs.push_back(new Variable("b_K_1780_3_0",3.14,bMin,bMax));
 
@@ -900,17 +891,15 @@ int main(int argc, char** argv) {
   // std::cout<<" - dataset with "<<dataset.getNumBins()<<" bins "<<std::endl;
   //std::cout<<" - efficiencyDatasetMasses with "<<efficiencyDatasetMasses->getNumBins()<<" bins "<<std::endl;
 
+  pair<fptype,fptype> histRange[] = {make_pair(massKPi_min,massKPi_max), make_pair(massPsiPi_min,massPsiPi_max), make_pair(cosMuMu_min,cosMuMu_max), make_pair(phi_min,phi_max)};
   vector<TH1F*> varHistos, varHistos_effCorr, varHistos_theory;
-  TH1F* projBkgHistosInt[nProjVars];
-  TH1F* projEffHistosInt[nProjVars];
+  TH1F* projBkgHistosInt[nProjVars], *projEffHistosInt[nProjVars];
 
   for (Int_t iVar=0; iVar<nProjVars; ++iVar) {
     TString xTitle = varTitles[iVar];
     if (iVar <= 2) xTitle.Append(" [GeV]");
 
-    Double_t varStep = (obserVariables[iVar]->upperlimit - obserVariables[iVar]->lowerlimit)/((fptype)dataPoints[iVar]);
-
-    TH1F* hist = new TH1F(varNames[iVar]+"_Histo", TString::Format("%s;%s",varNames[iVar].Data(),xTitle.Data()), dataPoints[iVar]+2, obserVariables[iVar]->lowerlimit-varStep, obserVariables[iVar]->upperlimit+varStep);
+    TH1F* hist = new TH1F(varNames[iVar]+"_Histo", TString::Format("%s;%s",varNames[iVar].Data(),xTitle.Data()), dataPoints[iVar], histRange[iVar].first, histRange[iVar].second);
     hist->SetLineColor(kBlack); hist->SetMarkerColor(kBlack); hist->SetMarkerStyle(kFullCircle);
     varHistos.push_back( hist );
 
@@ -942,6 +931,21 @@ int main(int argc, char** argv) {
 
   TString end = fullDatasetName; Ssiz_t endPoint = end.Index("__", fullDatasetName.Length()-10); end.Remove(0,endPoint);
   TString theory_datasetName = fullDatasetName; Ssiz_t startPoint = theory_datasetName.Index("__with"); theory_datasetName.Remove(startPoint); theory_datasetName.Append(end);
+
+
+  TString fileName = "Data_JPsi_2p0Sig_6p0to9p0SB.root"; Bool_t tmva = kFALSE;
+  TString bdtCut = "0p00"; //bdtCut  = "-0p03";
+  //fileName = "TMVApp__withBDTCutAt"+bdtCut+"_JPsi_2p0Sig_6p0to9p0SB.root";
+  if (fileName.Contains("TMVA")) tmva = kTRUE;
+
+  TString path;
+  if (localRead)
+    path = "./rootfiles/"; //path = "/lustre/home/adrianodif/RootFiles/Z4430/TMVA/";
+  else {
+    path = "/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/";
+    if (tmva) path.Append("TMVA/");
+  }
+
 
   if (txtfile) {
     ifstream dataTxt(fullDatasetName.Data());
