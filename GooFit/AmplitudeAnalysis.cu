@@ -555,7 +555,7 @@ int main(int argc, char** argv) {
   fptype phi_min = -3.25, phi_max = -phi_min;
 
   // The fit is very sensitive to the ranges below, be aware when changing them 
-  fptype fitMargin = 0.1;
+  fptype fitMargin = 0.1; // 0.0 takes 6' and 250 more calls but gives better agreement with gen values for K*(892) and K*(800)
   pair<fptype,fptype> fitRange[] = {make_pair(massKPi_min-fitMargin,massKPi_max+fitMargin), make_pair(massPsiPi_min-fitMargin,massPsiPi_max+fitMargin), make_pair(cosMuMu_min,cosMuMu_max), make_pair(phi_min,phi_max)};
 
   Variable* massKPi = new Variable(massKPi_name.Data(),1.,fitRange[0].first,fitRange[0].second); massKPi->numbins = bin[0];
