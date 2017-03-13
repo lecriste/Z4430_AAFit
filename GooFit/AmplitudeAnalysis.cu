@@ -1519,9 +1519,9 @@ int main(int argc, char** argv) {
       //bkgFile = TFile::Open(path+bkgName);
       bkgFile = inputFile;
       if (!bkgFile)
-	std::cout <<"File 0" <<std::endl;
+	std::cout <<"bkgFile is 0" <<std::endl;
       else
-	std::cout <<"Is open :" <<bkgFile->IsOpen() <<std::endl;
+	std::cout <<"bkgFile is open: " <<bkgFile->IsOpen() <<std::endl;
 
       bkgTH2[0] = bkgTH2Mass;
       bkgTH2[1] = bkgTH2Ang;
@@ -1995,8 +1995,8 @@ int main(int argc, char** argv) {
     //plotXMin[iVar] = varHistos[iVar]->GetXaxis()->GetBinUpEdge(varHistos[iVar]->GetNbinsX());
   }
 
-  Float_t xMax = 0.95, yMax = 0.95;
-  Float_t legLeft = 0.6, legWidth = 0.15;
+  Float_t xMax = 0.99, yMax = 0.95;
+  Float_t legLeft = 0.65, legWidth = 0.15;
   TLegend *legPlot = new TLegend(legLeft, 0.6, legLeft+legWidth, yMax); // 0.6 will be replaced later
   TPaveText *fitStat = new TPaveText(legPlot->GetX2(), 0.4, xMax, yMax, "NDC"); // 0.4 will be replaced later
 
@@ -2312,7 +2312,7 @@ int main(int argc, char** argv) {
       legPlot->AddEntry(&signalTotalSigPlot[0], "K* signal only", "l");
     }
 
-  }else{
+  } else {
 
     legPlot->AddEntry(projHistos[0], "Total fit", "lpe");
 
@@ -2434,11 +2434,11 @@ int main(int argc, char** argv) {
     //GooPdf* effHistPlot;
 
     if (b0Var)
-      matrixPlot = new MatrixPdf(bufferstring, massKPi, cosMuMu, massPsiPi, phi, b0Beauty, Masses,Gammas,Spins,asPlot,bsPlot,psi_nS,dRadB0,dRadKs);
+      matrixPlot = new MatrixPdf(bufferstring, massKPi, massPsiPi, cosMuMu, phi, b0Beauty, Masses,Gammas,Spins,asPlot,bsPlot,psi_nS,dRadB0,dRadKs);
     else if (b0BarPdf)
-      matrixPlot = new MatrixPdf(bufferstring, Masses, Gammas, Spins, asPlot,bsPlot,psi_nS,dRadB0,dRadKs,massKPi, cosMuMu, massPsiPi, phi);
+      matrixPlot = new MatrixPdf(bufferstring, Masses, Gammas, Spins, asPlot,bsPlot,psi_nS,dRadB0,dRadKs,massKPi, massPsiPi, cosMuMu, phi);
     else
-      matrixPlot = new MatrixPdf(bufferstring, massKPi, cosMuMu, massPsiPi, phi,Masses,Gammas,Spins,asPlot,bsPlot,psi_nS,dRadB0,dRadKs);
+      matrixPlot = new MatrixPdf(bufferstring, massKPi, massPsiPi, cosMuMu, phi,Masses,Gammas,Spins,asPlot,bsPlot,psi_nS,dRadB0,dRadKs);
 
     matrixPlot->setData(&plottingGridData);
     matrixPlot->copyParams();
