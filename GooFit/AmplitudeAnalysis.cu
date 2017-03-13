@@ -641,7 +641,7 @@ int main(int argc, char** argv) {
   }
 
   for (Int_t iVar=0; iVar<nProjVars; ++iVar)
-    obserVariables[iVar]->numbins = dataPoints[iVar];
+    obserVariables[iVar]->numbins = bin[iVar];
 
   if (!nKstars) {
     cout <<"No K* selected (K892,K800,K1410,K1430) please see instructions below" <<endl;
@@ -1709,7 +1709,7 @@ int main(int argc, char** argv) {
 	bkgTH2[y]->Draw("LEGO");
 	canvasB->SaveAs("./plots/"+biName[y]+"BkgHisto.png");
 	canvasB->Clear();
-	
+
 	bkgHistosInt[y]->Draw("LEGO");
 	canvasB->SaveAs("./plots/"+biName[y]+"BkgIntHisto.png");
 	canvasB->Clear();
