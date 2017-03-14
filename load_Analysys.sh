@@ -10,5 +10,8 @@ gROOT->ProcessLine(".x effMasses.cxx+");
 gROOT->ProcessLine(".x Angles_contour.cxx+");
 gROOT->ProcessLine(".x sqDalitzToMassesPdf.cxx+");
 gROOT->ProcessLine(".x sqDalitz_contour.cxx+");
+// not working
+gROOT->SetMacroPath("/lustrehome/cristella/work/Z_analysis/AA_fit/");
+gROOT->LoadMacro("Analysic.C");
 
 }

@@ -15,7 +15,7 @@
 //
 // or
 // root -l -b load_Analysys.sh
-// to load libraries and run with custom flasgs
+// to load libraries and run with custom flags
 //
 
 

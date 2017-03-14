@@ -891,7 +891,8 @@ int main(int argc, char** argv) {
   // std::cout<<" - dataset with "<<dataset.getNumBins()<<" bins "<<std::endl;
   //std::cout<<" - efficiencyDatasetMasses with "<<efficiencyDatasetMasses->getNumBins()<<" bins "<<std::endl;
 
-  pair<fptype,fptype> histRange[] = {make_pair(massKPi_min,massKPi_max), make_pair(massPsiPi_min,massPsiPi_max), make_pair(cosMuMu_min,cosMuMu_max), make_pair(phi_min,phi_max)};
+  fptype plotMargin = 0.1;
+  pair<fptype,fptype> histRange[] = {make_pair(massKPi_min-plotMargin,massKPi_max+plotMargin), make_pair(massPsiPi_min-plotMargin,massPsiPi_max+plotMargin), make_pair(cosMuMu_min,cosMuMu_max), make_pair(phi_min,phi_max)};
   vector<TH1F*> varHistos, varHistos_effCorr, varHistos_theory;
   TH1F* projBkgHistosInt[nProjVars], *projEffHistosInt[nProjVars];
 
@@ -1384,9 +1385,6 @@ int main(int argc, char** argv) {
     relEffTH2[1]->Draw("same");
     canvasEff->SaveAs("./plots/angEffHistAndIntHist.png");
     canvasEff->Clear();
-
-
-
 
 
     for (Int_t y=0; y<nProjVars; y+=2) {
@@ -2362,7 +2360,7 @@ int main(int argc, char** argv) {
     // Pushing histogram for each projection
     for (Int_t iVar=0; iVar<nProjVars; ++iVar) {
       sprintf(bufferstring,"comp_%d_plotHisto_%s",k,shortVarNames[iVar].Data());
-      compHistos[iVar].push_back(new TH1F(bufferstring,bufferstring,obserVariables[iVar]->numbins,obserVariables[iVar]->lowerlimit,obserVariables[iVar]->upperlimit));
+      compHistos[iVar].push_back(new TH1F(bufferstring,bufferstring,obserVariables[iVar]->numbins,histRange[iVar].first,histRange[iVar].second));
     }
 
     cout <<"\n- Plotting " <<kStarNames[k] <<" component by setting all other components to zero" <<endl;
@@ -2553,9 +2551,9 @@ int main(int argc, char** argv) {
 	multiGraphs[iVar]->Add(signalCompPlot,"L");
 
 	if (iVar==0) {
-	  sprintf(bufferstring,"%s (%.2f %)",kStarNames[k].c_str(), compsIntegral/totalSigIntegral*100.);
+	  sprintf(bufferstring,"%s [%.2f %]",kStarNames[k].c_str(), compsIntegral/totalSigIntegral*100.);
 	  if (!hPlots)
-	    legPlot->AddEntry(signalCompPlot,bufferstring,"l");
+	    legPlot->AddEntry(signalCompPlot,bufferstring, "l");
 	  else
 	    legPlot->AddEntry(compHistos[iVar][k],bufferstring, "lpe");
 	}
@@ -2581,12 +2579,7 @@ int main(int argc, char** argv) {
   legPlot->SetY1( yMax - 0.04*(legPlot->GetNRows()) ) ;
   fitStat->SetY1( yMax - 0.03*nStatEntries ) ;
 
-  //Adding single points to plot better and total plots
-  fptype pointsX[2], pointsY[2];
   for (Int_t iVar=0; iVar<nProjVars; ++iVar) {
-    pointsX[0] = obserVariables[iVar]->lowerlimit; pointsX[1] = obserVariables[iVar]->upperlimit;
-    pointsY[0] = 0.01; pointsY[1] = varHistos[iVar]->GetMaximum();
-    TGraph* points = new TGraph(2,pointsX,pointsY);
     if (bkgPhaseSpace) {
       multiGraphs[iVar]->Add(&signalTotalBkgPlot[iVar],"L");
       //multiGraphs[iVar]->Add(&signalTotalSigPlot[iVar],"L");
@@ -2606,16 +2599,17 @@ int main(int argc, char** argv) {
     canvas->cd();
     canvas->Clear();
 
+    fptype ySF = 1.3;
     if (!hPlots) {
       multiGraphs[iVar]->Draw("AL");
       multiGraphs[iVar]->SetMinimum(0.1);
-      multiGraphs[iVar]->SetMaximum(1.3 * plotYMax[iVar]);
+      multiGraphs[iVar]->SetMaximum(plotYMax[iVar]*ySF);
       varHistos[iVar]->Draw("Esame"); // if drawn without "same", varHistos[iVar]->SetMinimum(0.1) must be called as well
       if (!bkgPdfHist)
 	varHistos_theory[iVar]->Draw("Esame");
     } else {
       varHistos[iVar]->SetMinimum(0.1);
-      varHistos[iVar]->SetMaximum(1.3 * plotYMax[iVar]);
+      varHistos[iVar]->SetMaximum(plotYMax[iVar]*ySF);
       varHistos[iVar]->Draw("E");
       varHistos_theory[iVar]->Draw("ESAME");
 
@@ -2635,6 +2629,7 @@ int main(int argc, char** argv) {
     }
 
     if (bkgHistos[iVar]) bkgHistos[iVar]->Draw("same");
+
     if (iVar==0) { // it's enough on the m(KPi) plot only
       legPlot->Draw(); fitStat->Draw();
     }
