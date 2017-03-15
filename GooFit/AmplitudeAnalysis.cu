@@ -39,6 +39,7 @@
 // #include "../Angles_contour.h"
 // #include "../Dalitz_contour.h"
 // #include "../effMasses.h"
+#include "../initialAmpVal.h"
 
 #include <vector>
 #include <string>
@@ -751,12 +752,12 @@ int main(int argc, char** argv) {
       Masses.push_back(new Variable("K_892_Mass_0",M892));
       Gammas.push_back(new Variable("K_892_Gamma_0",G892));
       Spins.push_back(new Variable("K_892_Spin_0",1.0));
-      as.push_back(new Variable("a_K_892_0",1.0));//,aMin,aMax) );
-      bs.push_back(new Variable("b_K_892_0",0.0));//,bMin,bMax) );
-      as.push_back(new Variable("a_K_892_p1",0.844,aMin,aMax) );
-      bs.push_back(new Variable("b_K_892_p1",3.14,bMin,bMax) );
-      as.push_back(new Variable("a_K_892_m1",0.196,aMin,aMax));
-      bs.push_back(new Variable("b_K_892_m1",-1.7,bMin,bMax));
+      as.push_back(new Variable("a_K_892_0",K892_1_0_a));//,aMin,aMax) );
+      bs.push_back(new Variable("b_K_892_0",K892_1_0_b));//,bMin,bMax) );
+      as.push_back(new Variable("a_K_892_p1",K892_1_p1_a,aMin,aMax) );
+      bs.push_back(new Variable("b_K_892_p1",K892_1_p1_b,bMin,bMax) );
+      as.push_back(new Variable("a_K_892_m1",K892_1_m1_a,aMin,aMax));
+      bs.push_back(new Variable("b_K_892_m1",K892_1_m1_b,bMin,bMax));
     } else {
       Masses.push_back(new Variable("K_892_Mass_0",M892e));
       Gammas.push_back(new Variable("K_892_Gamma_0",G892e));
@@ -780,8 +781,8 @@ int main(int argc, char** argv) {
     Masses.push_back(new Variable("K_800_Mass_0",M800));
     Gammas.push_back(new Variable("K_800_Gamma_0",G800));
     Spins.push_back(new Variable("K_800_Spin_0",0.0));
-    as.push_back(new Variable("a_K_800_0",1.12,aMin,aMax) );
-    bs.push_back(new Variable("b_K_800_0",2.3,bMin,bMax) );
+    as.push_back(new Variable("a_K_800_0",K800_0_0_a,aMin,aMax) );
+    bs.push_back(new Variable("b_K_800_0",K800_0_0_b,bMin,bMax) );
   }
 
   if (k1410Star) {
@@ -790,17 +791,15 @@ int main(int argc, char** argv) {
     Masses.push_back(new Variable("K_1410_Mass_0",M1410));
     Gammas.push_back(new Variable("K_1410_Gamma_0",G1410));
     Spins.push_back(new Variable("K_1410_Spin_0",1.0));
-    as.push_back(new Variable("a_K_1410_0",0.119,aMin,aMax) );
-    bs.push_back(new Variable("b_K_1410_0",0.81,bMin,bMax) );
-
+    as.push_back(new Variable("a_K_1410_0",K1410_1_0_a,aMin,aMax) );
+    bs.push_back(new Variable("b_K_1410_0",K1410_1_0_b,bMin,bMax) );
     //as.push_back(new Variable("a_K_1410_0",0.844));
     //bs.push_back(new Variable("b_K_1410_0",3.14,bMin,bMax));
 
-    as.push_back(new Variable("a_K_1410_p1",0.123,aMin,aMax) );
-    bs.push_back(new Variable("b_K_1410_p1",-1.04,bMin,bMax) );
-
-    as.push_back(new Variable("a_K_1410_m1",0.036,aMin,aMax));
-    bs.push_back(new Variable("b_K_1410_m1",0.67,bMin,bMax));
+    as.push_back(new Variable("a_K_1410_p1",K1410_1_p1_a,aMin,aMax) );
+    bs.push_back(new Variable("b_K_1410_p1",K1410_1_p1_b,bMin,bMax) );
+    as.push_back(new Variable("a_K_1410_m1",K1410_1_m1_a,aMin,aMax));
+    bs.push_back(new Variable("b_K_1410_m1",K1410_1_m1_b,bMin,bMax));
   }
 
   if (k1430Star0) {
@@ -809,8 +808,8 @@ int main(int argc, char** argv) {
     Masses.push_back(new Variable("K_1430_0_Mass_0",M1430_0));
     Gammas.push_back(new Variable("K_1430_0_Gamma_0",G1430_0));
     Spins.push_back(new Variable("K_1430_0_Spin_0",0.0));
-    as.push_back(new Variable("a_K_1430_0_0",0.89,aMin,aMax) );
-    bs.push_back(new Variable("b_K_1430_0_0",-2.17,bMin,bMax) );
+    as.push_back(new Variable("a_K_1430_0_0",K1430_0_0_a,aMin,aMax) );
+    bs.push_back(new Variable("b_K_1430_0_0",K1430_0_0_b,bMin,bMax) );
   }
 
   if (k1430Star2) {
@@ -819,16 +818,15 @@ int main(int argc, char** argv) {
     Masses.push_back(new Variable("K_1430_2_Mass_0",M1430_2));
     Gammas.push_back(new Variable("K_1430_2_Gamma_0",G1430_2));
     Spins.push_back(new Variable("K_1430_2_Spin_0",2.0));
-    as.push_back(new Variable("a_K_1430_2_0",4.66,aMin,aMax) );
-    bs.push_back(new Variable("b_K_1430_2_0",-0.32,bMin,bMax) );
+    as.push_back(new Variable("a_K_1430_2_0",K1430_2_0_a,aMin,aMax) );
+    bs.push_back(new Variable("b_K_1430_2_0",K1430_2_0_b,bMin,bMax) );
     //as.push_back(new Variable("a_K_1430_2_0",0.844));
     //bs.push_back(new Variable("b_K_1430_2_0",3.14,bMin,bMax));
 
-    as.push_back(new Variable("a_K_1430_2_p1",4.65,aMin,aMax) );
-    bs.push_back(new Variable("b_K_1430_2_p1",-3.05,bMin,bMax) );
-
-    as.push_back(new Variable("a_K_1430_2_m1",1.26,aMin,aMax));
-    bs.push_back(new Variable("b_K_1430_2_m1",-1.92,bMin,bMax));
+    as.push_back(new Variable("a_K_1430_2_p1",K1430_2_p1_a,aMin,aMax) );
+    bs.push_back(new Variable("b_K_1430_2_p1",K1430_2_p1_b,bMin,bMax) );
+    as.push_back(new Variable("a_K_1430_2_m1",K1430_2_m1_a,aMin,aMax));
+    bs.push_back(new Variable("b_K_1430_2_m1",K1430_2_m1_b,bMin,bMax));
   }
 
   if (k1780Star) {
@@ -837,16 +835,16 @@ int main(int argc, char** argv) {
     Masses.push_back(new Variable("K_1780_3_Mass_0",M1780_3));
     Gammas.push_back(new Variable("K_1780_3_Gamma_0",G1780_3));
     Spins.push_back(new Variable("K_1780_3_Spin_0",3.0));
-    as.push_back(new Variable("a_K_1780_3_0",16.8,aMin,aMax) );
-    bs.push_back(new Variable("b_K_1780_3_0",-1.43,bMin,bMax) );
+    as.push_back(new Variable("a_K_1780_3_0",K1780_3_0_a,aMin,aMax) );
+    bs.push_back(new Variable("b_K_1780_3_0",K1780_3_0_b,bMin,bMax) );
     //as.push_back(new Variable("a_K_1780_3_0",0.844));
     //bs.push_back(new Variable("b_K_1780_3_0",3.14,bMin,bMax));
 
-    as.push_back(new Variable("a_K_1780_3_p1",19.1,aMin,aMax) );
-    bs.push_back(new Variable("b_K_1780_3_p1",2.03,bMin,bMax) );
+    as.push_back(new Variable("a_K_1780_3_p1",K1780_3_p1_a,aMin,aMax) );
+    bs.push_back(new Variable("b_K_1780_3_p1",K1780_3_p1_b,bMin,bMax) );
 
-    as.push_back(new Variable("a_K_1780_3_m1",10.2,aMin,aMax));
-    bs.push_back(new Variable("b_K_1780_3_m1",1.55,bMin,bMax));
+    as.push_back(new Variable("a_K_1780_3_m1",K1780_3_m1_a,aMin,aMax));
+    bs.push_back(new Variable("b_K_1780_3_m1",K1780_3_m1_b,bMin,bMax));
   }
 
   Int_t nHelAmps = as.size();

@@ -62,6 +62,8 @@
 #include "twoDFit.C"
 #include "twoD_chiSquare.C"
 
+#include "initialAmpVal.h"
+
 using namespace RooFit ;
 
 timeval start, stop;
@@ -191,38 +193,37 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
   vector< pair<TString, pair<const Double_t, const Double_t> > > Kstar_spin;
   map< TString, pair<Double_t, Double_t> > helJ_map;
 
-  // Belle B0->J/psi K+ pi- values
-
   cout <<"Adding K*(892)..." <<endl;
   Kstar_spin.push_back( make_pair("892_1", make_pair(M892,G892) ) ) ;
-  helJ_map["892_1_0"] = make_pair(1.,0.); helJ_map["892_1_p1"] = make_pair(0.844,3.14); helJ_map["892_1_m1"] = make_pair(0.196,-1.7); // from Belle
+  helJ_map["892_1_0"] = make_pair(K892_1_0_a,K892_1_0_b); helJ_map["892_1_p1"] = make_pair(K892_1_p1_a,K892_1_p1_b); helJ_map["892_1_m1"] = make_pair(K892_1_m1_a,K892_1_m1_b); // from Belle
   //helJ_map["892_1_0"] = make_pair(0.775,0.); helJ_map["892_1_p1"] = make_pair(0.159,1.563); helJ_map["892_1_m1"] = make_pair(0.612,2.712); // from EvtGen
 
   cout <<"Adding K*(800)..." <<endl;
   Kstar_spin.push_back( make_pair("800_0", make_pair(M800,G800) ) ) ;
-  helJ_map["800_0_0"] = make_pair(1.12,2.3);
+  helJ_map["800_0_0"] = make_pair(K800_0_0_a,K800_0_0_b);
 
   cout <<"Adding K*(1410)..." <<endl;
   Kstar_spin.push_back( make_pair("1410_1", make_pair(M1410,G1410) ) ) ;
-  helJ_map["1410_1_0"] = make_pair(0.119,0.81); helJ_map["1410_1_p1"] = make_pair(0.123,-1.04); helJ_map["1410_1_m1"] = make_pair(0.036,0.67);
+  helJ_map["1410_1_0"] = make_pair(K1410_1_0_a,K1410_1_0_b); helJ_map["1410_1_p1"] = make_pair(K1410_1_p1_a,K1410_1_p1_b); helJ_map["1410_1_m1"] = make_pair(K1410_1_m1_a,K1410_1_m1_b);
 
   cout <<"Adding K*(1430)_0..." <<endl;
   Kstar_spin.push_back( make_pair("1430_0", make_pair(M1430_0,G1430_0) ) ) ;
-  helJ_map["1430_0_0"] = make_pair(0.89,-2.17);
+  helJ_map["1430_0_0"] = make_pair(K1430_0_0_a,K1430_0_0_b);
   //helJ_map["1430_0_0"] = make_pair(1.,0.);
 
   cout <<"Adding K*(1430)_2..." <<endl;
   Kstar_spin.push_back( make_pair("1430_2", make_pair(M1430_2,G1430_2) ) ) ;
-  helJ_map["1430_2_0"] = make_pair(4.66,-0.32); helJ_map["1430_2_p1"] = make_pair(4.65,-3.05); helJ_map["1430_2_m1"] = make_pair(1.26,-1.92);
+  helJ_map["1430_2_0"] = make_pair(K1430_2_0_a,K1430_2_0_b); helJ_map["1430_2_p1"] = make_pair(K1430_2_p1_a,K1430_2_p1_b); helJ_map["1430_2_m1"] = make_pair(K1430_2_m1_a,K1430_2_m1_b);
   /*
     cout <<"Adding K*(1780)_3..." <<endl;
     Kstar_spin.push_back( make_pair("1780_3", make_pair(M1780_3,G1780_3) ) ) ;
-    helJ_map["1780_3_0"] = make_pair(16.8,-1.43); helJ_map["1780_3_p1"] = make_pair(19.1,2.03); helJ_map["1780_3_m1"] = make_pair(10.2,1.55);
-  *//*
-      cout <<"Adding K*(2380)_5..." <<endl;
-      Kstar_spin.push_back( make_pair("2380_5", make_pair(M2380_5,G2380_5) ) ) ;
-      helJ_map["2380_5_0"] = make_pair(1.,0.); helJ_map["2380_5_p1"] = make_pair(0.,0.); helJ_map["2380_5_m1"] = make_pair(0.,0.);
-    */
+    helJ_map["1780_3_0"] = make_pair(K1780_3_0_a,K1780_3_0_b); helJ_map["1780_3_p1"] = make_pair(K1780_3_p1_a,K1780_3_p1_b); helJ_map["1780_3_m1"] = make_pair(K1780_3_m1_a,K1780_3_m1_b);
+  */
+  /*
+    cout <<"Adding K*(2380)_5..." <<endl;
+    Kstar_spin.push_back( make_pair("2380_5", make_pair(M2380_5,G2380_5) ) ) ;
+    helJ_map["2380_5_0"] = make_pair(1.,0.); helJ_map["2380_5_p1"] = make_pair(0.,0.); helJ_map["2380_5_m1"] = make_pair(0.,0.);
+  */
   TString Hel = ""; //Hel = "_hel0"; //Hel = "_noHel0";
   if (Hel.Contains("_hel0"))
     cout <<"with helicity=0 amplitude only\n" <<endl;
@@ -289,8 +290,8 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
   TString massPsiPi_name = "massMuMuPi"; TString mass2PsiPi_name = massPsiPi_name; mass2PsiPi_name.ReplaceAll("mass","mass2");
   TString massPsiPi_title = "m(#psi#pi^{+})";
   Float_t massPsiPi_min = 3.2, massPsiPi_max = 4.9;
-  RooRealVar massPsiPi(massPsiPi_name,massPsiPi_title+" [GeV]",TMath::Sqrt(23),massPsiPi_min,massPsiPi_max);
-  //RooRealVar massPsiPi(massPsiPi_name,massPsiPi_title+" [GeV]",TMath::Sqrt(23),0.,99.9);
+  RooRealVar massPsiPi(massPsiPi_name,massPsiPi_title+" [GeV]",4,massPsiPi_min,massPsiPi_max);
+  //RooRealVar massPsiPi(massPsiPi_name,massPsiPi_title+" [GeV]",4,0.,99.9);
   TString mass2PsiPi_title = massPsiPi_title; mass2PsiPi_title.ReplaceAll("m(","m^{2}(");
   RooFormulaVar mass2PsiPiFor(mass2PsiPi_name+"For",mass2PsiPi_title+" [GeV^{2}]","pow(massMuMuPi,2)",massPsiPi);
   RooRealVar mass2PsiPi(mass2PsiPi_name,mass2PsiPiFor.getTitle(),TMath::Power(massPsiPi.getVal(),2),TMath::Power(massPsiPi.getMin(),2),TMath::Power(massPsiPi.getMax(),2));
@@ -404,7 +405,7 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
     cout <<"sigPDF set up with no K*! Please check" <<endl;
     return ;
   }
-  //cout <<"\nsigPDF->getVal() =\n" <<sigPDF->getVal() <<endl; return;
+  //cout <<"\nsigPDF->getVal() = " <<sigPDF->getVal() <<endl; return;
 
 
   RooConstVar mBd("mBd", "m(B^{0})", MBd) ;
@@ -839,6 +840,7 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
     modelWithBkgHist = new RooAddPdf(TString::Format("%s__with_%s",model->GetName(),sbsModel->GetName()),TString::Format("%s + %s",model->GetTitle(),sbsModel->GetTitle()),*model,*sbsModel,fixSig) ;
     model = modelWithBkgHist;
   }
+  cout <<"\nmodel->getVal() = " <<model->getVal() <<endl; return;
 
 
   Int_t nLegendEntries = 0;
