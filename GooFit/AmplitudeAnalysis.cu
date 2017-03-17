@@ -555,7 +555,7 @@ int main(int argc, char** argv) {
   fptype cosMuMu_min = -1.1, cosMuMu_max = -cosMuMu_min;
   fptype phi_min = -3.25, phi_max = -phi_min;
 
-  // The fit is very sensitive to the ranges below, be aware when changing them 
+  // The fit is very sensitive to the ranges below, be aware when changing them
   fptype fitMargin = 0.1; // 0.0 takes 6' and 250 more calls but gives better agreement with gen values for K*(892) and K*(800)
   pair<fptype,fptype> fitRange[] = {make_pair(massKPi_min-fitMargin,massKPi_max+fitMargin), make_pair(massPsiPi_min-fitMargin,massPsiPi_max+fitMargin), make_pair(cosMuMu_min,cosMuMu_max), make_pair(phi_min,phi_max)};
 
@@ -999,6 +999,41 @@ int main(int argc, char** argv) {
 
       }
     } // if ( (dataTxt.good()) )
+
+    if(bkgPdfHist){
+
+      TString dataFileName = path+fileName;
+      if (tmva) {
+        dataFileName.ReplaceAll("TMVApp_","TMVApp_data");
+      }
+      inputFile = TFile::Open(dataFileName);
+
+      if (!inputFile) {
+        cout <<"Warning: unable to open data file \"" <<dataFileName <<"\"" <<endl;
+      } else {
+        TString bkgNameMass = "psi2SPi_vs_KPi";
+        TString bkgNameAng = "planesAngle_vs_cos_psi2S_helicityAngle";
+        if (tmva) {
+  	bkgNameMass.Append("_masses_sbs_BDT"); bkgNameAng.Append("_sbs_BDT");
+        } else {
+  	bkgNameMass.Append("_hardCuts_1B0_sidebands_B0massC"); bkgNameAng.Append("_hardCuts_1B0_sidebands_B0massC");
+        }
+
+        bkgTH2Mass = (TH2F*)inputFile->Get(bkgNameMass) ;
+
+        bkgTH2Ang = (TH2F*)inputFile->Get(bkgNameAng) ;
+
+        if (!(bkgTH2Mass)) {
+  	std::cout<<"Efficiency TH2 named \'"<<bkgNameMass<<"\' NOT FOUND in found in TFile \'" <<bkgFile->GetName() <<"\'.\nReturning."<<std::endl;
+  	return -1;
+        }
+        if (!(bkgTH2Ang)) {
+  	std::cout<<"Efficiency TH2 named \'"<<bkgNameAng<<"\' NOT FOUND in found in TFile \'" <<bkgFile->GetName() <<"\'.\nReturning."<<std::endl;
+  	return -1;
+        }
+
+    }
+  }
     dataTxt.close();
   } // if (txtfile)
   else {
@@ -1810,7 +1845,7 @@ int main(int argc, char** argv) {
       // bkgFile->Close();
 
       for (int y=0; y<nProjVars; ++y)
-	obserVariables[y]->numbins = holdBinVar[y];
+	     obserVariables[y]->numbins = holdBinVar[y];
 
 
       background = bkgHistPdf;
@@ -2003,8 +2038,7 @@ int main(int argc, char** argv) {
   startC = times(&startProc);
   //
   matrixTotPlot->getCompProbsAtDataPoints(pdfTotalValues);
-  matrixTotPlot->clearCurrentFit();
-  int indexComponents = 0;
+
 
   //std::cout <<" Vector size : " <<pdfTotalValues.size() <<std::endl;
 
@@ -2053,7 +2087,7 @@ int main(int argc, char** argv) {
 
 
   //std::cout <<" Vector proj : " <<pdfTotalValues[0].size()/massKPi->numbins<<std::endl;
-  for (int k = 0; k < pdfTotalValues[0+indexComponents].size(); k++) {
+  for (int k = 0; k < pdfTotalValues[0].size(); k++) {
     //std::cout <<mkpTotalProjection[k]*events/sum<<std::endl;
     sum += pdfTotalValues[0][k];
     // if (bkgPhaseSpace) {
@@ -2145,7 +2179,7 @@ int main(int argc, char** argv) {
   // m(KPi)
   for (int j = 0; j < massKPi->numbins; ++j) {
     for (int i = 0; i < notMPKBins; ++i) {
-      totalProj[0][j] += pdfTotalValues[0+indexComponents][j  +  i * massKPi->numbins];
+      totalProj[0][j] += pdfTotalValues[0][j  +  i * massKPi->numbins];
       if (bkgPhaseSpace) {
 	totalSigProj[0][j] += pdfTotalValues[1][j  +  i * massKPi->numbins];
 	totalBkgProj[0][j] += pdfTotalValues[2][j  +  i * massKPi->numbins];
@@ -2156,7 +2190,7 @@ int main(int argc, char** argv) {
   for (int j = 0; j < massPsiPi->numbins; ++j) {
     for (int k = 0; k < phi->numbins * cosMuMu->numbins; ++k) {
       for (int i = 0; i < massKPi->numbins; ++i) {
-	totalProj[1][j] += pdfTotalValues[0+indexComponents][i  +  k * massKPi->numbins * massPsiPi->numbins  +  j * massKPi->numbins];
+	totalProj[1][j] += pdfTotalValues[0][i  +  k * massKPi->numbins * massPsiPi->numbins  +  j * massKPi->numbins];
 	if (bkgPhaseSpace) {
 	  totalSigProj[1][j] += pdfTotalValues[1][i  +  k * massKPi->numbins * massPsiPi->numbins  +  j * massKPi->numbins];
 	  totalBkgProj[1][j] += pdfTotalValues[2][i  +  k * massKPi->numbins * massPsiPi->numbins  +  j * massKPi->numbins];
@@ -2187,7 +2221,7 @@ int main(int argc, char** argv) {
   for (int j = 0; j < cosMuMu->numbins; ++j) {
     for (int k = 0; k < phi->numbins; ++k) {
       for (int i = 0; i < massKPi->numbins*cosMuMu->numbins; ++i) {
-	totalProj[2][j] += pdfTotalValues[0+indexComponents][i  +  j * massKPi->numbins * massPsiPi->numbins  +  k * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
+	totalProj[2][j] += pdfTotalValues[0][i  +  j * massKPi->numbins * massPsiPi->numbins  +  k * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
 	if (bkgPhaseSpace) {
 	  totalSigProj[2][j] += pdfTotalValues[1][i  +  j * massKPi->numbins * massPsiPi->numbins  +  k * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
 	  totalBkgProj[2][j] += pdfTotalValues[2][i  +  j * massKPi->numbins * massPsiPi->numbins  +  k * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
@@ -2198,7 +2232,7 @@ int main(int argc, char** argv) {
   // phi
   for (int j = 0; j < phi->numbins; ++j) {
     for (int k = 0; k < massPsiPi->numbins * massKPi->numbins * cosMuMu->numbins; ++k) {
-      totalProj[3][j] += pdfTotalValues[0+indexComponents][k  +  j * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
+      totalProj[3][j] += pdfTotalValues[0][k  +  j * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
       if (bkgPhaseSpace) {
 	totalSigProj[3][j] += pdfTotalValues[1][k  +  j * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
 	totalBkgProj[3][j] += pdfTotalValues[2][k  +  j * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
@@ -2265,7 +2299,8 @@ int main(int argc, char** argv) {
   }
 
   //fptype totalIntegral = totalPdf->normalise();
-  fptype totalSigIntegral = matrix->normalise();
+  fptype totalSigIntegral = matrixTotPlot->normalise();
+  matrixTotPlot->clearCurrentFit();
   //fptype totalComponent = 0.;
   fptype compsIntegral = 0.0;
   std::cout <<"\nTotal Normalisation Factor = " <<totalSigIntegral <<std::endl;
@@ -2465,7 +2500,7 @@ int main(int argc, char** argv) {
     for (int i=0; i<pdfCompValues[0].size(); i++) {
       //std::cout <<" Bin : " <<i <<" pdf : " <<pdfCompValues[0][i] <<std::endl;
       if (effPdfHist)
-	pdfCompValues[0][i] *= effCorrection[i];
+	     pdfCompValues[0][i] *= effCorrection[i];
 
       sum += pdfCompValues[0][i];
     }
@@ -2631,7 +2666,6 @@ int main(int argc, char** argv) {
     if (iVar==0) { // it's enough on the m(KPi) plot only
       legPlot->Draw(); fitStat->Draw();
     }
-
 
     // first Logy(1) and after Logy(0), viceversa does not work
     canvas->SetLogy(0);
