@@ -144,10 +144,10 @@ void printinstruction() {
   std::cerr <<"======= Instructions \n"
 	    <<"\t-h,--help \t\t Show this help message\n"
 	    <<"\t-evtGen \t\t Select EvtGen dataset and p.d.f. parameters\n"
-	    <<"\t-effH \t\t\t Perform the product of the pdf by the efficiency histogram \n"
-	    <<"\t-effHInt \t\t Perform the product of the pdf by the efficiency histogram interpolation \n"
-	    <<"\t-BkgMap \t\t Add Phase Space Background Map \n"
-	    <<"\t-BkgMapInt \t\t Add Phase Space Background Interpolation Map \n"
+	    <<"\t-effMap \t\t\t Perform the product of the pdf by the efficiency histogram \n"
+	    <<"\t-effInt \t\t Perform the product of the pdf by the efficiency histogram interpolation \n"
+	    <<"\t-BkgMap \t\t Add background histogram \n"
+	    <<"\t-BkgMapInt \t\t Add background histogram interpolation \n"
 	    <<"\t-BkgPHSP \t\t Add Phase Space Background to p.d.f.\n"
     //<<"\t-effH <4-dig-code> \t Perform the product of the pdf by the efficiency histogram ()\n"
     //<<"\t\t\t\t\t\t - code1 ()\n"
@@ -407,11 +407,11 @@ int main(int argc, char** argv) {
       bkgPdfHist = true;
       bkgFlag = true;
     }
-    else if (arg == "-effH") {
+    else if (arg == "-effMap") {
       effPdfHist = true;
       effHistMap = true;
     }
-    else if (arg == "-effHInt") {
+    else if (arg == "-effInt") {
       effPdfHist = true;
       effHistInt = true;
     }
@@ -531,13 +531,19 @@ int main(int argc, char** argv) {
     else if (arg == "-fixH") {
       i++;
       printCodes();
+      return -1;
+    }
+    else {
+      cout <<"Argument provided is not in the list, please check the spelling." <<endl;
+      printinstruction();
+      return -1;
     }
   }
 
   if (b0BarPdf && b0Var) {
     cout <<"Both B0Bar p.d.f. and B0Bar flag as variable selected. \n Incompatible selections, please see instructions below" <<endl;
     printinstruction();
-    return 1;
+    return -1;
   }
 
   TString massKPi_name = "massKPi", cosMuMu_name = "cosMuMu", massPsiPi_name = "massPsiPi", phi_name = "phi";
@@ -640,7 +646,7 @@ int main(int argc, char** argv) {
   if (!nKstars) {
     cout <<"No K* selected (K892,K800,K1410,K1430) please see instructions below" <<endl;
     printinstruction();
-    return 1;
+    return -1;
   } else {
     cout <<"- Performing Amplitude Analysis fit with\n  " <<nKstars <<" K*(s) on\n  " <<events <<" events, using\n  " <<bin[0] <<" bins for normalisation & integration and\n  " <<plottingFine[0] <<" bins for p.d.f. plotting along m(KPi)" <<endl;
     if (nKstars < 2) {
@@ -723,7 +729,7 @@ int main(int argc, char** argv) {
   else if (psi_nS->value == 2.0) massMuMu = MPsi2S ;
   else {
     cout <<"psi_nS is neither 1 nor 2, please check it." <<endl;
-    return 1; }
+    return -1; }
   Variable mMuMu("mMuMu", massMuMu);
   const fptype smearing = 0. ;
   Variable smear("smear",smearing) ;
@@ -979,7 +985,7 @@ int main(int argc, char** argv) {
     Int_t totEvents = 0;
     if ( !(dataTxt.good()) ) {
       std::cout <<"No valid input at : " <<fullDatasetName <<" provided.\nReturning." <<std::endl;
-      return 1;
+      return -1;
     } else {
       totEvents = std::count(std::istreambuf_iterator<char>(dataTxt), std::istreambuf_iterator<char>(), '\n');
       if (events > totEvents) {
@@ -1086,7 +1092,7 @@ int main(int argc, char** argv) {
     outParamsFile.open(outPutPath.data(),std::ofstream::out);
     if ( !(outParamsFile.good()) ) {
       std::cout <<"No path for output parameters txt : " <<outPutPath <<" provided.\nReturning." <<std::endl;
-      return 1;
+      return -1;
     }
   }
 
@@ -1094,7 +1100,7 @@ int main(int argc, char** argv) {
 
   if (dataset.getNumEvents() < 1) {
     cout <<"No events added from "  <<fullDatasetName <<"\nReturning." <<endl;
-    return 0;
+    return -1;
   } else
     std::cout <<"\nAdded " <<dataset.getNumEvents() <<" events within Dalitz border to GooFit dataset" <<std::endl;
 
@@ -1290,8 +1296,8 @@ int main(int argc, char** argv) {
 
 
 
-    effHistos[0] = relEffTH2Mass->ProjectionX(); effHistos[1] = relEffTH2Mass->ProjectionY();
-    effHistos[2] = relEffTH2Ang->ProjectionX(); effHistos[3] = relEffTH2Ang->ProjectionY();
+    effHistos[0] = relEffTH2[0]->ProjectionX(); effHistos[1] = relEffTH2[0]->ProjectionY();
+    effHistos[2] = relEffTH2[1]->ProjectionX(); effHistos[3] = relEffTH2[1]->ProjectionY();
 
     if (effHistInt)
       effHistPdfPlot = new BiDimHistoPdf("effHistPdf",effDataset,obserVariables);
@@ -1354,10 +1360,7 @@ int main(int argc, char** argv) {
     std::cout<<"-Producing sidebands background plots"<<std::endl;
 
     effHistosInt[0]->Scale(1.0/interpolationSum);
-    effHistosInt[0]->Scale(relEffTH2Mass->Integral());
-
-    effHistosInt[1]->Scale(1.0/interpolationSum);
-    effHistosInt[1]->Scale(relEffTH2Ang->Integral());
+    effHistosInt[0]->Scale(relEffTH2[0]->Integral());
 
     effHistosInt[0]->Draw("LEGO");
     canvasEff->SaveAs("./plots/massEffIntHisto.png");
@@ -1367,13 +1370,15 @@ int main(int argc, char** argv) {
     canvasEff->SaveAs("./plots/massEffHistogram.png");
     canvasEff->Clear();
 
-
     effHistosInt[0]->Draw("SURF3");
-    relEffTH2Mass->Draw("same");
+    relEffTH2[0]->Draw("same");
     canvasEff->SaveAs("./plots/massEffHistAndIntHist.png");
     canvasEff->Clear();
 
-    canvasEff->cd();
+
+    effHistosInt[1]->Scale(1.0/interpolationSum);
+    effHistosInt[1]->Scale(relEffTH2[1]->Integral());
+
     effHistosInt[1]->Draw("LEGO");
     canvasEff->SaveAs("./plots/angEffIntHisto.png");
     canvasEff->Clear();
@@ -2298,9 +2303,7 @@ int main(int argc, char** argv) {
   fitStat->SetFillColor(0);
 
   legPlot->AddEntry(varHistos[0], "Generated data", "lpe");
-
-  if (!bkgPdfHist)
-    legPlot->AddEntry(varHistos_theory[0], "Theory data", "lpe");
+  //legPlot->AddEntry(varHistos_theory[0], "Theory data", "lpe");
 
   if (!hPlots){
 
@@ -2601,41 +2604,44 @@ int main(int argc, char** argv) {
     canvas->Clear();
 
     fptype ySF = 1.3;
+    varHistos[iVar]->SetMinimum(0.1);
+    multiGraphs[iVar]->SetMinimum(0.1);
+
     if (!hPlots) {
       multiGraphs[iVar]->Draw("AL");
-      multiGraphs[iVar]->SetMinimum(0.1);
-      multiGraphs[iVar]->SetMaximum(plotYMax[iVar]*ySF);
-      varHistos[iVar]->Draw("Esame"); // if drawn without "same", varHistos[iVar]->SetMinimum(0.1) must be called as well
-      if (!bkgPdfHist)
-	varHistos_theory[iVar]->Draw("Esame");
-    } else {
-      varHistos[iVar]->SetMinimum(0.1);
-      varHistos[iVar]->SetMaximum(plotYMax[iVar]*ySF);
-      varHistos[iVar]->Draw("E");
-      varHistos_theory[iVar]->Draw("ESAME");
+      //multiGraphs[iVar]->SetMaximum(plotYMax[iVar]*ySF);
+      multiGraphs[iVar]->GetXaxis()->SetRangeUser(varHistos[iVar]->GetXaxis()->GetXmin(),varHistos[iVar]->GetXaxis()->GetXmax()); // TMultiGraphs::GetXaxis() returns a valid axis only after the TMultigraph has been drawn. 
 
+      varHistos[iVar]->Draw("E same");
+
+      //varHistos_theory[iVar]->Draw("E same");
+    } else {
       projHistos[iVar]->SetMarkerColor(kRed);
       projHistos[iVar]->SetMarkerStyle(kFullCircle);
-      projHistos[iVar]->Draw("ESAME");
+      projHistos[iVar]->Draw("E");
+
+      //varHistos[iVar]->SetMaximum(plotYMax[iVar]*ySF);
+      varHistos[iVar]->Draw("E same");
+
+      //varHistos_theory[iVar]->Draw("E same");
 
       if (bkgPhaseSpace) {
-	projSigHistos[iVar]->Draw("ESAME");
-	projBkgHistos[iVar]->Draw("PESAME");
+	projSigHistos[iVar]->Draw("E same");
+	projBkgHistos[iVar]->Draw("PE same");
       }
       for (int k = 0; k < nKstars; ++k)
-	compHistos[iVar][k]->Draw("PESAME");
+	compHistos[iVar][k]->Draw("PE same");
 
       if (bkgPdfHist)
-	projBkgHistosInt[iVar]->Draw("PESAME");
+	projBkgHistosInt[iVar]->Draw("PE same");
     }
 
     if (bkgHistos[iVar]) bkgHistos[iVar]->Draw("same");
 
-    if (iVar==0) { // it's enough on the m(KPi) plot only
+    if (iVar==0) { // it's enough to show the legend on the m(KPi) plot only
       legPlot->Draw(); fitStat->Draw();
     }
 
-    // first Logy(1) and after Logy(0), viceversa does not work
     canvas->SetLogy(0);
     canvas->SaveAs(TString::Format("%s/%s%s.%s",plotsDir.Data(),varNames[iVar].Data(),plotsName.Data(),extension.Data()));
     canvas->SetLogy(1);
