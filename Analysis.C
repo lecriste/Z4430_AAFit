@@ -163,7 +163,7 @@ void plotting(const RooDataHist* hist, const TString name, const RooRealVar* x, 
   TH1D* pdf_proj[] = {pdf_TH2->ProjectionX(projectionName+xName),pdf_TH2->ProjectionY(projectionName+yName)};
   for (Int_t iProj=0; iProj<2; ++iProj) {
     TH2_proj[iProj]->SetTitle(TString::Format("Projection of %s",TH2_fromHist->GetTitle()));
-    TH2_proj[iProj]->SetMarkerStyle(20); TH2_proj[iProj]->SetTitleOffset(1);
+    TH2_proj[iProj]->SetMarkerStyle(20); TH2_proj[iProj]->SetLineColor(kBlack); TH2_proj[iProj]->SetTitleOffset(1);
     //TH2_proj[iProj]->SetMinimum(0);
     TH2_proj[iProj]->Draw();
     pdf_proj[iProj]->Scale((1/pdf_proj[iProj]->Integral())*binDivision*(TH2_proj[iProj]->Integral()));
@@ -175,6 +175,8 @@ void plotting(const RooDataHist* hist, const TString name, const RooRealVar* x, 
 
 void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = kFALSE, Bool_t effFlag = kFALSE, Bool_t B0BarFlag = kFALSE, Int_t bkgOrd = 1, Int_t effOrd = 1)
 {
+  cout <<"With cut-based efficiency the linear interpolation (effOrd=1) of masses does not work" <<endl;
+
   SysInfo_t* s = new SysInfo_t();
   gSystem->GetSysInfo(s);
   Int_t nCPU = s->fCpus;
@@ -511,127 +513,130 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
   TString anglesScatt_name = "planesAngle_vs_cos_psi2S_helicityAngle";
   Bool_t DalitzEff = kFALSE;
 
-  // Model background from sidebands
-  //TString bkgFileName = path+"Data_JPsi_2p0Sig_4p0to6p0SB.root";
-  //TString bkgFileName = path+"Data_JPsi_2p0Sig_5p0to9p0SB.root";
-  TString bkgFileName = path+"Data_JPsi_2p0Sig_6p0to9p0SB.root";
-  if (tmva)
-    bkgFileName = path+"TMVApp_data_"+bdtCut_long+"_JPsi_2p0Sig_6p0to9p0SB.root";
-  cout <<"\nOpening \"" <<bkgFileName <<endl;
-  TFile *bkgFile = TFile::Open(bkgFileName);
-  const Int_t nVars = 2;
-  TString sb_name[] = {"sbs","leftSb","rightSb"};
   RooAbsPdf* null = 0;
-  pair<RooAbsPdf*, Float_t> sbPdf[nVars][3] = {{make_pair(null,0.),make_pair(null,0.),make_pair(null,0.)},{make_pair(null,0.),make_pair(null,0.),make_pair(null,0.)}};
-  const Int_t m2KPi_order_bkg = 6, m2PsiPi_order_bkg = 4;
-  const Int_t cosMuMu_order_bkg = 6, phi_order_bkg = 6;
-  const Int_t mKPi_order_bkg = 5, mPsiPi_order_bkg = 4, cosKstar_order_bkg = 7;
-
-  pair< pair<TString, pair<RooArgSet*,pair<Int_t,Int_t> > >, pair<TString,pair< pair<TString,TString>,pair<TString,TString> > > > bkgHisto_names[] = {make_pair( make_pair("psi2SPi_vs_KPi_dalitz",make_pair(&mass2Vars,make_pair(m2KPi_order_bkg,m2PsiPi_order_bkg))), make_pair("bkgDalitz",make_pair(make_pair("m2KPi",mass2KPi_title),make_pair("m2PsiPi",mass2PsiPi_title)))), make_pair(make_pair(anglesScatt_name,make_pair(&angleVars,make_pair(cosMuMu_order_bkg,phi_order_bkg))), make_pair("bkgAngles",make_pair(make_pair("cosMuMu",cosMuMu_title),make_pair("phi",phi_title))))};
-  // if you use &mass2Fors you get "ERROR:InputArguments -- RooAbsDataStore::initialize(RelEff_psi2SPi_vs_KPi_B0constr): Data set cannot contain non-fundamental types"
-  bkgHisto_names[0] = make_pair( make_pair("psi2SPi_vs_KPi_masses",make_pair(&massVars,make_pair(mKPi_order_bkg,mPsiPi_order_bkg))), make_pair("bkgMasses",make_pair(make_pair("mKPi",massKPi_title),make_pair("mPsiPi",massPsiPi_title)))); // need to apply Dalitz border in TMVAClassificationApplication.C
-  //bkgHisto_names[0] = make_pair(make_pair("cos_Kstar_helicityAngle_fromMasses_vs_KPiMassSq",make_pair(&sqDalitz,make_pair(m2KPi_order_bkg,cosKstar_order_bkg))), make_pair("bkgSqDalitz",make_pair(make_pair("m2KPi",mass2KPi_title),make_pair("cosKstar",cosKstar_title)))); DalitzEff = kTRUE;
-  //bkgHisto_names[0] = make_pair(make_pair("cos_Kstar_helicityAngle_fromMasses_vs_KPiMass",make_pair(&sqDalitz1,make_pair(mKPi_order_bkg,cosKstar_order_bkg))), make_pair("bkgSqDalitz1",make_pair(make_pair("mKPi",massKPi_title),make_pair("cosKstar",cosKstar_title)))); DalitzEff = kFALSE;
-  //
-  //bkgHisto_names[0] = make_pair(make_pair("cos_Kstar_helicityAngle_fromMasses_vs_psiPiMassSq",make_pair(&sqDalitz_v2,make_pair(m2PsiPi_order_bkg,cosKstar_order_bkg))), make_pair("bkgSqDalitz_v2",make_pair(make_pair("m2PsiPi",mass2PsiPi_title),make_pair("cosKstar",cosKstar_title)))); DalitzEff = kTRUE;
-  //bkgHisto_names[0] = make_pair(make_pair("cos_Kstar_helicityAngle_fromMasses_vs_psiPiMass",make_pair(&sqDalitz1_v2,make_pair(mPsiPi_order_bkg,cosKstar_order_bkg))), make_pair("bkgSqDalitz1_v2",make_pair(make_pair("mPsiPi",massPsiPi_title),make_pair("cosKstar",cosKstar_title)))); DalitzEff = kFALSE;
-
-  // bkgFile = 0;
-  if (bkgFile && bkgFlag)
-    for (Int_t iVars = 0; iVars < 2; ++iVars) {
-
-      RooArgSet* bkgVars = bkgHisto_names[iVars].first.second.first ;
-      // Set x and y vars
-      RooRealVar* x = 0, *y = 0;
-      setXY(bkgVars, x, y);
-      //x->printMultiline(cout,99); y->printMultiline(cout,99); //return;
-
-      for (Int_t iSb=0; iSb < 1; ++iSb) {
-	TString histName = bkgHisto_names[iVars].first.first+"_"+sb_name[iSb];
-	if (tmva) histName.Append("_BDT");
-	else {
-	  histName.ReplaceAll("_masses","");
-	  histName.ReplaceAll(sb_name[iSb],"");
-	  histName.Append("hardCuts_1B0_sidebands_B0massC");
-	}
-
-	const TH2F* sbTH2 = (TH2F*)bkgFile->Get( histName ) ;
-	if (!sbTH2) {
-	  cout <<"WARNING! No TH2F \"" <<histName <<"\" found in TFile \"" <<bkgFile->GetName() <<"\".\nSkipping " <<histName <<" evaluation" <<endl;
-	  continue; }
-
-	Float_t xMin = 0, xMax = 0; RooBinning* xRooBinning = 0;
-	Float_t yMin = 0, yMax = 0; RooBinning* yRooBinning = 0;
-	setBinning(sbTH2,xMin,xMax,yMin,yMax,xRooBinning,yRooBinning);
-
-	cout <<"Setting TH2 range to vars ..." <<endl;
-	x->setRange(xMin,xMax);
-	y->setRange(yMin,yMax);
-
-	// with RooHistPDF
-	cout <<"Creating RooDataHist from " <<sbTH2->GetName() <<" ..." <<endl;
-	RooDataHist* bkgHist = new RooDataHist(sbTH2->GetName(), sbTH2->GetTitle(), *bkgVars, sbTH2) ;
-	TString bkgName = bkgHisto_names[iVars].second.first+"_"+sb_name[iSb];
-	TString bkgType = bkgName; bkgType.ReplaceAll("bkg","");
-	TString first = TString(bkgType,1);
-	if (!bkgType.EqualTo("Dalitz")) first.ToLower();
-	TString bkgtype = bkgType; bkgtype.Remove(0,1); bkgtype.Prepend(first);
-
-	TString pdfTitle = "bkg("+bkgtype+") pdf";
-	TString method = "map";
-	if (bkgOrd) method = "interp"+TString::Itoa(bkgOrd,10);
-	RooHistPdf* bkgHistPdf = new RooHistPdf(bkgName+"PDF_"+method, pdfTitle, *bkgVars, *bkgHist, bkgOrd) ;
-	//RooHistPdf* bkgHistPdf = new RooHistPdf(bkgName+"PDF", pdfTitle, *bkgVars, *bkgHist, bkgOrd) ;
-	//If last argument is zero, the weight for the bin enclosing the coordinates contained in 'bin' is returned. For higher values, the result is interpolated in the real dimensions of the dataset with an order of interpolation equal to the value provided (more than ? does not work for Dalitz efficiencies, ? for masses efficiencies, ? for angles)
-	bkgHistPdf->setUnitNorm(kTRUE);
-
-	sbPdf[iVars][iSb].first = bkgHistPdf;
-	Int_t xOrder = bkgHisto_names[iVars].first.second.second.first;
-	Int_t yOrder = bkgHisto_names[iVars].first.second.second.second;
-	// sbPdf[iVars][iSb].first = twoDFit(*x, *y, sbTH2, psi_nS.Atoi(), xOrder, yOrder, sbPdf[iVars][iSb].second); method = "ROOTfit"; // ROOT fit
-	//sbPdf[iVars][iSb].first = twoDFit(*x, *y, bkgHist, psi_nS.Atoi(), xOrder, yOrder, sbPdf[iVars][iSb].second); method = "RooFit"; // RooFit fit
-	const Float_t chi2N = sbPdf[iVars][iSb].second;
-
-	RooAbsPdf* kinematicCheck(0), *bkgWithKinCheck(0);
-	if (bkgVars->GetName() == massVars_name  ||  bkgVars->GetName() == mass2Vars_name)
-	  kinematicCheck = new Dalitz_contour("Dalitz_kinCheck","kinematic check for Dalitz", *x, *y, DalitzEff, psi_nS) ;
-	else if (bkgVars->GetName() == sqDalitz_name  ||  bkgVars->GetName() == sqDalitz1_name)
-	  kinematicCheck = new sqDalitz_contour("sqDalitz_kinCheck","kinematic check for square Dalitz", *x, *y, DalitzEff, psi_nS.Atoi()) ;
-	else if (bkgVars->GetName() == angleVars_name)
-	  kinematicCheck = new Angles_contour("angles_kinCheck","kinematic check for angles", *x, *y) ;
-	//
-	if (kinematicCheck) {
-	  cout <<"Multiplying " <<bkgHistPdf->GetTitle() <<" by " <<kinematicCheck->GetTitle() <<endl;
-	  bkgWithKinCheck = new RooProdPdf(TString::Format("%s_withKinCheck",bkgHistPdf->GetName()),TString::Format("%s with kinematic check",bkgHistPdf->GetTitle()),RooArgSet(*kinematicCheck,*sbPdf[iVars][iSb].first)) ;
-	  if (bkgWithKinCheck)
-	    sbPdf[iVars][iSb].first = bkgWithKinCheck;
-	}
-
-	TString sbErrTH2_name = sbTH2->GetName(); sbErrTH2_name.Append("_err");
-	// chi2N_hist(bkgFile, sbErrTH2_name, sbTH2, sbPdf[iVars][iSb].first, x, y, method, dir+"/bkg", extension);
-
-	plotting(bkgHist, bkgName, x, y, xRooBinning, yRooBinning, sbPdf[iVars][iSb].first, pdfTitle, xOrder, bkgHisto_names[iVars].second.second.first.first, bkgHisto_names[iVars].second.second.first.second, yOrder, bkgHisto_names[iVars].second.second.second.first, bkgHisto_names[iVars].second.second.second.second, chi2N, method, dir+"/bkg", extension);
-
-      } // for (Int_t iSb=0; iSb < 3; ++iSb)
-    } // for (Int_t iVars=0; iVars < nVars; ++iVars)
-  else
-    cout <<"WARNING! TFile \"" <<bkgFileName <<"\" could not be opened.\nSkipping background computation" <<endl;
-  //return;
-
-  RooAbsPdf* sbsPdf[] = {sbPdf[0][0].first, sbPdf[1][0].first};
-  TString sbsName[] = {"Masses","Angles"};
-  RooConstVar half = RooConstVar("half", "half", 0.5);
-  RooConstVar fixSig = RooConstVar("half", "half", 0.7);
-  /*
-    for (Int_t iVar=0; iVar<2; ++iVar) // this to use leftSb + rightSb instead of totalSbs pdf
-    if (sbPdf[iVar][1].first && sbPdf[iVar][2].first)
-    sbsPdf[iVar] = new RooAddPdf("sbs"+sbsName[iVar]+"Pdf","sidebands "+sbsName[iVar]+" p.d.f.",*sbPdf[iVar][1].first,*sbPdf[iVar][2].first,half) ;
-  */
   RooProdPdf* sbsModel = 0;
-  if (sbsPdf[0] && sbsPdf[1])
-    sbsModel = new RooProdPdf(TString::Format("%s_X_%s",sbsPdf[0]->GetName(),sbsPdf[1]->GetName()),"sidebands p.d.f.",RooArgSet(*sbsPdf[0],*sbsPdf[1]));
+  RooConstVar half = RooConstVar("half", "half", 0.5);
+  RooConstVar fixSig = RooConstVar("fixSig", "fixSig", purity);
+
+  if (bkgFlag) { // Model background from sidebands
+    //TString bkgFileName = path+"Data_JPsi_2p0Sig_4p0to6p0SB.root";
+    //TString bkgFileName = path+"Data_JPsi_2p0Sig_5p0to9p0SB.root";
+    TString bkgFileName = path+"Data_JPsi_2p0Sig_6p0to9p0SB.root";
+    if (tmva)
+      bkgFileName = path+"TMVApp_data_"+bdtCut_long+"_JPsi_2p0Sig_6p0to9p0SB.root";
+    cout <<"\nOpening \"" <<bkgFileName <<endl;
+    TFile *bkgFile = TFile::Open(bkgFileName);
+    const Int_t nVars = 2;
+    TString sb_name[] = {"sbs","leftSb","rightSb"};
+    pair<RooAbsPdf*, Float_t> sbPdf[nVars][3] = {{make_pair(null,0.),make_pair(null,0.),make_pair(null,0.)},{make_pair(null,0.),make_pair(null,0.),make_pair(null,0.)}};
+    const Int_t m2KPi_order_bkg = 6, m2PsiPi_order_bkg = 4;
+    const Int_t cosMuMu_order_bkg = 6, phi_order_bkg = 6;
+    const Int_t mKPi_order_bkg = 5, mPsiPi_order_bkg = 4, cosKstar_order_bkg = 7;
+    
+    pair< pair<TString, pair<RooArgSet*,pair<Int_t,Int_t> > >, pair<TString,pair< pair<TString,TString>,pair<TString,TString> > > > bkgHisto_names[] = {make_pair( make_pair("psi2SPi_vs_KPi_dalitz",make_pair(&mass2Vars,make_pair(m2KPi_order_bkg,m2PsiPi_order_bkg))), make_pair("bkgDalitz",make_pair(make_pair("m2KPi",mass2KPi_title),make_pair("m2PsiPi",mass2PsiPi_title)))), make_pair(make_pair(anglesScatt_name,make_pair(&angleVars,make_pair(cosMuMu_order_bkg,phi_order_bkg))), make_pair("bkgAngles",make_pair(make_pair("cosMuMu",cosMuMu_title),make_pair("phi",phi_title))))};
+    // if you use &mass2Fors you get "ERROR:InputArguments -- RooAbsDataStore::initialize(RelEff_psi2SPi_vs_KPi_B0constr): Data set cannot contain non-fundamental types"
+    bkgHisto_names[0] = make_pair( make_pair("psi2SPi_vs_KPi_masses",make_pair(&massVars,make_pair(mKPi_order_bkg,mPsiPi_order_bkg))), make_pair("bkgMasses",make_pair(make_pair("mKPi",massKPi_title),make_pair("mPsiPi",massPsiPi_title)))); // need to apply Dalitz border in TMVAClassificationApplication.C
+    //bkgHisto_names[0] = make_pair(make_pair("cos_Kstar_helicityAngle_fromMasses_vs_KPiMassSq",make_pair(&sqDalitz,make_pair(m2KPi_order_bkg,cosKstar_order_bkg))), make_pair("bkgSqDalitz",make_pair(make_pair("m2KPi",mass2KPi_title),make_pair("cosKstar",cosKstar_title)))); DalitzEff = kTRUE;
+    //bkgHisto_names[0] = make_pair(make_pair("cos_Kstar_helicityAngle_fromMasses_vs_KPiMass",make_pair(&sqDalitz1,make_pair(mKPi_order_bkg,cosKstar_order_bkg))), make_pair("bkgSqDalitz1",make_pair(make_pair("mKPi",massKPi_title),make_pair("cosKstar",cosKstar_title)))); DalitzEff = kFALSE;
+    //
+    //bkgHisto_names[0] = make_pair(make_pair("cos_Kstar_helicityAngle_fromMasses_vs_psiPiMassSq",make_pair(&sqDalitz_v2,make_pair(m2PsiPi_order_bkg,cosKstar_order_bkg))), make_pair("bkgSqDalitz_v2",make_pair(make_pair("m2PsiPi",mass2PsiPi_title),make_pair("cosKstar",cosKstar_title)))); DalitzEff = kTRUE;
+    //bkgHisto_names[0] = make_pair(make_pair("cos_Kstar_helicityAngle_fromMasses_vs_psiPiMass",make_pair(&sqDalitz1_v2,make_pair(mPsiPi_order_bkg,cosKstar_order_bkg))), make_pair("bkgSqDalitz1_v2",make_pair(make_pair("mPsiPi",massPsiPi_title),make_pair("cosKstar",cosKstar_title)))); DalitzEff = kFALSE;
+    
+    // bkgFile = 0;
+    if (bkgFile)
+      for (Int_t iVars = 0; iVars < 2; ++iVars) {
+	
+	RooArgSet* bkgVars = bkgHisto_names[iVars].first.second.first ;
+	// Set x and y vars
+	RooRealVar* x = 0, *y = 0;
+	setXY(bkgVars, x, y);
+	//x->printMultiline(cout,99); y->printMultiline(cout,99); //return;
+	
+	for (Int_t iSb=0; iSb < 1; ++iSb) {
+	  TString histName = bkgHisto_names[iVars].first.first+"_"+sb_name[iSb];
+	  if (tmva) histName.Append("_BDT");
+	  else {
+	    histName.ReplaceAll("_masses","");
+	    histName.ReplaceAll(sb_name[iSb],"");
+	    histName.Append("hardCuts_1B0_sidebands_B0massC");
+	  }
+	  
+	  const TH2F* sbTH2 = (TH2F*)bkgFile->Get( histName ) ;
+	  if (!sbTH2) {
+	    cout <<"WARNING! No TH2F \"" <<histName <<"\" found in TFile \"" <<bkgFile->GetName() <<"\".\nSkipping " <<histName <<" evaluation" <<endl;
+	    continue; }
+	  
+	  Float_t xMin = 0, xMax = 0; RooBinning* xRooBinning = 0;
+	  Float_t yMin = 0, yMax = 0; RooBinning* yRooBinning = 0;
+	  setBinning(sbTH2,xMin,xMax,yMin,yMax,xRooBinning,yRooBinning);
+	  
+	  cout <<"Setting TH2 range to vars ..." <<endl;
+	  x->setRange(xMin,xMax);
+	  y->setRange(yMin,yMax);
+	  
+	  // with RooHistPDF
+	  cout <<"Creating RooDataHist from " <<sbTH2->GetName() <<" ..." <<endl;
+	  RooDataHist* bkgHist = new RooDataHist(sbTH2->GetName(), sbTH2->GetTitle(), *bkgVars, sbTH2) ;
+	  TString bkgName = bkgHisto_names[iVars].second.first+"_"+sb_name[iSb];
+	  TString bkgType = bkgName; bkgType.ReplaceAll("bkg","");
+	  TString first = TString(bkgType,1);
+	  if (!bkgType.EqualTo("Dalitz")) first.ToLower();
+	  TString bkgtype = bkgType; bkgtype.Remove(0,1); bkgtype.Prepend(first);
+	  
+	  TString pdfTitle = "bkg("+bkgtype+") pdf";
+	  TString method = "map";
+	  if (bkgOrd) method = "interp"+TString::Itoa(bkgOrd,10);
+	  RooHistPdf* bkgHistPdf = new RooHistPdf(bkgName+"PDF_"+method, pdfTitle, *bkgVars, *bkgHist, bkgOrd) ;
+	  //RooHistPdf* bkgHistPdf = new RooHistPdf(bkgName+"PDF", pdfTitle, *bkgVars, *bkgHist, bkgOrd) ;
+	  //If last argument is zero, the weight for the bin enclosing the coordinates contained in 'bin' is returned. For higher values, the result is interpolated in the real dimensions of the dataset with an order of interpolation equal to the value provided (more than ? does not work for Dalitz efficiencies, ? for masses efficiencies, ? for angles)
+	  bkgHistPdf->setUnitNorm(kTRUE);
+	  
+	  sbPdf[iVars][iSb].first = bkgHistPdf;
+	  Int_t xOrder = bkgHisto_names[iVars].first.second.second.first;
+	  Int_t yOrder = bkgHisto_names[iVars].first.second.second.second;
+	  // sbPdf[iVars][iSb].first = twoDFit(*x, *y, sbTH2, psi_nS.Atoi(), xOrder, yOrder, sbPdf[iVars][iSb].second); method = "ROOTfit"; // ROOT fit
+	  //sbPdf[iVars][iSb].first = twoDFit(*x, *y, bkgHist, psi_nS.Atoi(), xOrder, yOrder, sbPdf[iVars][iSb].second); method = "RooFit"; // RooFit fit
+	  const Float_t chi2N = sbPdf[iVars][iSb].second;
+	  
+	  RooAbsPdf* kinematicCheck(0), *bkgWithKinCheck(0);
+	  if (bkgVars->GetName() == massVars_name  ||  bkgVars->GetName() == mass2Vars_name)
+	    kinematicCheck = new Dalitz_contour("Dalitz_kinCheck","kinematic check for Dalitz", *x, *y, DalitzEff, psi_nS) ;
+	  else if (bkgVars->GetName() == sqDalitz_name  ||  bkgVars->GetName() == sqDalitz1_name)
+	    kinematicCheck = new sqDalitz_contour("sqDalitz_kinCheck","kinematic check for square Dalitz", *x, *y, DalitzEff, psi_nS.Atoi()) ;
+	  else if (bkgVars->GetName() == angleVars_name)
+	    kinematicCheck = new Angles_contour("angles_kinCheck","kinematic check for angles", *x, *y) ;
+	  //
+	  if (kinematicCheck) {
+	    cout <<"Multiplying " <<bkgHistPdf->GetTitle() <<" by " <<kinematicCheck->GetTitle() <<endl;
+	    bkgWithKinCheck = new RooProdPdf(TString::Format("%s_withKinCheck",bkgHistPdf->GetName()),TString::Format("%s with kinematic check",bkgHistPdf->GetTitle()),RooArgSet(*kinematicCheck,*sbPdf[iVars][iSb].first)) ;
+	    if (bkgWithKinCheck)
+	      sbPdf[iVars][iSb].first = bkgWithKinCheck;
+	  }
+	  
+	  TString sbErrTH2_name = sbTH2->GetName(); sbErrTH2_name.Append("_err");
+	  // chi2N_hist(bkgFile, sbErrTH2_name, sbTH2, sbPdf[iVars][iSb].first, x, y, method, dir+"/bkg", extension);
+
+	  plotting(bkgHist, bkgName, x, y, xRooBinning, yRooBinning, sbPdf[iVars][iSb].first, pdfTitle, xOrder, bkgHisto_names[iVars].second.second.first.first, bkgHisto_names[iVars].second.second.first.second, yOrder, bkgHisto_names[iVars].second.second.second.first, bkgHisto_names[iVars].second.second.second.second, chi2N, method, dir+"/bkg", extension);
+	  
+	} // for (Int_t iSb=0; iSb < 3; ++iSb)
+      } // for (Int_t iVars=0; iVars < nVars; ++iVars)
+    else
+      cout <<"WARNING! TFile \"" <<bkgFileName <<"\" could not be opened.\nSkipping background computation" <<endl;
   //return;
 
+    RooAbsPdf* sbsPdf[] = {sbPdf[0][0].first, sbPdf[1][0].first};
+    TString sbsName[] = {"Masses","Angles"};
+    /*
+      for (Int_t iVar=0; iVar<2; ++iVar) // this to use leftSb + rightSb instead of totalSbs pdf
+      if (sbPdf[iVar][1].first && sbPdf[iVar][2].first)
+      sbsPdf[iVar] = new RooAddPdf("sbs"+sbsName[iVar]+"Pdf","sidebands "+sbsName[iVar]+" p.d.f.",*sbPdf[iVar][1].first,*sbPdf[iVar][2].first,half) ;
+    */
+    if (sbsPdf[0] && sbsPdf[1]) {
+      sbsModel = new RooProdPdf(TString::Format("%s_X_%s",sbsPdf[0]->GetName(),sbsPdf[1]->GetName()),"sidebands p.d.f.",RooArgSet(*sbsPdf[0],*sbsPdf[1]));
+      //cout <<"\nsbsModel->getVal() = " <<sbsModel->getVal() <<endl; return;
+    }
+    //return;
+  } // if (bkgFlag)
 
   // Masses and angles efficiencies
   //TString effFileName = path+"officialMC_noPtEtaCuts_JPsi_Bd2MuMuKPi_2p0Sig_4p0to6p0SB.root";
@@ -836,11 +841,12 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
   // adding background
   RooAddPdf* modelWithBkgHist = 0;
   if (sbsModel) {
-    std::cout<<"\nAdding bkg to pdf" <<std::endl;
-    modelWithBkgHist = new RooAddPdf(TString::Format("%s__with_%s",model->GetName(),sbsModel->GetName()),TString::Format("%s + %s",model->GetTitle(),sbsModel->GetTitle()),*model,*sbsModel,fixSig) ;
+    std::cout<<"\nAdding " <<(1 - fixSig.getVal())*100 <<"\% of bkg to pdf" <<std::endl;
+    modelWithBkgHist = new RooAddPdf(TString::Format("%s__with__%s",model->GetName(),sbsModel->GetName()),TString::Format("%s + %s",model->GetTitle(),sbsModel->GetTitle()),*model,*sbsModel,fixSig) ;
     model = modelWithBkgHist;
   }
-  cout <<"\nmodel->getVal() = " <<model->getVal() <<endl; return;
+  cout <<"\nmodel->getVal() = " <<model->getVal() <<endl;
+  //return;
 
 
   Int_t nLegendEntries = 0;
@@ -897,57 +903,10 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
     dataToFit = dataGenPDF;
   }
 
-  // Create corresponding m2 dataset + K* helicity angle if absent
-  if ( !kinematicVars_m2.contains(cosKstar) )
-    kinematicVars_m2.add(cosKstar);
-  RooDataSet* data_withCos = (RooDataSet*)dataToFit->emptyClone();
-  data_withCos->addColumn(cosKstar);
-
-  RooDataSet* data_m2 = new RooDataSet(dataToFit->GetName(), dataToFit->GetTitle(), kinematicVars_m2 ) ;
-  for (Int_t iEvent=0; iEvent<dataToFit->numEntries(); ++iEvent) {
-    kinematicVars = *(dataToFit->get(iEvent)) ; // this line will propagate the RooRealVars values of the event to all the corresponding RooRealVars in kinematicVars
-    //kinematicVars.Print("extras") ; cout <<endl; kinematicVars_m2.Print("extras") ;
-    //cout <<"massesEffPdf->printValue(cout) = "; massesEffPdf->printValue(cout); cout <<endl;
-    TIterator *massVarsIter = massVars.createIterator() ;
-    if (!massVarsIter) {
-      cout <<"Cannot create massVars.createIterator()! Please check" <<endl; return;
-    }
-    RooRealVar* temp = 0;
-    while ( (temp = (RooRealVar*)massVarsIter->Next()) ) {
-      TString temp_m2Name = temp->GetName(); temp_m2Name.ReplaceAll("mass","mass2"); //cout <<"temp_m2Name = " <<temp_m2Name <<endl; mass2Fors.Print("extras") ;
-      RooFormulaVar* temp_m2For = (RooFormulaVar*)mass2Fors.find( temp_m2Name+"For" ) ;
-      if (!temp_m2For) {
-	cout <<"temp_m2For = " <<temp_m2For <<"! Please check" <<endl; return;
-      } else if ( temp_m2For->dependsOn( *temp ) ) {
-	RooRealVar* temp_m2 = (RooRealVar*)mass2Vars.find(temp_m2Name) ;
-	if (temp_m2)
-	  temp_m2->setVal( temp_m2For->getVal() ) ;
-      }
-    }
-    //kinematicVars_m2.Print("extras") ; cout <<endl;
-    data_m2->add( kinematicVars_m2 ) ;
-
-    //cout <<"\nmassesEffPdf->printValue(cout) = "; massesEffPdf->printValue(cout); cout <<endl;
-
-    // set K* helicity angle value
-    cosKstar.setVal( cosTheta_FromMasses_host(mass2KPiFor.getVal(), mass2PsiPiFor.getVal(), TMath::Power(massMuMu,2), MBd2, MKaon2, MPion2) );
-    data_withCos->add( RooArgSet(kinematicVars,cosKstar) );
-  }
-  if (dataToFit->numEntries() != data_m2->numEntries()) {
-    cout <<"dataToFit->numEntries() (" <<dataToFit->numEntries() <<") != data_m2->numEntries() (" <<data_m2->numEntries() <<")! Please check" <<endl; return;
-  }
-  if (dataToFit->numEntries() != data_withCos->numEntries()) {
-    cout <<"dataToFit->numEntries() (" <<dataToFit->numEntries() <<") != data_withCos->numEntries() (" <<data_withCos->numEntries() <<")! Please check" <<endl; return;
-  }
-  //return;
-
   cout <<"\nPlotting data..." <<endl;
   TString plotName = model->GetName();
 
   Float_t rightMargin = 0.12;
-  cout <<"\nPlotting angles scatter plot..." <<endl;
-  TCanvas* scatter_C = new TCanvas("Angles_scatter_plot","Angles scatter plot",800,600) ; scatter_C->SetRightMargin(rightMargin);
-  scatter_C->cd();
   Float_t cos_limit = 1.02; Float_t cos_margin = 0.02;
   Float_t phi_limit = 3.2; Float_t phi_margin = 0.05;
   if ( totEvents < 50000 ) {
@@ -956,30 +915,81 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
   }
   Int_t cos_bins = 2*cos_limit/cos_margin;
   Int_t phi_bins = 2*phi_limit/phi_margin;
-  TH2F* scatter = (TH2F*)data_m2->createHistogram("Angles_scatter_plot", cosMuMu, Binning(cos_bins,-cos_limit,cos_limit), YVar(phi, Binning(phi_bins,-phi_limit,phi_limit)) ) ; scatter->SetTitle( TString::Format("Angles scatter plot;%s;%s",cosMuMu.GetTitle(),phi.GetTitle()) ) ;
-  gStyle->SetOptStat( 10 ) ;
-  scatter->Draw("COLZ");
-  scatter_C->SaveAs(TString::Format("%s/%s_%s%s",dir.Data(),scatter_C->GetName(),plotName.Data(),extension.Data()));
 
-  cout <<"\nPlotting Dalitz..." <<endl;
   Float_t KPiMass2_low = 0., KPiMass2_high = 5.; Int_t KPiMass2_bins = 100;
   Float_t MuMuPiMass2_low = 9., MuMuPiMass2_high = 25.; Int_t MuMuPiMass2_bins = 128;
 
-  TCanvas* dalitz_C = new TCanvas("Dalitz_C","Dalitz",800,600) ; dalitz_C->SetRightMargin(rightMargin); dalitz_C->cd();
-  if ( totEvents < 20000 ) {KPiMass2_bins = 50; MuMuPiMass2_bins = 64;}
-  TH2F* dalitz = (TH2F*)data_m2->createHistogram("Dalitz", mass2KPi, Binning(KPiMass2_bins,KPiMass2_low,KPiMass2_high), YVar(mass2PsiPi, Binning(MuMuPiMass2_bins,MuMuPiMass2_low,MuMuPiMass2_high)) ) ; dalitz->SetTitle( TString::Format("Dalitz;%s;%s",mass2KPi.GetTitle(),mass2PsiPi.GetTitle()) ) ;
-  gStyle->SetOptStat( 10 ) ;
-  dalitz->Draw("COLZ");
-  //dalitz->Draw("LEGO");
-  dalitz_C->SaveAs(TString::Format("%s/%s_%s%s",dir.Data(),dalitz_C->GetTitle(),plotName.Data(),extension.Data()));
-  //return;
-  cout <<"\nPlotting rectangular Dalitz..." <<endl;
-  TCanvas* dalitzRect_C = new TCanvas("DalitzRect_C","Rectangular_Dalitz",800,600) ; dalitzRect_C->SetRightMargin(rightMargin);
-  dalitzRect_C->cd();
-  TH2F* dalitz_rect = (TH2F*)data_withCos->createHistogram("DalitzRect", massKPi, YVar(cosKstar, Binning(cos_bins,-cos_limit,cos_limit)) ) ; dalitz_rect->SetTitle( TString::Format("Rectangular Dalitz;%s;%s",massKPi.GetTitle(),cosKstar.GetTitle()) ) ;
-  gStyle->SetOptStat( 10 ) ;
-  dalitz_rect->Draw("COLZ");
-  dalitzRect_C->SaveAs(TString::Format("%s/%s_%s%s",dir.Data(),dalitzRect_C->GetTitle(),plotName.Data(),extension.Data()));
+  // Create corresponding m2 dataset + K* helicity angle if absent
+  if ( !kinematicVars_m2.contains(cosKstar) )
+    kinematicVars_m2.add(cosKstar);
+
+  if (dataToFit) {
+    RooDataSet* data_withCos = (RooDataSet*)dataToFit->emptyClone();
+    data_withCos->addColumn(cosKstar);
+
+    RooDataSet* data_m2 = new RooDataSet(dataToFit->GetName(), dataToFit->GetTitle(), kinematicVars_m2 ) ;
+    for (Int_t iEvent=0; iEvent<dataToFit->numEntries(); ++iEvent) {
+      kinematicVars = *(dataToFit->get(iEvent)) ; // this line will propagate the RooRealVars values of the event to all the corresponding RooRealVars in kinematicVars
+      //kinematicVars.Print("extras") ; cout <<endl; kinematicVars_m2.Print("extras") ;
+      //cout <<"massesEffPdf->printValue(cout) = "; massesEffPdf->printValue(cout); cout <<endl;
+      TIterator *massVarsIter = massVars.createIterator() ;
+      if (!massVarsIter) {
+	cout <<"Cannot create massVars.createIterator()! Please check" <<endl; return;
+      }
+      RooRealVar* temp = 0;
+      while ( (temp = (RooRealVar*)massVarsIter->Next()) ) {
+	TString temp_m2Name = temp->GetName(); temp_m2Name.ReplaceAll("mass","mass2"); //cout <<"temp_m2Name = " <<temp_m2Name <<endl; mass2Fors.Print("extras") ;
+	RooFormulaVar* temp_m2For = (RooFormulaVar*)mass2Fors.find( temp_m2Name+"For" ) ;
+	if (!temp_m2For) {
+	  cout <<"temp_m2For = " <<temp_m2For <<"! Please check" <<endl; return;
+	} else if ( temp_m2For->dependsOn( *temp ) ) {
+	  RooRealVar* temp_m2 = (RooRealVar*)mass2Vars.find(temp_m2Name) ;
+	  if (temp_m2)
+	    temp_m2->setVal( temp_m2For->getVal() ) ;
+	}
+      }
+      //kinematicVars_m2.Print("extras") ; cout <<endl;
+      data_m2->add( kinematicVars_m2 ) ;
+      
+      //cout <<"\nmassesEffPdf->printValue(cout) = "; massesEffPdf->printValue(cout); cout <<endl;
+      
+      // set K* helicity angle value
+      cosKstar.setVal( cosTheta_FromMasses_host(mass2KPiFor.getVal(), mass2PsiPiFor.getVal(), TMath::Power(massMuMu,2), MBd2, MKaon2, MPion2) );
+      data_withCos->add( RooArgSet(kinematicVars,cosKstar) );
+    }
+    if (dataToFit->numEntries() != data_m2->numEntries()) {
+      cout <<"dataToFit->numEntries() (" <<dataToFit->numEntries() <<") != data_m2->numEntries() (" <<data_m2->numEntries() <<")! Please check" <<endl; return;
+    }
+    if (dataToFit->numEntries() != data_withCos->numEntries()) {
+      cout <<"dataToFit->numEntries() (" <<dataToFit->numEntries() <<") != data_withCos->numEntries() (" <<data_withCos->numEntries() <<")! Please check" <<endl; return;
+    }
+    //return;
+
+    cout <<"\nPlotting angles scatter plot..." <<endl;
+    TCanvas* scatter_C = new TCanvas("Angles_scatter_plot","Angles scatter plot",800,600) ; scatter_C->SetRightMargin(rightMargin);
+    scatter_C->cd();
+    TH2F* scatter = (TH2F*)data_m2->createHistogram("Angles_scatter_plot", cosMuMu, Binning(cos_bins,-cos_limit,cos_limit), YVar(phi, Binning(phi_bins,-phi_limit,phi_limit)) ) ; scatter->SetTitle( TString::Format("Angles scatter plot;%s;%s",cosMuMu.GetTitle(),phi.GetTitle()) ) ;
+    gStyle->SetOptStat( 10 ) ;
+    scatter->Draw("COLZ");
+    scatter_C->SaveAs(TString::Format("%s/%s_%s%s",dir.Data(),scatter_C->GetName(),plotName.Data(),extension.Data()));
+
+    cout <<"\nPlotting Dalitz..." <<endl;
+    TCanvas* dalitz_C = new TCanvas("Dalitz_C","Dalitz",800,600) ; dalitz_C->SetRightMargin(rightMargin); dalitz_C->cd();
+    if ( totEvents < 20000 ) {KPiMass2_bins = 50; MuMuPiMass2_bins = 64;}
+    TH2F* dalitz = (TH2F*)data_m2->createHistogram("Dalitz", mass2KPi, Binning(KPiMass2_bins,KPiMass2_low,KPiMass2_high), YVar(mass2PsiPi, Binning(MuMuPiMass2_bins,MuMuPiMass2_low,MuMuPiMass2_high)) ) ; dalitz->SetTitle( TString::Format("Dalitz;%s;%s",mass2KPi.GetTitle(),mass2PsiPi.GetTitle()) ) ;
+    gStyle->SetOptStat( 10 ) ;
+    dalitz->Draw("COLZ");
+    //dalitz->Draw("LEGO");
+    dalitz_C->SaveAs(TString::Format("%s/%s_%s%s",dir.Data(),dalitz_C->GetTitle(),plotName.Data(),extension.Data()));
+    //return;
+    cout <<"\nPlotting rectangular Dalitz..." <<endl;
+    TCanvas* dalitzRect_C = new TCanvas("DalitzRect_C","Rectangular_Dalitz",800,600) ; dalitzRect_C->SetRightMargin(rightMargin);
+    dalitzRect_C->cd();
+    TH2F* dalitz_rect = (TH2F*)data_withCos->createHistogram("DalitzRect", massKPi, YVar(cosKstar, Binning(cos_bins,-cos_limit,cos_limit)) ) ; dalitz_rect->SetTitle( TString::Format("Rectangular Dalitz;%s;%s",massKPi.GetTitle(),cosKstar.GetTitle()) ) ;
+    gStyle->SetOptStat( 10 ) ;
+    dalitz_rect->Draw("COLZ");
+    dalitzRect_C->SaveAs(TString::Format("%s/%s_%s%s",dir.Data(),dalitzRect_C->GetTitle(),plotName.Data(),extension.Data()));
+  }
 
   vector <RooPlot*> var_frame;
   for (Int_t iVar=0; iVar<kinematicVars.getSize(); ++iVar) {
