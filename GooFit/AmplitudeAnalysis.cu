@@ -945,7 +945,35 @@ int main(int argc, char** argv) {
     if (tmva) path.Append("TMVA/");
   }
 
-
+  TString dataFileName = path+fileName;
+  if (tmva)
+    dataFileName.ReplaceAll("TMVApp_","TMVApp_data");
+  inputFile = TFile::Open(dataFileName);
+  
+  if (!inputFile) {
+    cout <<"Warning: unable to open data file \"" <<dataFileName <<"\"" <<endl;
+  } else {
+    TString bkgNameMass = "psi2SPi_vs_KPi";
+    TString bkgNameAng = "planesAngle_vs_cos_psi2S_helicityAngle";
+    if (tmva) {
+      bkgNameMass.Append("_masses_sbs_BDT"); bkgNameAng.Append("_sbs_BDT");
+    } else {
+      bkgNameMass.Append("_hardCuts_1B0_sidebands_B0massC"); bkgNameAng.Append("_hardCuts_1B0_sidebands_B0massC");
+    }
+    
+    bkgTH2Mass = (TH2F*)inputFile->Get(bkgNameMass) ;
+    bkgTH2Ang = (TH2F*)inputFile->Get(bkgNameAng) ;
+    
+    if (!(bkgTH2Mass)) {
+      std::cout<<"Efficiency TH2 named \'" <<bkgNameMass <<"\' NOT FOUND in found in TFile \'" <<bkgFile->GetName() <<"\'.\nReturning." <<std::endl;
+      return -1;
+    }
+    if (!(bkgTH2Ang)) {
+      std::cout<<"Efficiency TH2 named \'" <<bkgNameAng <<"\' NOT FOUND in found in TFile \'" <<bkgFile->GetName() <<"\'.\nReturning." <<std::endl;
+      return -1;
+    }
+  }
+    
   if (txtfile) {
     ifstream dataTxt(fullDatasetName.Data());
     Int_t totEvents = 0;
@@ -999,73 +1027,13 @@ int main(int argc, char** argv) {
 
       }
     } // if ( (dataTxt.good()) )
-
-    if(bkgPdfHist){
-
-      TString dataFileName = path+fileName;
-      if (tmva) {
-        dataFileName.ReplaceAll("TMVApp_","TMVApp_data");
-      }
-      inputFile = TFile::Open(dataFileName);
-
-      if (!inputFile) {
-        cout <<"Warning: unable to open data file \"" <<dataFileName <<"\"" <<endl;
-      } else {
-        TString bkgNameMass = "psi2SPi_vs_KPi";
-        TString bkgNameAng = "planesAngle_vs_cos_psi2S_helicityAngle";
-        if (tmva) {
-  	bkgNameMass.Append("_masses_sbs_BDT"); bkgNameAng.Append("_sbs_BDT");
-        } else {
-  	bkgNameMass.Append("_hardCuts_1B0_sidebands_B0massC"); bkgNameAng.Append("_hardCuts_1B0_sidebands_B0massC");
-        }
-
-        bkgTH2Mass = (TH2F*)inputFile->Get(bkgNameMass) ;
-
-        bkgTH2Ang = (TH2F*)inputFile->Get(bkgNameAng) ;
-
-        if (!(bkgTH2Mass)) {
-  	std::cout<<"Efficiency TH2 named \'"<<bkgNameMass<<"\' NOT FOUND in found in TFile \'" <<bkgFile->GetName() <<"\'.\nReturning."<<std::endl;
-  	return -1;
-        }
-        if (!(bkgTH2Ang)) {
-  	std::cout<<"Efficiency TH2 named \'"<<bkgNameAng<<"\' NOT FOUND in found in TFile \'" <<bkgFile->GetName() <<"\'.\nReturning."<<std::endl;
-  	return -1;
-        }
-
-    }
-  }
     dataTxt.close();
   } // if (txtfile)
   else {
-    TString dataFileName = path+fileName;
-    if (tmva) {
-      dataFileName.ReplaceAll("TMVApp_","TMVApp_data");
-    }
-    inputFile = TFile::Open(dataFileName);
 
     if (!inputFile) {
       cout <<"Warning: unable to open data file \"" <<dataFileName <<"\"" <<endl;
     } else {
-      TString bkgNameMass = "psi2SPi_vs_KPi";
-      TString bkgNameAng = "planesAngle_vs_cos_psi2S_helicityAngle";
-      if (tmva) {
-	bkgNameMass.Append("_masses_sbs_BDT"); bkgNameAng.Append("_sbs_BDT");
-      } else {
-	bkgNameMass.Append("_hardCuts_1B0_sidebands_B0massC"); bkgNameAng.Append("_hardCuts_1B0_sidebands_B0massC");
-      }
-
-      bkgTH2Mass = (TH2F*)inputFile->Get(bkgNameMass) ;
-
-      bkgTH2Ang = (TH2F*)inputFile->Get(bkgNameAng) ;
-
-      if (!(bkgTH2Mass)) {
-	std::cout<<"Efficiency TH2 named \'"<<bkgNameMass<<"\' NOT FOUND in found in TFile \'" <<bkgFile->GetName() <<"\'.\nReturning."<<std::endl;
-	return -1;
-      }
-      if (!(bkgTH2Ang)) {
-	std::cout<<"Efficiency TH2 named \'"<<bkgNameAng<<"\' NOT FOUND in found in TFile \'" <<bkgFile->GetName() <<"\'.\nReturning."<<std::endl;
-	return -1;
-      }
 
       TString dataTreeName = "AA_recoVars";
       TNtupleD* dataNTuple = (TNtupleD*)inputFile->Get(dataTreeName);
