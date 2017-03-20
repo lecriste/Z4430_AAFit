@@ -173,7 +173,7 @@ void plotting(const RooDataHist* hist, const TString name, const RooRealVar* x, 
 }
 
 
-void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = kFALSE, Bool_t effFlag = kFALSE, Bool_t B0BarFlag = kFALSE, Int_t bkgOrd = 1, Int_t effOrd = 1)
+void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = kFALSE, Bool_t effFlag = kFALSE, Bool_t B0BarFlag = kFALSE, Int_t bkgMassOrd = 1, Int_t bkgAngOrd = 1, Int_t effMassOrd = 1, Int_t effAngOrd = 1)
 {
   cout <<"With cut-based efficiency the linear interpolation (effOrd=1) of masses does not work" <<endl;
 
@@ -529,10 +529,17 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
     const Int_t nVars = 2;
     TString sb_name[] = {"sbs","leftSb","rightSb"};
     pair<RooAbsPdf*, Float_t> sbPdf[nVars][3] = {{make_pair(null,0.),make_pair(null,0.),make_pair(null,0.)},{make_pair(null,0.),make_pair(null,0.),make_pair(null,0.)}};
+    /*
+    // with fit function
     const Int_t m2KPi_order_bkg = 6, m2PsiPi_order_bkg = 4;
     const Int_t cosMuMu_order_bkg = 6, phi_order_bkg = 6;
     const Int_t mKPi_order_bkg = 5, mPsiPi_order_bkg = 4, cosKstar_order_bkg = 7;
-    
+    */
+    // with RooHistPdf
+    const Int_t m2KPi_order_bkg = bkgMassOrd, m2PsiPi_order_bkg = bkgMassOrd;
+    const Int_t mKPi_order_bkg = bkgMassOrd, mPsiPi_order_bkg = bkgMassOrd;
+    const Int_t cosMuMu_order_bkg = bkgAngOrd, phi_order_bkg = bkgAngOrd;
+
     pair< pair<TString, pair<RooArgSet*,pair<Int_t,Int_t> > >, pair<TString,pair< pair<TString,TString>,pair<TString,TString> > > > bkgHisto_names[] = {make_pair( make_pair("psi2SPi_vs_KPi_dalitz",make_pair(&mass2Vars,make_pair(m2KPi_order_bkg,m2PsiPi_order_bkg))), make_pair("bkgDalitz",make_pair(make_pair("m2KPi",mass2KPi_title),make_pair("m2PsiPi",mass2PsiPi_title)))), make_pair(make_pair(anglesScatt_name,make_pair(&angleVars,make_pair(cosMuMu_order_bkg,phi_order_bkg))), make_pair("bkgAngles",make_pair(make_pair("cosMuMu",cosMuMu_title),make_pair("phi",phi_title))))};
     // if you use &mass2Fors you get "ERROR:InputArguments -- RooAbsDataStore::initialize(RelEff_psi2SPi_vs_KPi_B0constr): Data set cannot contain non-fundamental types"
     bkgHisto_names[0] = make_pair( make_pair("psi2SPi_vs_KPi_masses",make_pair(&massVars,make_pair(mKPi_order_bkg,mPsiPi_order_bkg))), make_pair("bkgMasses",make_pair(make_pair("mKPi",massKPi_title),make_pair("mPsiPi",massPsiPi_title)))); // need to apply Dalitz border in TMVAClassificationApplication.C
@@ -585,15 +592,15 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
 	  
 	  TString pdfTitle = "bkg("+bkgtype+") pdf";
 	  TString method = "map";
-	  if (bkgOrd) method = "interp"+TString::Itoa(bkgOrd,10);
-	  RooHistPdf* bkgHistPdf = new RooHistPdf(bkgName+"PDF_"+method, pdfTitle, *bkgVars, *bkgHist, bkgOrd) ;
-	  //RooHistPdf* bkgHistPdf = new RooHistPdf(bkgName+"PDF", pdfTitle, *bkgVars, *bkgHist, bkgOrd) ;
+	  Int_t xOrder = bkgHisto_names[iVars].first.second.second.first;
+	  Int_t yOrder = bkgHisto_names[iVars].first.second.second.second;
+	  if (xOrder) method = "interp"+TString::Itoa(xOrder,10); // with RooHistPdf xOrder = yOrder (see previous comment in this commit)
+	  RooHistPdf* bkgHistPdf = new RooHistPdf(bkgName+"PDF_"+method, pdfTitle, *bkgVars, *bkgHist, xOrder) ;
+	  //RooHistPdf* bkgHistPdf = new RooHistPdf(bkgName+"PDF", pdfTitle, *bkgVars, *bkgHist, xOrder) ;
 	  //If last argument is zero, the weight for the bin enclosing the coordinates contained in 'bin' is returned. For higher values, the result is interpolated in the real dimensions of the dataset with an order of interpolation equal to the value provided (more than ? does not work for Dalitz efficiencies, ? for masses efficiencies, ? for angles)
 	  bkgHistPdf->setUnitNorm(kTRUE);
 	  
 	  sbPdf[iVars][iSb].first = bkgHistPdf;
-	  Int_t xOrder = bkgHisto_names[iVars].first.second.second.first;
-	  Int_t yOrder = bkgHisto_names[iVars].first.second.second.second;
 	  // sbPdf[iVars][iSb].first = twoDFit(*x, *y, sbTH2, psi_nS.Atoi(), xOrder, yOrder, sbPdf[iVars][iSb].second); method = "ROOTfit"; // ROOT fit
 	  //sbPdf[iVars][iSb].first = twoDFit(*x, *y, bkgHist, psi_nS.Atoi(), xOrder, yOrder, sbPdf[iVars][iSb].second); method = "RooFit"; // RooFit fit
 	  const Float_t chi2N = sbPdf[iVars][iSb].second;
@@ -622,7 +629,7 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
       } // for (Int_t iVars=0; iVars < nVars; ++iVars)
     else
       cout <<"WARNING! TFile \"" <<bkgFileName <<"\" could not be opened.\nSkipping background computation" <<endl;
-  //return;
+    //return;
 
     RooAbsPdf* sbsPdf[] = {sbPdf[0][0].first, sbPdf[1][0].first};
     TString sbsName[] = {"Masses","Angles"};
@@ -648,8 +655,16 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
   RooAbsPdf* pdfToCorrect = sigPDF;
   TString pdfToCorr_name = pdfToCorrect->GetName();
   RooProdPdf* modelWithEff = 0;
+  /*
+  // with fit function
   const Int_t m2KPi_order_relEff = 5, m2PsiPi_order_relEff = 4, cosMuMu_order_relEff = 5, phi_order_relEff = 5;
   const Int_t mKPi_order_relEff = 4, mPsiPi_order_relEff = 4, cosKstar_order_relEff = 4;
+  */
+  // with RooHistPdf
+  const Int_t m2KPi_order_relEff = effMassOrd, m2PsiPi_order_relEff = effMassOrd;
+  const Int_t mKPi_order_relEff = effMassOrd, mPsiPi_order_relEff = effMassOrd;
+  const Int_t cosMuMu_order_relEff = effAngOrd, phi_order_relEff = effAngOrd;
+
   pair< pair<TString, pair<RooArgSet*,pair<Int_t,Int_t> > >, pair<TString,pair< pair<TString,TString>,pair<TString,TString> > > > effHisto_names[] = {make_pair( make_pair("RelEff_psi2SPi_vs_KPi_B0constr_Dalitz",make_pair(&mass2Vars,make_pair(m2KPi_order_relEff,m2PsiPi_order_relEff))), make_pair("relEffDalitz",make_pair(make_pair("m2KPi",mass2KPi_title),make_pair("m2PsiPi",mass2PsiPi_title)))), make_pair(make_pair("RelEff_"+anglesScatt_name,make_pair(&angleVars,make_pair(cosMuMu_order_relEff,phi_order_relEff))), make_pair("relEffAngles",make_pair(make_pair("cosMuMu",cosMuMu_title),make_pair("phi",phi_title))))}; DalitzEff = kTRUE;
   // if you use &mass2Fors you get "ERROR:InputArguments -- RooAbsDataStore::initialize(RelEff_psi2SPi_vs_KPi_B0constr): Data set cannot contain non-fundamental types"
   //effHisto_names[0] = make_pair(make_pair("RelEff_psi2SPi_vs_KPi_B0constr",make_pair(&massVars,make_pair(mKPi_order_relEff,mPsiPi_order_relEff))), make_pair("relEffMasses",make_pair(make_pair("mKPi",massKPi_title),make_pair("mPsiPi",massPsiPi_title)))); DalitzEff = kFALSE;
@@ -699,8 +714,10 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
       TString efftype = effType; efftype.Remove(0,1); efftype.Prepend(first);
       TString pdfTitle = "#epsilon_{rel}("+efftype+") pdf";
       TString method = "map";
-      if (effOrd) method = "interp"+TString::Itoa(effOrd,10);
-      RooHistPdf* relHistPdf = new RooHistPdf(effName+"PDF_"+method,pdfTitle, *effVars, *relEffHist, effOrd) ; //If last argument is zero, the weight for the bin enclosing the coordinates contained in 'bin' is returned. For higher values, the result is interpolated in the real dimensions of the dataset with an order of interpolation equal to the value provided (more than 10 does not work for Dalitz efficiencies, 9 for masses efficiencies, 10 for angles)
+      Int_t xOrder = effHisto_names[iEff].first.second.second.first;
+      Int_t yOrder = effHisto_names[iEff].first.second.second.second;
+      if (xOrder) method = "interp"+TString::Itoa(xOrder,10); // with RooHistPdf xOrder = yOrder (see previous comment in this commit)
+      RooHistPdf* relHistPdf = new RooHistPdf(effName+"PDF_"+method,pdfTitle, *effVars, *relEffHist, xOrder) ; //If last argument is zero, the weight for the bin enclosing the coordinates contained in 'bin' is returned. For higher values, the result is interpolated in the real dimensions of the dataset with an order of interpolation equal to the value provided (more than 10 does not work for Dalitz efficiencies, 9 for masses efficiencies, 10 for angles)
       relHistPdf->setUnitNorm(kTRUE);
 
       /*
@@ -727,8 +744,6 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
       */
 
       effPdf[iEff].first = relHistPdf;
-      Int_t xOrder = effHisto_names[iEff].first.second.second.first;
-      Int_t yOrder = effHisto_names[iEff].first.second.second.second;
       // effPdf[iEff].first = twoDFit(*x, *y, relEffTH2, psi_nS.Atoi(), xOrder, yOrder, effPdf[iEff].second); method = "ROOTfit";
       const Float_t chi2N = effPdf[iEff].second;
 
