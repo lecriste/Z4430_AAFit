@@ -147,7 +147,7 @@ void printinstruction() {
 	    <<"\t-effMap \t\t\t Perform the product of the pdf by the efficiency histogram \n"
 	    <<"\t-effInt \t\t Perform the product of the pdf by the efficiency histogram interpolation \n"
 	    <<"\t-BkgMap \t\t Add background histogram \n"
-	    <<"\t-BkgMapInt \t\t Add background histogram interpolation \n"
+	    <<"\t-BkgInt \t\t Add background histogram interpolation \n"
 	    <<"\t-BkgPHSP \t\t Add Phase Space Background to p.d.f.\n"
     //<<"\t-effH <4-dig-code> \t Perform the product of the pdf by the efficiency histogram ()\n"
     //<<"\t\t\t\t\t\t - code1 ()\n"
@@ -402,7 +402,7 @@ int main(int argc, char** argv) {
       bkgPdfHist = true;
       bkgFlag = true;
     }
-    else if (arg == "-BkgMapInt") {
+    else if (arg == "-BkgInt") {
       bkgHistInt = true;
       bkgPdfHist = true;
       bkgFlag = true;
@@ -1400,6 +1400,7 @@ int main(int argc, char** argv) {
       projEffHistosInt[y]->Scale(1.0/projEffHistosInt[y]->Integral());
       projEffHistosInt[y]->Scale(effHistos[y]->Integral());
 
+      projEffHistosInt[y]->SetLineColor(kRed);
       projEffHistosInt[y]->Draw("L");
       effHistos[y]->Draw("same");
 
@@ -1410,6 +1411,7 @@ int main(int argc, char** argv) {
       projEffHistosInt[y+1]->Scale(1.0/projEffHistosInt[y+1]->Integral());
       projEffHistosInt[y+1]->Scale(effHistos[y+1]->Integral());
 
+      projEffHistosInt[y+1]->SetLineColor(kRed);
       projEffHistosInt[y+1]->Draw("L");
       effHistos[y+1]->Draw("same");
       canvasEff->SaveAs(TString::Format("%s/%s_EffIntProjection.%s",plotsDir.Data(),varNames[y+1].Data(),extension.Data()));
@@ -1735,6 +1737,7 @@ int main(int argc, char** argv) {
 	projBkgHistosInt[y]->Scale(1.0/projBkgHistosInt[y]->Integral());
 	projBkgHistosInt[y]->Scale(bkgHistos[y]->Integral());
 
+	projBkgHistosInt[y]->SetLineColor(kRed);
 	projBkgHistosInt[y]->Draw("L");
 	bkgHistos[y]->Draw("same");
 	canvas->SaveAs(TString::Format("%s/%s_BkgIntProjection.%s",plotsDir.Data(),varNames[y].Data(),extension.Data()));
@@ -1744,6 +1747,7 @@ int main(int argc, char** argv) {
 	projBkgHistosInt[y+1]->Scale(1.0/projBkgHistosInt[y+1]->Integral());
 	projBkgHistosInt[y+1]->Scale(bkgHistos[y+1]->Integral());
 
+	projBkgHistosInt[y+1]->SetLineColor(kRed);
 	projBkgHistosInt[y+1]->Draw("L");
 	bkgHistos[y+1]->Draw("same");
 	canvas->SaveAs(TString::Format("%s/%s_BkgIntProjection.%s",plotsDir.Data(),varNames[y+1].Data(),extension.Data()));
@@ -2603,13 +2607,14 @@ int main(int argc, char** argv) {
     canvas->cd();
     canvas->Clear();
 
-    fptype ySF = 1.3;
+    //fptype ySF = 1.3;
     varHistos[iVar]->SetMinimum(0.1);
     multiGraphs[iVar]->SetMinimum(0.1);
 
     if (!hPlots) {
       multiGraphs[iVar]->Draw("AL");
       //multiGraphs[iVar]->SetMaximum(plotYMax[iVar]*ySF);
+      // not able to plot histos first and so TGraph X range needs to be forced:
       multiGraphs[iVar]->GetXaxis()->SetRangeUser(varHistos[iVar]->GetXaxis()->GetXmin(),varHistos[iVar]->GetXaxis()->GetXmax()); // TMultiGraphs::GetXaxis() returns a valid axis only after the TMultigraph has been drawn. 
 
       varHistos[iVar]->Draw("E same");
@@ -2640,6 +2645,8 @@ int main(int argc, char** argv) {
 
     if (iVar==0) { // it's enough to show the legend on the m(KPi) plot only
       legPlot->Draw(); fitStat->Draw();
+      Float_t marginShift = 0.15;
+      canvas->SetLeftMargin(canvas->GetLeftMargin() - marginShift); canvas->SetRightMargin(canvas->GetRightMargin() - marginShift);
     }
 
     canvas->SetLogy(0);
