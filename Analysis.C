@@ -451,7 +451,7 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
   //totEvents *= 2;
   //totEvents *= 2.5;
   //totEvents *= 5;
-  //totEvents *= 10;
+  totEvents *= 10;
   totEvents *= 10; totEvents *= 5;
   //totEvents *= 10; totEvents *= 3;
   //totEvents /= 2; totEvents /= 100;
@@ -868,6 +868,7 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
 
   TString selection = "cutBased";
   if (tmva) selection = bdtCut_long;
+  selection.Prepend("__");
 
   if (generating) {
 
@@ -905,13 +906,11 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = 
     //if (nEvents.getVal() > 100000)
     // dataGenPDF->write(TString::Format("%s/%s.txt",datasetsPath.Data(),model->GetName()));
 
-    if (B0BarFlag) {
-      dataGenPDF->write(TString::Format("%s/B0bar/%s__%s.txt",datasetsPath.Data(),model->GetName(),selection.Data()));
-      //dataGenPDFB0->write(TString::Format("%s/B0Bar/%s__%s__B0Flag.txt",datasetsPath.Data(),model->GetName(),selection.Data()));
-    } else {
-      dataGenPDF->write(TString::Format("%s/B0/%s__%s.txt",datasetsPath.Data(),model->GetName(),selection.Data()));
-      //dataGenPDFB0->write(TString::Format("%s/B0/%s__%s__B0Flag.txt",datasetsPath.Data(),model->GetName(),selection.Data()));
-    }
+    TString flavour = "B0";
+    if (B0BarFlag) flavour.Append("bar"); 
+
+    dataGenPDF->write(TString::Format("%s/%s/%s%s.txt",datasetsPath.Data(),flavour.Data(),model->GetName(),selection.Data()));
+    //dataGenPDFB0->write(TString::Format("%s/%s/%s%s__B0Flag.txt",datasetsPath.Data(),flavour.Data(),model->GetName(),selection.Data()));
 
     return;
 
