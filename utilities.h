@@ -33,8 +33,8 @@ TString cosTheta_FromMasses_TFormula_host(const TString sameSideM2, const TStrin
 
 Bool_t Dalitz_contour_host(const Double_t mKP, const Double_t mPsiP, const Bool_t massSquared, const Int_t psi_nS) {
 
-  Double_t MPsi_nS = 0;
-  if (psi_nS == 1)
+  Double_t MPsi_nS = 0; 
+  if (psi_nS == 1) 
     MPsi_nS = MJpsi;
   else if (psi_nS == 2)
     MPsi_nS = MPsi2S;
@@ -52,7 +52,7 @@ Bool_t Dalitz_contour_host(const Double_t mKP, const Double_t mPsiP, const Bool_
 
   if ((mKP_1 < MKaon + MPion) || (mKP_1 > MBd - MPsi_nS) || (mPsiP_1 < MPsi_nS + MPion) || (mPsiP_1 > MBd - MKaon))
     return kFALSE;
-  else { // Dalitz border from PDG KINEMATICS 43.4.3.1.
+  else { // Dalitz border from PDG KINEMATICS 43.4.3.1. 
     Float_t E_P = (mPsiP_1*mPsiP_1 - MJpsi2 + MPion2)/(2*mPsiP_1) ;
     Float_t E_K = (MBd2 - mPsiP_1*mPsiP_1 - MKaon2)/(2*mPsiP_1) ;
     Float_t E_PpE_K_2 = TMath::Power((E_P + E_K),2);
@@ -72,26 +72,8 @@ Bool_t angles_contour_host(const Double_t cos, const Double_t phi) {
 
   if ( (fabs(cos) > 1) || (fabs(phi) > TMath::Pi()) )
     return kFALSE;
-  else
+  else  
     return kTRUE ;
 
 }
 
-void progressBar(float progress){
-
-  while (progress < 1.0) {
-    int barWidth = 70;
-
-    std::cout << "[";
-    int pos = barWidth * progress;
-    for (int i = 0; i < barWidth; ++i) {
-      if (i < pos) std::cout << "=";
-      else if (i == pos) std::cout << ">";
-      else std::cout << " ";
-    }
-    std::cout << "] " << int(progress * 100.0) << " %\r";
-    std::cout.flush();
-
-  }
-  // std::cout << std::endl;
-}
