@@ -80,7 +80,6 @@ Bool_t angles_contour_host(const Double_t cos, const Double_t phi) {
 void progressBar(float progress){
 
   while (progress < 1.0) {
-    
     int barWidth = 70;
 
     std::cout << "[";
