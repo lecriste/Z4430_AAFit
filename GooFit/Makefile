@@ -31,7 +31,7 @@ LDFLAGS     += -fopenmp -DTHRUST_DEVICE_BACKEND=THRUST_DEVICE_BACKEND_OMP #-lgom
 endif
 
 ifeq ($(CUDALOCATION), )
-CUDALOCATION = /usr/local/cuda-7.5
+CUDALOCATION = /usr/local/cuda-8.0
 #CUDALOCATION = /cmshome/adrianodif/CUDAs/cuda-6.0
 #CUDALOCATION = /cmshome/adrianodif/CUDAs/cuda-6.5
 #CUDALOCATION = /usr/local/cuda-6.5
