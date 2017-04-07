@@ -882,12 +882,12 @@ int main(int argc, char** argv) {
 	if (bFixCode.data()[i]=='1') bs[i]->fixed = true;
 
   fptype ratios[nProjVars];
-  ratios[iVar] = 1.0;
-
-  if(!hPlots)
+  
   for (Int_t iVar=0; iVar<nProjVars; ++iVar)
+    if(!hPlots)
     ratios[iVar] = (fptype)plottingFine[iVar]/(fptype)dataPoints[iVar];
-
+    else
+    ratios[iVar] = 1.0;
 
   //DATASET
   UnbinnedDataSet dataset(obserVariables);
