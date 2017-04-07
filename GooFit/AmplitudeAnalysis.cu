@@ -882,6 +882,9 @@ int main(int argc, char** argv) {
 	if (bFixCode.data()[i]=='1') bs[i]->fixed = true;
 
   fptype ratios[nProjVars];
+  ratios[iVar] = 1.0;
+
+  if(!hPlots)
   for (Int_t iVar=0; iVar<nProjVars; ++iVar)
     ratios[iVar] = (fptype)plottingFine[iVar]/(fptype)dataPoints[iVar];
 
@@ -955,7 +958,7 @@ int main(int argc, char** argv) {
   if (tmva)
     dataFileName.ReplaceAll("TMVApp_","TMVApp_data");
   inputFile = TFile::Open(dataFileName);
-  
+
   if (!inputFile) {
     cout <<"Warning: unable to open data file \"" <<dataFileName <<"\"" <<endl;
   } else {
@@ -966,10 +969,10 @@ int main(int argc, char** argv) {
     } else {
       bkgNameMass.Append("_hardCuts_1B0_sidebands_B0massC"); bkgNameAng.Append("_hardCuts_1B0_sidebands_B0massC");
     }
-    
+
     bkgTH2Mass = (TH2F*)inputFile->Get(bkgNameMass) ;
     bkgTH2Ang = (TH2F*)inputFile->Get(bkgNameAng) ;
-    
+
     if (!(bkgTH2Mass)) {
       std::cout<<"Efficiency TH2 named \'" <<bkgNameMass <<"\' NOT FOUND in found in TFile \'" <<bkgFile->GetName() <<"\'.\nReturning." <<std::endl;
       return -1;
@@ -979,7 +982,7 @@ int main(int argc, char** argv) {
       return -1;
     }
   }
-    
+
   if (txtfile) {
     ifstream dataTxt(fullDatasetName.Data());
     Int_t totEvents = 0;
@@ -2615,7 +2618,7 @@ int main(int argc, char** argv) {
       multiGraphs[iVar]->Draw("AL");
       //multiGraphs[iVar]->SetMaximum(plotYMax[iVar]*ySF);
       // not able to plot histos first and so TGraph X range needs to be forced:
-      multiGraphs[iVar]->GetXaxis()->SetRangeUser(varHistos[iVar]->GetXaxis()->GetXmin(),varHistos[iVar]->GetXaxis()->GetXmax()); // TMultiGraphs::GetXaxis() returns a valid axis only after the TMultigraph has been drawn. 
+      multiGraphs[iVar]->GetXaxis()->SetRangeUser(varHistos[iVar]->GetXaxis()->GetXmin(),varHistos[iVar]->GetXaxis()->GetXmax()); // TMultiGraphs::GetXaxis() returns a valid axis only after the TMultigraph has been drawn.
 
       varHistos[iVar]->Draw("E same");
 
