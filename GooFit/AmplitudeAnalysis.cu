@@ -31,6 +31,7 @@
 #include "TLegend.h"
 #include "TSystem.h"
 #include "TStyle.h"
+#include "TDatime.h"
 
 #include "BiDimHistoPdf.hh"
 #include "QuadDimHistoKStarPdf.hh"
@@ -255,9 +256,20 @@ int main(int argc, char** argv) {
   std::string aFixCode;
   std::string bFixCode;
 
+  TDatime *starttime = new TDatime();
+  int Date = starttime->GetDate();
+  int Clock = starttime->GetTime();
+
+  sprintf(bufferstring,"mkdir ./plots/%d_%d/",Date,Clock);
+  system(bufferstring);
+
   TString datasetName = "Kstars";
   std::string underscores = "__";
-  TString plotsDir = "./plots";
+  TString plotsDir = "./plots/";
+  plotsDir.Append(std::to_string(Date).data());
+  plotsDir.Append("_");
+  plotsDir.Append(std::to_string(Clock).data());
+  
   std::vector< std::string> kStarNames;
   TString plotOption = "L";
 
@@ -905,7 +917,7 @@ int main(int argc, char** argv) {
 
   for (Int_t iVar=0; iVar<nProjVars; ++iVar) {
     TString xTitle = varTitles[iVar];
-    if (iVar <= 2) xTitle.Append(" [GeV]");
+    if (iVar < 2) xTitle.Append(" [GeV]");
 
     TH1F* hist = new TH1F(varNames[iVar]+"_Histo", TString::Format("%s;%s",varNames[iVar].Data(),xTitle.Data()), dataPoints[iVar], histRange[iVar].first, histRange[iVar].second);
     hist->SetLineColor(kBlack); hist->SetMarkerColor(kBlack); hist->SetMarkerStyle(kFullCircle);
@@ -1970,8 +1982,15 @@ int main(int argc, char** argv) {
     pointsYTot.push_back(new fptype[obserVariables[iVar]->numbins]);
     pointsYTotSig.push_back(new fptype[obserVariables[iVar]->numbins]);
     pointsYTotBkg.push_back(new fptype[obserVariables[iVar]->numbins]);
+    
+    TH1F* h = new TH1F("projHisto_"+shortVarNames[iVar],"projHisto_"+shortVarNames[iVar],obserVariables[iVar]->numbins,obserVariables[iVar]->lowerlimit,obserVariables[iVar]->upperlimit);
+    TString xTitle = varTitles[iVar];
+    if (iVar < 2) xTitle.Append(" [GeV]");
 
-    projHistos.push_back( new TH1F("projHisto_"+shortVarNames[iVar],"projHisto_"+shortVarNames[iVar],obserVariables[iVar]->numbins,obserVariables[iVar]->lowerlimit,obserVariables[iVar]->upperlimit) );
+    h->GetXaxis()->SetTitle(xTitle.Data());
+    h->GetYaxis()->SetTitle("Candidates");    
+
+    projHistos.push_back(h);
     projSigHistos.push_back( new TH1F("projSigHisto_"+shortVarNames[iVar],"projSigHisto_"+shortVarNames[iVar],obserVariables[iVar]->numbins,obserVariables[iVar]->lowerlimit,obserVariables[iVar]->upperlimit) );
     projBkgHistos.push_back( new TH1F("projBkgHisto_"+shortVarNames[iVar],"projBkgHisto_"+shortVarNames[iVar],obserVariables[iVar]->numbins,obserVariables[iVar]->lowerlimit,obserVariables[iVar]->upperlimit) );
 
@@ -2613,7 +2632,8 @@ int main(int argc, char** argv) {
     //fptype ySF = 1.3;
     varHistos[iVar]->SetMinimum(0.1);
     multiGraphs[iVar]->SetMinimum(0.1);
-
+    projHistos[iVar]->SetMinimum(0.1);
+	
     if (!hPlots) {
       multiGraphs[iVar]->Draw("AL");
       //multiGraphs[iVar]->SetMaximum(plotYMax[iVar]*ySF);
@@ -2624,8 +2644,16 @@ int main(int argc, char** argv) {
 
       //varHistos_theory[iVar]->Draw("E same");
     } else {
+TString xTitle = varTitles[iVar];
+      if (iVar < 2) xTitle.Append(" [GeV]");
+
       projHistos[iVar]->SetMarkerColor(kRed);
+      projHistos[iVar]->SetLineColor(kRed);
       projHistos[iVar]->SetMarkerStyle(kFullCircle);
+      
+      varHistos[iVar]->GetXaxis()->SetTitle(xTitle.Data());
+      varHistos[iVar]->GetYaxis()->SetTitle("Candidates");
+
       projHistos[iVar]->Draw("E");
 
       //varHistos[iVar]->SetMaximum(plotYMax[iVar]*ySF);
@@ -2638,10 +2666,13 @@ int main(int argc, char** argv) {
 	projBkgHistos[iVar]->Draw("PE same");
       }
       for (int k = 0; k < nKstars; ++k)
-	compHistos[iVar][k]->Draw("PE same");
-
-      if (bkgPdfHist)
-	projBkgHistosInt[iVar]->Draw("PE same");
+	{
+	compHistos[iVar][k]->SetLineStyle(7);
+	compHistos[iVar][k]->Draw("hist same");
+	compHistos[iVar][k]->Draw("p same");
+	}
+    //  if (bkgPdfHist)
+	//projBkgHistosInt[iVar]->Draw("PE same");
     }
 
     if (bkgHistos[iVar]) bkgHistos[iVar]->Draw("same");
