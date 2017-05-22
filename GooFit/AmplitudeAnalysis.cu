@@ -1,3 +1,8 @@
+//
+//  GooFit AA analysis code.
+//  Developed by Adriano Di Florio & Leonardo Cristella
+//
+
 #include <cuda_runtime.h>
 #include "Variable.hh"
 #include "ThreeBodiesPsiPiKPdf.hh"
@@ -256,6 +261,8 @@ int main(int argc, char** argv) {
   std::string aFixCode;
   std::string bFixCode;
 
+  //
+
   TDatime *starttime = new TDatime();
   int Date = starttime->GetDate();
   int Clock = starttime->GetTime();
@@ -269,7 +276,6 @@ int main(int argc, char** argv) {
   plotsDir.Append(std::to_string(Date).data());
   plotsDir.Append("_");
   plotsDir.Append(std::to_string(Clock).data());
-  
   std::vector< std::string> kStarNames;
   TString plotOption = "L";
 
@@ -592,12 +598,16 @@ int main(int argc, char** argv) {
   if (b0Var)
     b0Beauty = new Variable("B0beauty",0.,-2,+2);
 
-  std::vector<Variable*> obserVariables;
+  std::vector<Variable*> obserVariables, massVariables, angleVariables;
   // same order as varNames
   obserVariables.push_back(massKPi);
   obserVariables.push_back(massPsiPi);
   obserVariables.push_back(cosMuMu);
   obserVariables.push_back(phi);
+  massVariables.push_back(massKPi);
+  massVariables.push_back(massPsiPi);
+  angleVariables.push_back(cosMuMu);
+  angleVariables.push_back(phi);
   Int_t nProjVars = obserVariables.size();
 
   if (b0Var)
@@ -894,7 +904,7 @@ int main(int argc, char** argv) {
 	if (bFixCode.data()[i]=='1') bs[i]->fixed = true;
 
   fptype ratios[nProjVars];
-  
+
   for (Int_t iVar=0; iVar<nProjVars; ++iVar)
     if(!hPlots)
     ratios[iVar] = (fptype)plottingFine[iVar]/(fptype)dataPoints[iVar];
@@ -904,7 +914,11 @@ int main(int argc, char** argv) {
   //DATASET
   UnbinnedDataSet dataset(obserVariables);
   UnbinnedDataSet dataset_EffCorr(obserVariables);
-  std::vector<fptype> effCorrection, bkgAddition;
+  BinnedDataSet datasetChi(obserVariables);
+  BinnedDataSet datasetChiAngle(angleVariables);
+  BinnedDataSet datasetChiMass(massVariables);
+
+  std::vector<fptype> effCorrection, effCorrectionChi, bkgAddition;
 
   std::cout<<"Dataset: "<<std::endl;
   // std::cout<<" - dataset with "<<dataset.getNumBins()<<" bins "<<std::endl;
@@ -1030,6 +1044,9 @@ int main(int argc, char** argv) {
 	//std::cout <<massKPi->value <<" - " <<cosMuMu->value <<" - " <<massPsiPi->value <<" - " <<phi->value <<" - " <<std::endl;
 	if (Dalitz_contour_host(massKPi->value, massPsiPi->value, kFALSE, (Int_t)psi_nS->value) ) {
 	  dataset.addEvent();
+    datasetChi.addEvent();
+    datasetChiAngle.addEvent();
+    datasetChiMass.addEvent();
 	  for (Int_t iVar=0; iVar<nProjVars; ++iVar)
 	    varHistos[iVar]->Fill(obserVariables[iVar]->value);
 	}
@@ -1089,6 +1106,9 @@ int main(int argc, char** argv) {
 
 	if (Dalitz_contour_host(massKPi->value, massPsiPi->value, kFALSE, (Int_t)psi_nS->value) ) {
 	  dataset.addEvent();
+    datasetChi.addEvent();
+    datasetChiMass.addEvent();
+    datasetChiAngle.addEvent();
 	  for (Int_t iVar=0; iVar<nProjVars; ++iVar)
 	    varHistos[iVar]->Fill(obserVariables[iVar]->value);
 	}
@@ -1463,6 +1483,16 @@ int main(int argc, char** argv) {
 
     for (size_t i = 0; i < effPdfValues[0].size(); i++) {
       effCorrection.push_back(effPdfValues[0][i]);
+    }
+
+    effPdfValues.clear();
+
+    effHist->setData(&dataset);
+    effHist->getCompProbsAtDataPoints(effPdfValues);
+
+
+    for (size_t i = 0; i < effPdfValues[0].size(); i++) {
+      effCorrectionChi.push_back(effPdfValues[0][i]);
     }
 
     //effFile->Close();
@@ -1936,8 +1966,51 @@ int main(int argc, char** argv) {
       bs[i]->value += bs[i]->value > 0 ? -period : +period ;
   }
 
+  std::vector<UnbinnedDataSet> compData;
+  std::vector<std::vector<fptype> > pdfTotalValues, pdfTotalSigValues, pdfTotalBkgValues;
+  std::vector<std::vector<fptype> > pdfCompValues, pdfTotalAngValues, pdfTotalMasValues;
+
+  totalPdf->getCompProbsAtDataPoints(pdfTotalValues);
+
+  if (effPdfHist)
+    for (int k = 0; k < pdfTotalValues[0].size(); k++)
+      if (effPdfHist) pdfTotalValues[0][k] *= effCorrectionChi[k];
+
+  fptype sum = 0.0, chisquare = 0.0, chisquaremass = 0.0, chisquareangle = 0.0;
+
+
+  //4D chisquare
+  for (int k = 0; k < pdfTotalValues[0].size(); k++)
+    sum += pdfTotalValues[0][k];
+
+  for (int k = 0; k<pdfTotalValues[0].size(); ++k)
+  {
+    pdfTotalValues[0][k] /= sum;
+    pdfTotalValues[0][k] *= events;
+  }
+
+  for (size_t o = 0; o < pdfTotalValues[0].size(); o++)
+  {
+    if(pdfTotalValues[0][o]>0.0 && datasetChi.getBinContent(o)>0.0)
+    {
+      fptype term = POW(pdfTotalValues[0][o] - datasetChi.getBinContent(o),2)/pdfTotalValues[0][o];
+      chisquare += term;
+
+      std::cout << " data : " << datasetChi.getBinContent(o) << " pdf : " << pdfTotalValues[0][o] <<std::endl;
+
+    }
+
+  }
+
+  std::cout << "===================================" << std::endl;
+  std::cout << "Chi square 4D   : " << chisquare << std::endl;
+  std::cout << "Chi square mass : " << chisquaremass << std::endl;
+  std::cout << "Chi square angl : " << chisquareangle << std::endl;
+  std::cout << "===================================" << std::endl;
+
   totalPdf->clearCurrentFit();
 
+  pdfTotalValues.clear();
   GooPdf* matrixTotPlot;
   //GooPdf* bkgHistPlot;
 
@@ -1952,10 +2025,6 @@ int main(int argc, char** argv) {
   startC = times(&startProc);
   //
   // UnbinnedDataSet plottingGridData(obserVariables);
-
-  std::vector<UnbinnedDataSet> compData;
-  std::vector<std::vector<fptype> > pdfTotalValues, pdfTotalSigValues, pdfTotalBkgValues;
-  std::vector<std::vector<fptype> > pdfCompValues;
 
   for (int id = 0; id < nKstars; ++id)
     compData.push_back( UnbinnedDataSet(obserVariables) );
@@ -1982,15 +2051,16 @@ int main(int argc, char** argv) {
     pointsYTot.push_back(new fptype[obserVariables[iVar]->numbins]);
     pointsYTotSig.push_back(new fptype[obserVariables[iVar]->numbins]);
     pointsYTotBkg.push_back(new fptype[obserVariables[iVar]->numbins]);
-    
+
     TH1F* h = new TH1F("projHisto_"+shortVarNames[iVar],"projHisto_"+shortVarNames[iVar],obserVariables[iVar]->numbins,obserVariables[iVar]->lowerlimit,obserVariables[iVar]->upperlimit);
     TString xTitle = varTitles[iVar];
     if (iVar < 2) xTitle.Append(" [GeV]");
 
     h->GetXaxis()->SetTitle(xTitle.Data());
-    h->GetYaxis()->SetTitle("Candidates");    
+    h->GetYaxis()->SetTitle("Candidates");
 
     projHistos.push_back(h);
+
     projSigHistos.push_back( new TH1F("projSigHisto_"+shortVarNames[iVar],"projSigHisto_"+shortVarNames[iVar],obserVariables[iVar]->numbins,obserVariables[iVar]->lowerlimit,obserVariables[iVar]->upperlimit) );
     projBkgHistos.push_back( new TH1F("projBkgHisto_"+shortVarNames[iVar],"projBkgHisto_"+shortVarNames[iVar],obserVariables[iVar]->numbins,obserVariables[iVar]->lowerlimit,obserVariables[iVar]->upperlimit) );
 
@@ -2000,8 +2070,6 @@ int main(int argc, char** argv) {
       totalBkgProj[iVar].push_back(0.0);
     }
   }
-
-  fptype sum = 0.0;
   //fptype sumSig = 0.0;
   //fptype sumBkg = 0.0;
 
@@ -2083,7 +2151,7 @@ int main(int argc, char** argv) {
     }
 
 
-
+  sum = 0.0;
 
   //std::cout <<" Vector proj : " <<pdfTotalValues[0].size()/massKPi->numbins<<std::endl;
   for (int k = 0; k < pdfTotalValues[0].size(); k++) {
@@ -2633,7 +2701,7 @@ int main(int argc, char** argv) {
     varHistos[iVar]->SetMinimum(0.1);
     multiGraphs[iVar]->SetMinimum(0.1);
     projHistos[iVar]->SetMinimum(0.1);
-	
+
     if (!hPlots) {
       multiGraphs[iVar]->Draw("AL");
       //multiGraphs[iVar]->SetMaximum(plotYMax[iVar]*ySF);
@@ -2644,35 +2712,35 @@ int main(int argc, char** argv) {
 
       //varHistos_theory[iVar]->Draw("E same");
     } else {
-TString xTitle = varTitles[iVar];
+      TString xTitle = varTitles[iVar];
       if (iVar < 2) xTitle.Append(" [GeV]");
+
 
       projHistos[iVar]->SetMarkerColor(kRed);
       projHistos[iVar]->SetLineColor(kRed);
       projHistos[iVar]->SetMarkerStyle(kFullCircle);
-      
+
       varHistos[iVar]->GetXaxis()->SetTitle(xTitle.Data());
       varHistos[iVar]->GetYaxis()->SetTitle("Candidates");
 
       projHistos[iVar]->Draw("E");
-
       //varHistos[iVar]->SetMaximum(plotYMax[iVar]*ySF);
       varHistos[iVar]->Draw("E same");
 
       //varHistos_theory[iVar]->Draw("E same");
 
       if (bkgPhaseSpace) {
-	projSigHistos[iVar]->Draw("E same");
-	projBkgHistos[iVar]->Draw("PE same");
+      	projSigHistos[iVar]->Draw("E same");
+      	projBkgHistos[iVar]->Draw("PE same");
       }
       for (int k = 0; k < nKstars; ++k)
-	{
-	compHistos[iVar][k]->SetLineStyle(7);
-	compHistos[iVar][k]->Draw("hist same");
-	compHistos[iVar][k]->Draw("p same");
-	}
-    //  if (bkgPdfHist)
-	//projBkgHistosInt[iVar]->Draw("PE same");
+      {
+        compHistos[iVar][k]->SetLineStyle(7);
+	      compHistos[iVar][k]->Draw("hist same");
+	      compHistos[iVar][k]->Draw("p same");
+      }
+      // if (bkgPdfHist)
+	    //  projBkgHistosInt[iVar]->Draw("PE same");
     }
 
     if (bkgHistos[iVar]) bkgHistos[iVar]->Draw("same");
