@@ -213,6 +213,8 @@ int main(int argc, char** argv) {
   dataPoints.push_back(dataBins); dataPoints.push_back(dataBins); dataPoints.push_back(dataBins); dataPoints.push_back(dataBins);
   vector <Int_t> plottingFine; // same order as varNames
   plottingFine.push_back(pdfBins*4); plottingFine.push_back(pdfBins); plottingFine.push_back(pdfBins); plottingFine.push_back(pdfBins);
+  vector <Int_t> chiPoints;
+  chiPoints.push_back(dataBins); chiPoints.push_back(dataBins); chiPoints.push_back(dataBins); chiPoints.push_back(dataBins);
 
   TFile *inputFile = 0;
   TFile *effFile  = 0;
@@ -651,7 +653,7 @@ int main(int argc, char** argv) {
       //std::cout <<"CosMu : " <<j <<std::endl;
       for (int a = 0; a < massPsiPi->numbins; ++a) {
 	massPsiPi->value = massPsiPi->lowerlimit + (massPsiPi->upperlimit - massPsiPi->lowerlimit)*(a + 0.5) / massPsiPi->numbins;
-	//std::cout <<"CosK : " <<a <<std::endl;
+	//std::cout <<"mpp : " <<a <<std::endl;
 	for (int i = 0; i < massKPi->numbins; ++i) {
 	  //std::vector<std::vector<fptype> > tempValues;
 	  //UnbinnedDataSet tempData(obserVariables);
@@ -914,9 +916,8 @@ int main(int argc, char** argv) {
   //DATASET
   UnbinnedDataSet dataset(obserVariables);
   UnbinnedDataSet dataset_EffCorr(obserVariables);
-  BinnedDataSet datasetChi(obserVariables);
-  BinnedDataSet datasetChiAngle(angleVariables);
-  BinnedDataSet datasetChiMass(massVariables);
+
+  BinnedDataSet datasetPdf(obserVariables);
 
   std::vector<fptype> effCorrection, effCorrectionChi, bkgAddition;
 
@@ -927,6 +928,7 @@ int main(int argc, char** argv) {
   fptype plotMargin = 0.1;
   pair<fptype,fptype> histRange[] = {make_pair(massKPi_min-plotMargin,massKPi_max+plotMargin), make_pair(massPsiPi_min-plotMargin,massPsiPi_max+plotMargin), make_pair(cosMuMu_min,cosMuMu_max), make_pair(phi_min,phi_max)};
   vector<TH1F*> varHistos, varHistos_effCorr, varHistos_theory;
+
   TH1F* projBkgHistosInt[nProjVars], *projEffHistosInt[nProjVars];
 
   for (Int_t iVar=0; iVar<nProjVars; ++iVar) {
@@ -1009,6 +1011,63 @@ int main(int argc, char** argv) {
     }
   }
 
+  //eff File
+  TString effName = path + "officialMC_noPtEtaCuts_JPsi_Bd2MuMuKPi_2p0Sig_6p0to9p0SB.root";
+  if (tmva) {
+    effName = path + fileName; effName.ReplaceAll("TMVApp_","TMVApp_MC");
+  }
+
+  effFile = TFile::Open(effName);
+
+  if (!effFile) {
+    cout <<"ERROR! Unable to open efficiency file \"" <<effName <<"\".\nChi square computed with custom binning" <<endl;
+    }else{
+
+    //TString relEffNameMass = "RelEff_psi2SPi_vs_KPi_B0constr";
+    TString relEffNameMass = "RelEff_psi2SPi_vs_KPi_B0constr_1B0";
+    TString relEffNameAng = "RelEff_planesAngle_vs_cos_psi2S_helicityAngle";
+    if (tmva) {
+      relEffNameMass.Append("_BDTCutAt"+bdtCut); relEffNameAng.Append("_BDTCutAt"+bdtCut);
+    } else {
+      relEffNameMass.ReplaceAll("B0constr_1B0","hardCuts_1B0"); relEffNameAng.Append("_hardCuts_1B0");
+    }
+
+    relEffTH2Mass = (TH2F*)effFile->Get(relEffNameMass) ;
+        relEffTH2Ang = (TH2F*)effFile->Get(relEffNameAng) ;
+
+if (!(relEffTH2Mass)) {
+        std::cout<<"ERROR! Efficiency TH2 named \'"<<relEffNameMass <<"\' not found in TFile \'" <<effFile->GetName() <<"\'.\nReturning" <<std::endl;
+        return -1;
+    }
+
+    if (!(relEffTH2Ang)) {
+        std::cout<<"ERROR! Efficiency TH2 named \'"<<relEffNameAng <<"\' not found in TFile \'" <<effFile->GetName() <<"\'.\nReturning" <<std::endl;
+        return -1;
+    }
+
+    if (!(relEffTH2Mass) || !(relEffTH2Ang)) {
+      std::cout<<"ERROR! Efficiency TH2s not found in TFile \'" <<effFile->GetName() <<".\nChi square computed with data binning." <<std::endl;
+    } else
+    {
+        chiPoints[0] = relEffTH2Mass->GetNbinsX();
+        chiPoints[1] = relEffTH2Mass->GetNbinsY();
+        chiPoints[2] = relEffTH2Ang->GetNbinsX();
+        chiPoints[3] = relEffTH2Ang->GetNbinsY();
+
+
+    }
+
+  }
+
+  TH2F* varHistoMasses = new TH2F("masses_Histo","masses_Histo", chiPoints[0], massKPi->lowerlimit, massKPi->upperlimit,chiPoints[1], massPsiPi->lowerlimit, massPsiPi->upperlimit);
+  TH2F* varHistoAngles = new TH2F("angles_Histo","angles_Histo", chiPoints[2], cosMuMu->lowerlimit, cosMuMu->upperlimit,chiPoints[3], phi->lowerlimit, phi->upperlimit);
+  TH2F* projPdfMasses = new TH2F("masses_Histo_Pdf","masses_Histo_Pdf", chiPoints[0], massKPi->lowerlimit, massKPi->upperlimit,chiPoints[1], massPsiPi->lowerlimit, massPsiPi->upperlimit);
+  TH2F* projPdfAngles = new TH2F("angles_Histo_Pdf","angles_Histo_Pdf", chiPoints[2], cosMuMu->lowerlimit, cosMuMu->upperlimit,chiPoints[3], phi->lowerlimit, phi->upperlimit);
+
+  TH2F* projChiMasses = new TH2F("masses_Histo_Chi","masses_Histo_Chi", chiPoints[0], massKPi->lowerlimit, massKPi->upperlimit,chiPoints[1], massPsiPi->lowerlimit, massPsiPi->upperlimit);
+  TH2F* projChiAngles = new TH2F("angles_Histo_Chi","angles_Histo_Chi", chiPoints[2], cosMuMu->lowerlimit, cosMuMu->upperlimit,chiPoints[3], phi->lowerlimit, phi->upperlimit);
+
+
   if (txtfile) {
     ifstream dataTxt(fullDatasetName.Data());
     Int_t totEvents = 0;
@@ -1044,11 +1103,12 @@ int main(int argc, char** argv) {
 	//std::cout <<massKPi->value <<" - " <<cosMuMu->value <<" - " <<massPsiPi->value <<" - " <<phi->value <<" - " <<std::endl;
 	if (Dalitz_contour_host(massKPi->value, massPsiPi->value, kFALSE, (Int_t)psi_nS->value) ) {
 	  dataset.addEvent();
-    datasetChi.addEvent();
-    datasetChiAngle.addEvent();
-    datasetChiMass.addEvent();
+
 	  for (Int_t iVar=0; iVar<nProjVars; ++iVar)
 	    varHistos[iVar]->Fill(obserVariables[iVar]->value);
+
+      varHistoMasses->Fill(massKPi->value,massPsiPi->value);
+      varHistoAngles->Fill(cosMuMu->value,phi->value);
 	}
 
 	dataTxt.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -1106,11 +1166,12 @@ int main(int argc, char** argv) {
 
 	if (Dalitz_contour_host(massKPi->value, massPsiPi->value, kFALSE, (Int_t)psi_nS->value) ) {
 	  dataset.addEvent();
-    datasetChi.addEvent();
-    datasetChiMass.addEvent();
-    datasetChiAngle.addEvent();
+
 	  for (Int_t iVar=0; iVar<nProjVars; ++iVar)
 	    varHistos[iVar]->Fill(obserVariables[iVar]->value);
+
+    varHistoMasses->Fill(massKPi->value,massPsiPi->value);
+    varHistoAngles->Fill(cosMuMu->value,phi->value);
 	}
       }
 
@@ -1163,45 +1224,62 @@ int main(int argc, char** argv) {
 
   std::cout<<"\nInitialising pdfs " <<std::endl;
   std::cout<<"\n- Matrix p.d.f. " <<std::endl;
+
+  std::cout <<"\n- Generating chi square dataset" <<std::endl;
+
+  for (Int_t iVar=0; iVar<nProjVars; ++iVar)
+    obserVariables[iVar]->numbins = chiPoints[iVar];
+
+  UnbinnedDataSet chisquareGridData(obserVariables);
+
+  if (b0Var)
+    b0Beauty->value = 1.0;
+
+  for (int k = 0; k < phi->numbins; ++k) {
+    phi->value = phi->lowerlimit + (phi->upperlimit - phi->lowerlimit)*(k + 0.5) / phi->numbins;
+    //std::cout <<"Phi : " <<k <<std::endl;
+    for (int j = 0; j < cosMuMu->numbins; ++j) {
+      cosMuMu->value = cosMuMu->lowerlimit + (cosMuMu->upperlimit - cosMuMu->lowerlimit)*(j + 0.5) / cosMuMu->numbins;
+      //std::cout <<"CosMu : " <<j <<std::endl;
+      for (int a = 0; a < massPsiPi->numbins; ++a) {
+	massPsiPi->value = massPsiPi->lowerlimit + (massPsiPi->upperlimit - massPsiPi->lowerlimit)*(a + 0.5) / massPsiPi->numbins;
+	//std::cout <<"mpp : " <<a <<std::endl;
+	for (int i = 0; i < massKPi->numbins; ++i) {
+	  //std::vector<std::vector<fptype> > tempValues;
+	  //UnbinnedDataSet tempData(obserVariables);
+	  massKPi->value = massKPi->lowerlimit + (massKPi->upperlimit - massKPi->lowerlimit)*(i + 0.5) / massKPi->numbins;
+	  chisquareGridData.addEvent();
+	}
+      }
+    }
+  }
+
+  for (Int_t iVar=0; iVar<nProjVars; ++iVar)
+    obserVariables[iVar]->numbins = bin[iVar];
+
   if (effPdfHist) {
 
     int holdBinVar[nProjVars];
     fptype lowerL[nProjVars], upperL[nProjVars];
 
     //int outCounter = 0;
+    TString relEffNameMass = "RelEff_psi2SPi_vs_KPi_B0constr_1B0";
+    TString relEffNameAng = "RelEff_planesAngle_vs_cos_psi2S_helicityAngle";
 
     // path = "./effFiles/";
-    TString effName = path + "officialMC_noPtEtaCuts_JPsi_Bd2MuMuKPi_2p0Sig_6p0to9p0SB.root";
-    if (tmva) {
-      effName = path + fileName; effName.ReplaceAll("TMVApp_","TMVApp_MC");
-    }
-
-    effFile = TFile::Open(effName);
     if (!effFile) {
       cout <<"ERROR! Unable to open efficiency file \"" <<effName <<"\".\nReturning" <<endl;
       return -1;
     } else
       cout <<"\nUsing \"" <<effName <<"\" to compute efficiency correction" <<endl;
 
-    //TString relEffNameMass = "RelEff_psi2SPi_vs_KPi_B0constr";
-    TString relEffNameMass = "RelEff_psi2SPi_vs_KPi_B0constr_1B0";
-    TString relEffNameAng = "RelEff_planesAngle_vs_cos_psi2S_helicityAngle";
-    if (tmva) {
-      relEffNameMass.Append("_BDTCutAt"+bdtCut); relEffNameAng.Append("_BDTCutAt"+bdtCut);
-    } else {
-      relEffNameMass.ReplaceAll("B0constr_1B0","hardCuts_1B0"); relEffNameAng.Append("_hardCuts_1B0");
-    }
-
-    relEffTH2Mass = (TH2F*)effFile->Get(relEffNameMass) ;
-    relEffTH2Ang = (TH2F*)effFile->Get(relEffNameAng) ;
-
     if (!(relEffTH2Mass)) {
-      std::cout<<"ERROR! Efficiency TH2 named \'"<<relEffNameMass <<"\' not found in TFile \'" <<effFile->GetName() <<"\'.\nReturning" <<std::endl;
-      return -1;
+        std::cout<<"ERROR! Efficiency TH2 named \'"<<relEffNameMass <<"\' not found in TFile \'" <<effFile->GetName() <<"\'.\nReturning" <<std::endl;
+        return -1;
     }
     if (!(relEffTH2Ang)) {
-      std::cout<<"ERROR! Efficiency TH2 named \'"<<relEffNameAng <<"\' not found in TFile \'" <<effFile->GetName() <<"\'.\nReturning" <<std::endl;
-      return -1;
+        std::cout<<"ERROR! Efficiency TH2 named \'"<<relEffNameAng <<"\' not found in TFile \'" <<effFile->GetName() <<"\'.\nReturning" <<std::endl;
+        return -1;
     }
 
     relEffTH2[0] = relEffTH2Mass;
@@ -1398,16 +1476,16 @@ int main(int argc, char** argv) {
     effHistosInt[0]->Scale(relEffTH2[0]->Integral());
 
     effHistosInt[0]->Draw("LEGO");
-    canvasEff->SaveAs("./plots/massEffIntHisto.png");
+    canvasEff->SaveAs(TString::Format("%s/massEffIntHisto_%s.%s",plotsDir.Data(),plotsName.Data(),extension.Data()));
     canvasEff->Clear();
 
     relEffTH2[0]->Draw("LEGO");
-    canvasEff->SaveAs("./plots/massEffHistogram.png");
+    canvasEff->SaveAs(TString::Format("%s/massEffHistogram_%s.%s",plotsDir.Data(),plotsName.Data(),extension.Data()));
     canvasEff->Clear();
 
     effHistosInt[0]->Draw("SURF3");
     relEffTH2[0]->Draw("same");
-    canvasEff->SaveAs("./plots/massEffHistAndIntHist.png");
+    canvasEff->SaveAs(TString::Format("%s/massEffHistAndIntHist_%s.%s",plotsDir.Data(),plotsName.Data(),extension.Data()));
     canvasEff->Clear();
 
 
@@ -1415,16 +1493,16 @@ int main(int argc, char** argv) {
     effHistosInt[1]->Scale(relEffTH2[1]->Integral());
 
     effHistosInt[1]->Draw("LEGO");
-    canvasEff->SaveAs("./plots/angEffIntHisto.png");
+    canvasEff->SaveAs(TString::Format("%s/angEffIntHisto_%s.%s",plotsDir.Data(),plotsName.Data(),extension.Data()));
     canvasEff->Clear();
 
     relEffTH2[1]->Draw("LEGO");
-    canvasEff->SaveAs("./plots/angEffHistogram.png");
+    canvasEff->SaveAs(TString::Format("%s/angEffHistogram_%s.%s",plotsDir.Data(),plotsName.Data(),extension.Data()));
     canvasEff->Clear();
 
     effHistosInt[1]->Draw("SURF3");
     relEffTH2[1]->Draw("same");
-    canvasEff->SaveAs("./plots/angEffHistAndIntHist.png");
+    canvasEff->SaveAs(TString::Format("%s/angEffHistAndIntHist_%s.%s",plotsDir.Data(),plotsName.Data(),extension.Data()));
     canvasEff->Clear();
 
 
@@ -1439,7 +1517,7 @@ int main(int argc, char** argv) {
       projEffHistosInt[y]->Draw("L");
       effHistos[y]->Draw("same");
 
-      canvasEff->SaveAs(TString::Format("%s/%s_EffIntProjection.%s",plotsDir.Data(),varNames[y].Data(),extension.Data()));
+      canvasEff->SaveAs(TString::Format("%s/EffIntProjection_%s.%s",plotsDir.Data(),varNames[y].Data(),extension.Data()));
       canvasEff->Clear();
 
       projEffHistosInt[y+1] = (TH1F*)effHistosInt[y/2]->ProjectionY();
@@ -1449,7 +1527,7 @@ int main(int argc, char** argv) {
       projEffHistosInt[y+1]->SetLineColor(kRed);
       projEffHistosInt[y+1]->Draw("L");
       effHistos[y+1]->Draw("same");
-      canvasEff->SaveAs(TString::Format("%s/%s_EffIntProjection.%s",plotsDir.Data(),varNames[y+1].Data(),extension.Data()));
+      canvasEff->SaveAs(TString::Format("%s/EffIntProjection_%s.%s",plotsDir.Data(),varNames[y+1].Data(),extension.Data()));
       canvasEff->Clear();
 
     }
@@ -1485,16 +1563,20 @@ int main(int argc, char** argv) {
       effCorrection.push_back(effPdfValues[0][i]);
     }
 
+    effHist->clearCurrentFit();
     effPdfValues.clear();
 
-    effHist->setData(&dataset);
-    effHist->getCompProbsAtDataPoints(effPdfValues);
+    for (Int_t iVar=0; iVar<nProjVars; ++iVar)
+      obserVariables[iVar]->numbins = chiPoints[iVar];
 
+    effHist->setData(&chisquareGridData);
+    effHist->getCompProbsAtDataPoints(effPdfValues);
 
     for (size_t i = 0; i < effPdfValues[0].size(); i++) {
       effCorrectionChi.push_back(effPdfValues[0][i]);
     }
 
+    effPdfValues.clear();
     //effFile->Close();
 
     for (Int_t iVar=0; iVar<nProjVars; ++iVar)
@@ -1708,24 +1790,24 @@ int main(int argc, char** argv) {
       //   ==================================================
       //   array ind   coordinates where the pdf is evaluated
       //   ==================================================
-      //   0                phi0 cosMu0 cosk0 mkp0
-      //   1                phi0 cosMu0 cosk0 mkp1
-      //   2                phi0 cosMu0 cosk0 mkp2
-      //   3                phi0 cosMu0 cosk0 mkp3
-      //   4(b1)            phi0 cosMu0 cosk1 mkp0
-      //   5                phi0 cosMu0 cosk1 mkp1
+      //   0                phi0 cosMu0 mpp0 mkp0
+      //   1                phi0 cosMu0 mpp0 mkp1
+      //   2                phi0 cosMu0 mpp0 mkp2
+      //   3                phi0 cosMu0 mpp0 mkp3
+      //   4(b1)            phi0 cosMu0 mpp1 mkp0
+      //   5                phi0 cosMu0 mpp1 mkp1
       //   . . .
-      //   19               phi0 cosMu0 cosk4 mkp3
-      //   20(b1*b2)        phi0 cosMu1 cosk0 mkp0
+      //   19               phi0 cosMu0 mpp4 mkp3
+      //   20(b1*b2)        phi0 cosMu1 mpp0 mkp0
       //   . . .
-      //   59               phi0 cosMu2 cosk4 mkp3
-      //   60(b1*b2*b3)     phi1 cosMu0 cosk0 mkp0
-      //   . . .            phi0 cosMu0 cosk0 mkp3
-      //   179              phi2 cosMu2 cosk4 mkp3
+      //   59               phi0 cosMu2 mpp4 mkp3
+      //   60(b1*b2*b3)     phi1 cosMu0 mpp0 mkp0
+      //   . . .            phi0 cosMu0 mpp0 mkp3
+      //   179              phi2 cosMu2 mpp4 mkp3
 
       //MASSES PLOT
       for (int j = 0; j < massKPi->numbins; ++j)
-	for (int i = 0; i < massPsiPi->numbins; ++i) {
+	     for (int i = 0; i < massPsiPi->numbins; ++i) {
 	  fptype xval   = massKPi->lowerlimit + j*massKPiStep +0.5*massKPiStep;
 	  fptype yval   = massPsiPi->lowerlimit + i*massPsiPiStep +0.5*massPsiPiStep;
 
@@ -1832,7 +1914,7 @@ int main(int argc, char** argv) {
       //         //std::cout <<"CosMu : " <<j <<std::endl;
       //         for (int a = 0; a < massPsiPi->numbins; ++a) {
       //           massPsiPi->value = massPsiPi->lowerlimit + (massPsiPi->upperlimit - massPsiPi->lowerlimit)*(a + 0.5) / massPsiPi->numbins;
-      //           //std::cout <<"CosK : " <<a <<std::endl;
+      //           //std::cout <<"mpp : " <<a <<std::endl;
       //           for (int i = 0; i < massKPi->numbins; ++i) {
       //             //std::vector<std::vector<fptype> > tempValues;
       //             //UnbinnedDataSet tempData(obserVariables);
@@ -1970,43 +2052,223 @@ int main(int argc, char** argv) {
   std::vector<std::vector<fptype> > pdfTotalValues, pdfTotalSigValues, pdfTotalBkgValues;
   std::vector<std::vector<fptype> > pdfCompValues, pdfTotalAngValues, pdfTotalMasValues;
 
-  totalPdf->getCompProbsAtDataPoints(pdfTotalValues);
+  fptype sum = 0.0, chisquareMasses = 0.0, chisquareAngles = 0.0;
 
-  if (effPdfHist)
-    for (int k = 0; k < pdfTotalValues[0].size(); k++)
-      if (effPdfHist) pdfTotalValues[0][k] *= effCorrectionChi[k];
+  // for (size_t iVar = 0; iVar < nProjVars; ++iVar)
+  //   obserVariables[iVar]->numbins = chiPoints[iVar];
+  //
+  // BinnedDataSet datasetChi(obserVariables);
+  //
+  // for (int k = 0; k < dataset.getNumEvents(); k++)
+  // {
+  //   dataset.loadEvent(k);
+  //   datasetChi.addEvent();
+  // }
+  //
+  // pdfTotalValues.clear();
+  //
+  // sum = 0.0;
+  // std::vector< fptype >pdfChiValues;
+  //
+  // totalPdf->clearCurrentFit();
+  // totalPdf->setData(&datasetChi);
+  // totalPdf->copyParams();
+  //
+  // totalPdf->getCompProbsAtDataPoints(pdfTotalValues);
+  //
+  // if (effPdfHist)
+  //   for (int k = 0; k < pdfTotalValues[0].size(); k++)
+  //     if (effPdfHist) pdfTotalValues[0][k] *= effCorrectionChi[k];
+  //
+  // std::cout << "Chi dataset with " << datasetChi.getNumBins() << " bins " << std::endl;
 
-  fptype sum = 0.0, chisquare = 0.0, chisquaremass = 0.0, chisquareangle = 0.0;
 
+  // for (int k = 0; k < datasetChi.getNumBins(); k++)
+  //   {
+  //
+  //     for (size_t iVar = 0; iVar < nProjVars; ++iVar)
+  //       obserVariables[iVar]->value = datasetChi.getBinCenter(obserVariables[iVar],k);
+  //
+  //     fptype pdf = totalPdf->getValue();
+  //     sum += pdf;
+  //
+  //     pdfChiValues.push_back(pdf);
+  //
+  //
+  //
+  // }
+
+  sum = 0.0;
+
+  // for (int k = 0; k < datasetChi.getNumBins(); k++)
+	// sum += pdfTotalValues[0][k];
+  //
+  // for (int k = 0; k < datasetChi.getNumBins(); k++)
+  //     pdfTotalValues[0][k] *= events/sum;
+
+  // for (int k = 0; k < datasetChi.getNumBins(); k++)
+  //     std::cout << "Bin : " << k << "  -> " <<datasetChi.getBinContent(k) <<" -- Pdf: "<< pdfTotalValues[0][k] <<std::endl;
+
+  fptype maxBin = 0.0;
+
+  // for (int k = 0; k < datasetChi.getNumBins(); k++)
+  //   maxBin = std::max(maxBin,std::max(datasetChi.getBinContent(k),pdfTotalValues[0][k]));
+  //
+  // std::cout<<"Max bin : " << floor(maxBin) + 1.0 << std::endl;
+  // TH1I bincContentPdf ("bincContentPdf","bincContentPdf",(int)FLOOR(maxBin+0.5),0.0,(fptype)FLOOR(maxBin+0.5));
+  // TH1I bincContentDat ("bincContentDat","bincContentDat",140,0.0,70.0);
+  //
+  // for (int k = 0; k < datasetChi.getNumBins(); k++)
+  // {
+  //   // //   projPdfMasses->SetBinContent(projPdfMasses->FindBin(xMass,yMass), pdfValue + projPdfMasses->GetBinContent(xMass,yMass));
+  //
+  //   fptype effM = relEffTH2Mass->GetBinContent(relEffTH2Mass->FindBin(datasetChi.getBinCenter(massKPi,k),datasetChi.getBinCenter(massPsiPi,k)));
+  //   fptype effA = relEffTH2Ang->GetBinContent(relEffTH2Ang->FindBin(datasetChi.getBinCenter(cosMuMu,k),datasetChi.getBinCenter(phi,k)));
+  //
+  //   if(effM*effA>0.0)
+  //   {
+  //     bincContentDat.Fill(datasetChi.getBinContent(k));
+  //     bincContentPdf.Fill(pdfTotalValues[0][k]);
+  //   }
+  // }
+
+
+  //
+  // gStyle->SetOptStat(1);
+  // bincContentDat.Draw();
+  // canvas->SetLogy(1);
+  // canvas->SaveAs("plots/datBinContent.png");
+  // bincContentPdf.Draw();
+  // canvas->SetLogy(1);
+  // canvas->SaveAs("plots/pdfBinContent.png");
+  // gStyle->SetOptStat(000000000);
+
+  //////////////////////////////////////////////////////////////////////
+  //PROJECTING PDF ON THE FOUR VARIABLES (mkpi,phi,cosMuMu,mpp)
+  //////////////////////////////////////////////////////////////////////
+  //   Pdf evaluation vector (pdfTotalValues) structure :
+  //
+  //   es.
+  //   b1 = 4  mKPi
+  //   b2 = 5  massPsiPi
+  //   b3 = 3  cosMuMu
+  //   b4 = 3  phi
+  //   ==================================================
+  //   array ind   coordinates where the pdf is evaluated
+  //   ==================================================
+  //   0                phi0 cosMu0 mpp0 mkp0
+  //   1                phi0 cosMu0 mpp0 mkp1
+  //   2                phi0 cosMu0 mpp0 mkp2
+  //   3                phi0 cosMu0 mpp0 mkp3
+  //   4(b1)            phi0 cosMu0 mpp1 mkp0
+  //   5                phi0 cosMu0 mpp1 mkp1
+  //   . . .
+  //   19               phi0 cosMu0 mpp4 mkp3
+  //   20(b1*b2)        phi0 cosMu1 mpp0 mkp0
+  //   . . .
+  //   59               phi0 cosMu2 mpp4 mkp3
+  //   60(b1*b2*b3)     phi1 cosMu0 mpp0 mkp0
+  //   . . .            phi0 cosMu0 mpp0 mkp3
+  //   179              phi2 cosMu2 mpp4 mkp3
+
+  // for (int i = 0; i < massKPi->numbins * massPsiPi->numbins; ++i)
+  //     totMassProj[0].push_back(0.0);
+  //
+  // for (int j = 0; j < massKPi->numbins * massPsiPi->numbins; ++j)
+  //   for (int i = 0; i < cosMuMu->numbins * phi->numbins; ++i)
+  //     totalProj[0][j] += pdfTotalValues[0][j + i * massKPi->numbins * massPsiPi->numbins];
+  //
+  //
+
+
+  //
+  //
+  // fptype massKPiStep = (massKPi->upperlimit-massKPi->lowerlimit)/(fptype)massKPi->numbins;
+  // fptype massPsiPiStep = (massPsiPi->upperlimit-massPsiPi->lowerlimit)/(fptype)massPsiPi->numbins;
+  // fptype phiStep = (phi->upperlimit-phi->lowerlimit)/(fptype)phi->numbins;
+  // fptype cosMuMuStep = (cosMuMu->upperlimit-cosMuMu->lowerlimit)/(fptype)cosMuMu->numbins;
+  //
+  // for (size_t l = 0; l <= projPdfMasses->GetNbinsX()*projPdfMasses->GetNbinsY(); l++)
+  //     projPdfMasses->SetBinContent(l,0.0);
+  //
+  // sum = 0.0;
+  //
+  // for (size_t i = 0; i < count; i++) {
+  //   /* code */
+  // }
+  // // for (int k = 0; k < pdfTotalValues[0].size(); k++)
+  // //     datasetPdf.setBinContent(k,0.0);
+  // //
+  // // for (int k = 0; k < pdfTotalValues[0].size(); k++)
+  // // {
+  // //   dataset.loadEvent(k);
+  // //   datasetPdf.setBinContent(datasetPdf.getBinNumber(),pdfTotalValues[0][k]);
+  // // }
+  // //
+  // // for (int k = 0; k < pdfTotalValues[0].size(); k++)
+  // // {
+  // //   fptype xMass = datasetPdf.getBinCenter(massKPi,k);
+  // //   fptype yMass = datasetPdf.getBinCenter(massPsiPi,k);
+  // //
+  // //   std::cout << xMass << " --- " << yMass << std::endl;
+  // //   fptype pdfValue = datasetPdf.getBinContent(k);
+  // //   sum += pdfValue;
+  // //
+  // //   projPdfMasses->SetBinContent(projPdfMasses->FindBin(xMass,yMass), pdfValue + projPdfMasses->GetBinContent(xMass,yMass));
+  // // }
+  // //
+  // // projPdfMasses->Scale(1.0/sum);
+  // // projPdfMasses->Scale(events);
+  // //
+  // // sum = 0.0;
+  // //
+  // // for (int j = 0; j < massKPi->numbins; ++j)
+  // //   for (int i = 0; i < massPsiPi->numbins; ++i) {
+  // //       fptype xval   = massKPi->lowerlimit + j*massKPiStep + 0.5 * massKPiStep;
+  // //       fptype yval   = massPsiPi->lowerlimit + i*massPsiPiStep + 0.5 * massPsiPiStep;
+  // //
+  // //       fptype zval = 0.0;
+  // //
+  // //       for (int k = 0; k < phi->numbins * cosMuMu->numbins; ++k)
+  // //         zval += pdfTotalValues[0][j+i*massKPi->numbins+k*massKPi->numbins * massPsiPi->numbins];
+  // //
+  // //       std::cout << xval << " - " << yval << " - " << zval << " - " << varHistoMasses->GetBinContent(varHistoMasses->FindBin(xval,yval)) << std::endl;
+  // //       sum += zval;
+  // //       projPdfMasses->SetBinContent(projPdfMasses->FindBin(xval,yval),zval);
+  // //   }
+  //
+  // projPdfMasses->Draw("COLZ");
+  // canvas->SaveAs("massesPdf.png");
+  varHistoMasses->Draw("COLZ");
+  canvas->SaveAs(TString::Format("%s/dataMassesProjection_%s.%s",plotsDir.Data(),plotsName.Data(),extension.Data()));
+  canvas->Clear();
+
+  varHistoAngles->Draw("COLZ");
+  canvas->SaveAs(TString::Format("%s/dataAnglesProjection_%s.%s",plotsDir.Data(),plotsName.Data(),extension.Data()));
+  canvas->Clear();
+
+  //
+  // sum = 0.0;
 
   //4D chisquare
-  for (int k = 0; k < pdfTotalValues[0].size(); k++)
-    sum += pdfTotalValues[0][k];
+  // for (size_t o = 0; o < pdfTotalValues[0].size(); o++)
+  // {
+  //   if(pdfTotalValues[0][o]>0.0 && datasetChi.getBinContent(o)>0.0)
+  //   {
+  //     fptype term = POW(pdfTotalValues[0][o] - datasetChi.getBinContent(o),2)/pdfTotalValues[0][o];
+  //     chisquare += term;
+  //
+  //     std::cout << " data : " << datasetChi.getBinContent(o) << " pdf : " << pdfTotalValues[0][o] <<std::endl;
+  //
+  //   }
+  //
+  // }
 
-  for (int k = 0; k<pdfTotalValues[0].size(); ++k)
-  {
-    pdfTotalValues[0][k] /= sum;
-    pdfTotalValues[0][k] *= events;
-  }
-
-  for (size_t o = 0; o < pdfTotalValues[0].size(); o++)
-  {
-    if(pdfTotalValues[0][o]>0.0 && datasetChi.getBinContent(o)>0.0)
-    {
-      fptype term = POW(pdfTotalValues[0][o] - datasetChi.getBinContent(o),2)/pdfTotalValues[0][o];
-      chisquare += term;
-
-      std::cout << " data : " << datasetChi.getBinContent(o) << " pdf : " << pdfTotalValues[0][o] <<std::endl;
-
-    }
-
-  }
-
-  std::cout << "===================================" << std::endl;
-  std::cout << "Chi square 4D   : " << chisquare << std::endl;
-  std::cout << "Chi square mass : " << chisquaremass << std::endl;
-  std::cout << "Chi square angl : " << chisquareangle << std::endl;
-  std::cout << "===================================" << std::endl;
+  // std::cout << "===================================" << std::endl;
+  // std::cout << "Chi square 4D   : " << chisquare << std::endl;
+  // std::cout << "Chi square mass : " << chisquaremass << std::endl;
+  // std::cout << "Chi square angl : " << chisquareangle << std::endl;
+  // std::cout << "===================================" << std::endl;
 
   totalPdf->clearCurrentFit();
 
@@ -2033,7 +2295,7 @@ int main(int argc, char** argv) {
 
   std::vector<fptype> compEvents;
 
-  std::vector<std::vector<fptype> > totalProj(4), totalSigProj(4), totalBkgProj(4);
+  std::vector<std::vector<fptype> > totalProj(4), totalSigProj(4), totalBkgProj(4), totAngProj(1), totMassProj(1);
 
   if (!hPlots)
     for (Int_t iVar=0; iVar<nProjVars; ++iVar)
@@ -2111,7 +2373,7 @@ int main(int argc, char** argv) {
 
   //MULTIPLYING TOTAL PDF PLOT BY EFFICIENCY
   //////////////////////////////////////////////////////////////////////
-  //PROJECTING PDF ON THE FOUR VARIABLES (mkpi,phi,cosMuMu,cosK)
+  //PROJECTING PDF ON THE FOUR VARIABLES (mkpi,phi,cosMuMu,mpp)
   //////////////////////////////////////////////////////////////////////
   //   Pdf evaluation vector (pdfTotalValues) structure :
   //
@@ -2123,20 +2385,20 @@ int main(int argc, char** argv) {
   //   ==================================================
   //   array ind   coordinates where the pdf is evaluated
   //   ==================================================
-  //   0                phi0 cosMu0 cosk0 mkp0
-  //   1                phi0 cosMu0 cosk0 mkp1
-  //   2                phi0 cosMu0 cosk0 mkp2
-  //   3                phi0 cosMu0 cosk0 mkp3
-  //   4(b1)            phi0 cosMu0 cosk1 mkp0
-  //   5                phi0 cosMu0 cosk1 mkp1
+  //   0                phi0 cosMu0 mpp0 mkp0
+  //   1                phi0 cosMu0 mpp0 mkp1
+  //   2                phi0 cosMu0 mpp0 mkp2
+  //   3                phi0 cosMu0 mpp0 mkp3
+  //   4(b1)            phi0 cosMu0 mpp1 mkp0
+  //   5                phi0 cosMu0 mpp1 mkp1
   //   . . .
-  //   19               phi0 cosMu0 cosk4 mkp3
-  //   20(b1*b2)        phi0 cosMu1 cosk0 mkp0
+  //   19               phi0 cosMu0 mpp4 mkp3
+  //   20(b1*b2)        phi0 cosMu1 mpp0 mkp0
   //   . . .
-  //   59               phi0 cosMu2 cosk4 mkp3
-  //   60(b1*b2*b3)     phi1 cosMu0 cosk0 mkp0
-  //   . . .            phi0 cosMu0 cosk0 mkp3
-  //   179              phi2 cosMu2 cosk4 mkp3
+  //   59               phi0 cosMu2 mpp4 mkp3
+  //   60(b1*b2*b3)     phi1 cosMu0 mpp0 mkp0
+  //   . . .            phi0 cosMu0 mpp0 mkp3
+  //   179              phi2 cosMu2 mpp4 mkp3
 
   if (effPdfHist)
     for (int k = 0; k < pdfTotalValues[0].size(); k++) {
@@ -2210,7 +2472,7 @@ int main(int argc, char** argv) {
   fptype normClocks = (stopC - startC)*10000.;
 
   //////////////////////////////////////////////////////////////////////
-  //PROJECTING PDF ON THE FOUR VARIABLES (mkpi,phi,cosMuMu,cosK)
+  //PROJECTING PDF ON THE FOUR VARIABLES (mkpi,phi,cosMuMu,mpp)
   //////////////////////////////////////////////////////////////////////
   //   Pdf evaluation vector (pdfTotalValues) structure :
   //
@@ -2222,20 +2484,20 @@ int main(int argc, char** argv) {
   //   ==================================================
   //   array ind   coordinates where the pdf is evaluated
   //   ==================================================
-  //   0                phi0 cosMu0 cosk0 mkp0
-  //   1                phi0 cosMu0 cosk0 mkp1
-  //   2                phi0 cosMu0 cosk0 mkp2
-  //   3                phi0 cosMu0 cosk0 mkp3
-  //   4(b1)            phi0 cosMu0 cosk1 mkp0
-  //   5                phi0 cosMu0 cosk1 mkp1
+  //   0                phi0 cosMu0 mpp0 mkp0
+  //   1                phi0 cosMu0 mpp0 mkp1
+  //   2                phi0 cosMu0 mpp0 mkp2
+  //   3                phi0 cosMu0 mpp0 mkp3
+  //   4(b1)            phi0 cosMu0 mpp1 mkp0
+  //   5                phi0 cosMu0 mpp1 mkp1
   //   . . .
-  //   19               phi0 cosMu0 cosk4 mkp3
-  //   20(b1*b2)        phi0 cosMu1 cosk0 mkp0
+  //   19               phi0 cosMu0 mpp4 mkp3
+  //   20(b1*b2)        phi0 cosMu1 mpp0 mkp0
   //   . . .
-  //   59               phi0 cosMu2 cosk4 mkp3
-  //   60(b1*b2*b3)     phi1 cosMu0 cosk0 mkp0
-  //   . . .            phi0 cosMu0 cosk0 mkp3
-  //   179              phi2 cosMu2 cosk4 mkp3
+  //   59               phi0 cosMu2 mpp4 mkp3
+  //   60(b1*b2*b3)     phi1 cosMu0 mpp0 mkp0
+  //   . . .            phi0 cosMu0 mpp0 mkp3
+  //   179              phi2 cosMu2 mpp4 mkp3
 
   int notMPKBins = pdfTotalValues[0].size()/massKPi->numbins;
   int notCosMuMuBins = pdfTotalValues[0].size()/cosMuMu->numbins;
@@ -2368,9 +2630,272 @@ int main(int argc, char** argv) {
   //fptype totalIntegral = totalPdf->normalise();
   fptype totalSigIntegral = matrixTotPlot->normalise();
   matrixTotPlot->clearCurrentFit();
+
   //fptype totalComponent = 0.;
   fptype compsIntegral = 0.0;
   std::cout <<"\nTotal Normalisation Factor = " <<totalSigIntegral <<std::endl;
+
+  std::cout << "\n- Chi square calculation " << std::endl;
+
+  pdfTotalValues.clear();
+
+  for (Int_t iVar=0; iVar<nProjVars; ++iVar)
+    obserVariables[iVar]->numbins = chiPoints[iVar];
+
+  matrixTotPlot->setData(&chisquareGridData);
+  matrixTotPlot->copyParams();
+  matrixTotPlot->getCompProbsAtDataPoints(pdfTotalValues);
+
+  // std::cout<<"eff corr: "<< effCorrectionChi.size()<<" "<<pdfTotalValues[0].size()<<std::endl;
+
+
+  if (effPdfHist)
+    for (int k = 0; k < pdfTotalValues[0].size(); k++) {
+
+      if (effPdfHist) pdfTotalValues[0][k] *= effCorrectionChi[k];
+
+      // if (bkgPhaseSpace) {
+      //    pdfTotalValues[1][k] *= effDataCont;
+      //     pdfTotalValues[2][k] *= effDataCont;
+      // }
+
+    }
+
+
+  sum = 0.0;
+
+  //std::cout <<" Vector proj : " <<pdfTotalValues[0].size()/massKPi->numbins<<std::endl;
+  for (int k = 0; k < pdfTotalValues[0].size(); k++) {
+    //std::cout <<mkpTotalProjection[k]*events/sum<<std::endl;
+    sum += pdfTotalValues[0][k];
+    // if (bkgPhaseSpace) {
+    //   sumSig += pdfTotalValues[1][k];
+    //   sumBkg += pdfTotalValues[2][k];
+    // }
+  }
+  //
+
+  for (int k = 0; k<pdfTotalValues[0].size(); ++k) {
+    //std::cout <<mkpTotalProjection[k]*events/sum<<std::endl;
+    pdfTotalValues[0][k] /= sum;
+  }
+
+  if (bkgPdfHist)
+    for (int i=0; i<pdfTotalValues[0].size(); i++) {
+      fptype signal = pdfTotalValues[0][i];
+      fptype backg = bkgAddition[i];
+      pdfTotalValues[0][i] = sFrac->value*signal + (1-sFrac->value)*backg;
+      // std::cout<<i<<" "<<signal<<" "<<backg<<std::endl;
+
+    }
+
+  for (int k = 0; k<pdfTotalValues[0].size(); ++k) {
+    pdfTotalValues[0][k] *= events;
+    // if (bkgPhaseSpace) {
+    //   pdfTotalValues[1][k] /= sumSig;
+    //   pdfTotalValues[1][k] *= (events*sigFrac);
+    //
+    //   pdfTotalValues[2][k] /= sumBkg;
+    //   pdfTotalValues[2][k] *= (events*bkgFrac);
+    // }
+  }
+
+  fptype massKPiStep = (massKPi->upperlimit-massKPi->lowerlimit)/(fptype)massKPi->numbins;
+  fptype massPsiPiStep = (massPsiPi->upperlimit-massPsiPi->lowerlimit)/(fptype)massPsiPi->numbins;
+  fptype phiStep = (phi->upperlimit-phi->lowerlimit)/(fptype)phi->numbins;
+  fptype cosMuMuStep = (cosMuMu->upperlimit-cosMuMu->lowerlimit)/(fptype)cosMuMu->numbins;
+
+  fptype maxDatAng = 0.0, maxDatMas = 0.0, maxPdfAng = 0.0, maxPdfMas = 0.0;
+
+  fptype twoDsum = 0.0;
+
+  for (int j = 0; j < massKPi->numbins; ++j)
+    for (int i = 0; i < massPsiPi->numbins; ++i) {
+        fptype xval   = massKPi->lowerlimit + j*massKPiStep +0.5*massKPiStep;
+        fptype yval   = massPsiPi->lowerlimit + i*massPsiPiStep +0.5*massPsiPiStep;
+
+        fptype zval = 0.0;
+
+        if (Dalitz_contour_host(xval,yval, kFALSE, (Int_t)psi_nS->value) )
+          for (int k = 0; k < phi->numbins * cosMuMu->numbins; ++k)
+            zval += pdfTotalValues[0][j+i*massKPi->numbins+k*massKPi->numbins * massPsiPi->numbins];
+
+          twoDsum += zval;
+
+          projPdfMasses->SetBinContent(projPdfMasses->FindBin(xval,yval),zval);
+
+          // std::cout << xval << " " << yval << " " << zval << " " << twoDsum << " " << projPdfMasses->FindBin(xval,yval) << " " << varHistoMasses->Integral() << std::endl;
+    }
+
+  twoDsum = 0.0;
+  //PLOTTING ANGLES
+  for (int j = 0; j < cosMuMu->numbins; ++j)
+      for (int i = 0; i < phi->numbins; ++i) {
+        fptype xval   = cosMuMu->lowerlimit + j*cosMuMuStep + 0.5*cosMuMuStep;
+        fptype yval   = phi->lowerlimit + i*phiStep + 0.5*phiStep;
+
+        fptype zval = 0.0;
+        if(FABS(yval) <= devPi && FABS(xval) <= 1.0)
+          for (int k = 0; k < massKPi->numbins * massPsiPi->numbins; ++k)
+            zval += pdfTotalValues[0][j * massKPi->numbins * massPsiPi->numbins+ i * massKPi->numbins * massPsiPi->numbins * cosMuMu->numbins + k ];
+
+        twoDsum += zval;
+        projPdfAngles->SetBinContent(projPdfAngles->FindBin(xval,yval),zval);
+    }
+
+
+  projPdfMasses->Scale(1.0/twoDsum);
+  projPdfMasses->Scale(events);
+  projPdfMasses->Draw("COLZ");
+
+  canvas->SaveAs(TString::Format("%s/pdfMassesProjection_%s.%s",plotsDir.Data(),plotsName.Data(),extension.Data()));
+  canvas->Clear();
+
+  projPdfAngles->Scale(1.0/twoDsum);
+  projPdfAngles->Scale(events);
+  projPdfAngles->Draw("COLZ");
+
+  canvas->SaveAs(TString::Format("%s/pdfAnglesProjection_%s.%s",plotsDir.Data(),plotsName.Data(),extension.Data()));
+  canvas->Clear();
+
+  for (int I = 0; I < projPdfMasses->GetNbinsX() * projPdfMasses->GetNbinsY(); I++)
+    maxPdfMas = std::max(maxPdfMas,projPdfMasses->GetBinContent(I));
+
+  for (int I = 0; I < projPdfAngles->GetNbinsX() * projPdfAngles->GetNbinsY(); I++)
+    maxPdfAng = std::max(maxPdfAng,projPdfAngles->GetBinContent(I));
+
+  for (int I = 0; I < varHistoMasses->GetNbinsX() * varHistoMasses->GetNbinsY(); I++)
+    maxDatMas = std::max(maxDatMas,varHistoMasses->GetBinContent(I));
+
+  for (int I = 0; I < varHistoAngles->GetNbinsX() * varHistoAngles->GetNbinsY(); I++)
+    maxDatAng = std::max(maxDatAng,varHistoAngles->GetBinContent(I));
+
+  gStyle->SetOptStat(1111);
+
+  TH1I* binContentPdfAngles = new TH1I("binContentPdfAngles","binContentPdfAngles",(int)FLOOR(maxPdfAng+0.5),0.0,2.0*(fptype)FLOOR(maxPdfAng+0.5));
+  TH1I* binContentDatMasses = new TH1I("binContentDatMasses","binContentDatMasses",(int)FLOOR(maxDatMas+0.5),0.0,2.0*(fptype)FLOOR(maxDatMas+0.5));
+
+  TH1I* binContentPdfMasses = new TH1I("binContentPdfMasses","binContentPdfMasses",(int)FLOOR(maxPdfMas+0.5),0.0,2.0*(fptype)FLOOR(maxPdfMas+0.5));
+  TH1I* binContentDatAngles = new TH1I("binContentDatAngles","binContentDatAngles",(int)FLOOR(maxDatAng+0.5),0.0,2.0*(fptype)FLOOR(maxDatAng+0.5));
+
+  //2D chi square calculation
+
+  //angular
+  for (int I = 0; I < projPdfMasses->GetNbinsX() * projPdfMasses->GetNbinsY(); I++)
+      projChiMasses->SetBinContent(I,0.0);
+
+  for (int I = 0; I < projPdfAngles->GetNbinsX() * projPdfAngles->GetNbinsY(); I++)
+      projChiAngles->SetBinContent(I,0.0);
+
+  chisquareAngles = 0.0;
+
+  for (int I = 0; I < projPdfAngles->GetNbinsX(); I++)
+  {
+    fptype xval = projPdfAngles->GetXaxis()->GetBinCenter(I);
+    for (int J = 0; J < projPdfAngles->GetNbinsY(); J++)
+    {
+      fptype yval = projPdfAngles->GetYaxis()->GetBinCenter(J);
+
+      fptype pdf = projPdfAngles->GetBinContent(projPdfAngles->FindBin(xval,yval));
+      fptype dat = varHistoAngles->GetBinContent(varHistoAngles->FindBin(xval,yval));
+      fptype term = 0.0;
+
+      if(FABS(yval) <= devPi && FABS(xval) <= 1.0)
+      {
+         binContentPdfAngles->Fill(pdf);
+         binContentDatAngles->Fill(dat);
+       }
+
+      if(pdf > 0.0)
+        term = POW(pdf - dat,2)/pdf;
+
+      chisquareAngles += term;
+
+      projChiAngles->SetBinContent(projChiAngles->FindBin(xval,yval),term);
+
+      // std::cout << pdf << " - " << dat << " - " << term << " - " << std::endl;
+      // std::cout << projPdfAngles->GetXaxis()->GetBinCenter(I) << " - " << varHistoAngles->GetXaxis()->GetBinCenter(I) << " - " << projChiAngles->GetXaxis()->GetBinCenter(I) << " - " << std::endl;
+
+    }
+  }
+  //massive
+
+  chisquareMasses = 0.0;
+
+  for (int I = 0; I < projPdfMasses->GetNbinsX(); I++)
+  {
+    fptype xval = projPdfMasses->GetXaxis()->GetBinCenter(I);
+    for (int J = 0; J < projPdfMasses->GetNbinsY(); J++)
+    {
+      fptype yval = projPdfMasses->GetYaxis()->GetBinCenter(J);
+
+      fptype pdf = projPdfMasses->GetBinContent(projPdfMasses->FindBin(xval,yval));
+      fptype dat = varHistoMasses->GetBinContent(varHistoMasses->FindBin(xval,yval));
+
+      fptype term = 0.0;
+      if (Dalitz_contour_host(xval,yval, kFALSE, (Int_t)psi_nS->value) )
+      {
+        binContentPdfMasses->Fill(pdf);
+        binContentDatMasses->Fill(dat);
+      }
+      if(pdf > 0.0)
+        term = POW(pdf - dat,2)/pdf;
+
+      chisquareMasses += term;
+
+      projChiMasses->SetBinContent(projChiMasses->FindBin(xval,yval),term);
+
+      // std::cout << pdf << " - " << dat << " - " << term << " - " << std::endl;
+      // std::cout << projPdfMasses->GetXaxis()->GetBinCenter(I) << " - " << varHistoMasses->GetXaxis()->GetBinCenter(I) << " - " << projChiMasses->GetXaxis()->GetBinCenter(I) << " - " << std::endl;
+
+    }
+  }
+
+  std::cout << "===================================" << std::endl;
+  std::cout << "Chi square mass : " << chisquareMasses << std::endl;
+  std::cout << "Chi square angl : " << chisquareAngles << std::endl;
+  std::cout << "===================================" << std::endl;
+
+  std::cout<< projChiMasses->Integral() << " " << projChiAngles->Integral() << std::endl;
+
+  projChiMasses->Draw("COLZ");
+
+  canvas->SaveAs(TString::Format("%s/chiMassesProjection_%s.%s",plotsDir.Data(),plotsName.Data(),extension.Data()));
+  canvas->Clear();
+
+  binContentPdfMasses->Draw();
+  canvas->SaveAs(TString::Format("%s/pdfMassesCounter_%s.%s",plotsDir.Data(),plotsName.Data(),extension.Data()));
+  canvas->Clear();
+  canvas->SetLogx(1);
+  canvas->SetLogy(1);
+  canvas->SaveAs(TString::Format("%s/pdfMassesCounter_%s_log.%s",plotsDir.Data(),plotsName.Data(),extension.Data()));
+  canvas->Clear();
+  canvas->SetLogy(0);
+  canvas->SetLogy(0);
+
+  binContentPdfAngles->Draw();
+  canvas->SaveAs(TString::Format("%s/pdfAnglesCounter_%s.%s",plotsDir.Data(),plotsName.Data(),extension.Data()));
+  canvas->Clear();
+
+  projChiAngles->Draw("COLZ");
+
+  canvas->SaveAs(TString::Format("%s/chiAnglesProjection_%s.%s",plotsDir.Data(),plotsName.Data(),extension.Data()));
+  canvas->Clear();
+
+  binContentDatMasses->Draw();
+  canvas->SaveAs(TString::Format("%s/datMassesCounter_%s.%s",plotsDir.Data(),plotsName.Data(),extension.Data()));
+  canvas->Clear();
+
+  binContentDatAngles->Draw();
+  canvas->SaveAs(TString::Format("%s/datAnglesCounter_%s.%s",plotsDir.Data(),plotsName.Data(),extension.Data()));
+  canvas->Clear();
+
+  gStyle->SetOptStat(000000000);
+
+  pdfTotalValues.clear();
+
+  for (Int_t iVar=0; iVar<nProjVars; ++iVar)
+    obserVariables[iVar]->numbins = plottingFine[iVar];
 
   Int_t nStatEntries = 0;
   Int_t amplitudeCounter = 0;
@@ -2712,6 +3237,7 @@ int main(int argc, char** argv) {
 
       //varHistos_theory[iVar]->Draw("E same");
     } else {
+
       TString xTitle = varTitles[iVar];
       if (iVar < 2) xTitle.Append(" [GeV]");
 
@@ -2724,6 +3250,7 @@ int main(int argc, char** argv) {
       varHistos[iVar]->GetYaxis()->SetTitle("Candidates");
 
       projHistos[iVar]->Draw("E");
+
       //varHistos[iVar]->SetMaximum(plotYMax[iVar]*ySF);
       varHistos[iVar]->Draw("E same");
 
@@ -2739,8 +3266,9 @@ int main(int argc, char** argv) {
 	      compHistos[iVar][k]->Draw("hist same");
 	      compHistos[iVar][k]->Draw("p same");
       }
-      // if (bkgPdfHist)
-	    //  projBkgHistosInt[iVar]->Draw("PE same");
+
+  //     if (bkgPdfHist)
+	// projBkgHistosInt[iVar]->Draw("PE same");
     }
 
     if (bkgHistos[iVar]) bkgHistos[iVar]->Draw("same");
