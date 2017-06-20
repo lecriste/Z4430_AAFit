@@ -358,7 +358,7 @@ Double_t myPDF::BWGamma(Double_t RMass, Double_t RGamma, Int_t Lmin, Double_t D)
 */
 Double_t myPDF::BWGamma(Double_t RMass, Double_t RGamma, Double_t RMassCalc, Double_t GDau1Mass, Double_t GDau2Mass, Int_t Lmin, Double_t D) const
 {
-    
+
   Double_t QRMassCalc = dec2mm(RMassCalc,GDau1Mass,GDau2Mass);
   Double_t QRMass = dec2mm(RMass,GDau1Mass,GDau2Mass);
   Int_t expoterm = 2*Lmin + 1 ;
@@ -384,7 +384,7 @@ TComplex myPDF::BW(Double_t RMass, Double_t RGamma, Int_t Lmin, Double_t D) cons
 */
 TComplex myPDF::BW(Double_t RMass, Double_t RGamma, Double_t RMassCalc, Double_t GDau1Mass, Double_t GDau2Mass, Int_t Lmin, Double_t D) const
 {
-    
+
   Double_t num1term = RMass*RMass - RMassCalc*RMassCalc ;
   Double_t num2term = RMass * BWGamma(RMass, RGamma, RMassCalc, GDau1Mass, GDau2Mass, Lmin, D) ;
   Double_t denoterm = num1term*num1term + num2term*num2term ;
@@ -422,7 +422,7 @@ TComplex myPDF::RFunction(Double_t RMass, Double_t RGamma, Double_t RMassCalc, D
   Double_t QRMass = dec2mm(RMass,GDau1Mass,GDau2Mass);
     
   //TComplex RFunc = BlattWeisskopf(LminMom, PmKP, PRMass, D) * TMath::Power(PmKP/MomMass,LminMom) * BW(RMass, RGamma, LminR, D) * BlattWeisskopf(LminR, QmKP, QRMass, D) * TMath::Power(QmKP/RMass,LminR);
-  TComplex RFunc = BlattWeisskopf(LminMom, PRMassCalc, PRMass, DB0) * TMath::Power(PRMassCalc/MomMass,LminMom) * BW(RMass, RGamma, RMassCalc, GDau1Mass, GDau1Mass, LminR, DKs) * BlattWeisskopf(LminR, QRMassCalc, QRMass, DKs) * TMath::Power(QRMassCalc/PRMassCalc,LminR);
+  TComplex RFunc = BlattWeisskopf(LminMom, PRMassCalc, PRMass, DB0) * TMath::Power(PRMassCalc/MomMass,LminMom) * BW(RMass, RGamma, RMassCalc, GDau1Mass, GDau2Mass, LminR, DKs) * BlattWeisskopf(LminR, QRMassCalc, QRMass, DKs) * TMath::Power(QRMassCalc/PRMassCalc,LminR);
   //cout <<"BlattWeisskopf(LminR, QmKP, QRMass, D) for RMass " <<RMass <<" = " <<BlattWeisskopf(LminR, QmKP, QRMass, D) <<endl;
   //cout <<"BlattWeisskopf(LminMom, PmKP, PRMass, D) for RMass " <<RMass <<" = " <<BlattWeisskopf(LminMom, PmKP, PRMass, D) <<endl;
   //cout <<"BlattWeisskopf(LminMom, PmKP, PRMass, D) * BlattWeisskopf(LminR, QmKP, QRMass, D) for RMass " <<RMass <<" = " <<BlattWeisskopf(LminMom, PmKP, PRMass, D) * BlattWeisskopf(LminR, QmKP, QRMass, D) <<endl;

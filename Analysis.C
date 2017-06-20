@@ -45,8 +45,8 @@
 //#include "RooNDKeysPdf.h"
 #include "RooBinning.h"
 
-#include <sys/time.h> // for timeval
-#include <sys/times.h> // for tms
+//#include <sys/time.h> // for timeval
+//#include <sys/times.h> // for tms
 //#include <time.h>
 //#include <ctime> 
 #include "TSystem.h" // to get number of CPUs
@@ -66,11 +66,15 @@
 
 #include "initialAmpVal.h"
 
+//#define TIME_INFO
+
 using namespace RooFit ;
 
+#ifdef TIME_INFO
 timeval start, stop;
 clock_t startCPU, stopCPU;
 tms startProc, stopProc;
+#endif
 
 Float_t TH2_offset = 1.6;
 
@@ -175,8 +179,9 @@ void plotting(const RooDataHist* hist, const TString name, const RooRealVar* x, 
 }
 
 
-void Analysis(Int_t nEvt = 100000, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALSE, Bool_t effFlag = kFALSE, Bool_t B0BarFlag = kFALSE, Int_t bkgMassOrd = 1, Int_t bkgAngOrd = 1, Int_t effMassOrd = 1, Int_t effAngOrd = 1)
+void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALSE, Bool_t effFlag = kFALSE, Bool_t B0BarFlag = kFALSE, Int_t bkgMassOrd = 1, Int_t bkgAngOrd = 1, Int_t effMassOrd = 1, Int_t effAngOrd = 1)
 {
+//  nEvt = 100000
   cout <<"With cut-based efficiency the linear interpolation (effOrd=1) of masses does not work" <<endl;
 
   SysInfo_t* s = new SysInfo_t();
@@ -197,11 +202,13 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kTRUE, Bool_t bkgFlag = k
   vector< pair<TString, pair<const Double_t, const Double_t> > > Kstar_spin;
   map< TString, pair<Double_t, Double_t> > helJ_map;
 
+  
   cout <<"Adding K*(892)..." <<endl;
   Kstar_spin.push_back( make_pair("892_1", make_pair(M892,G892) ) ) ;
   helJ_map["892_1_0"] = make_pair(K892_1_0_a,K892_1_0_b); helJ_map["892_1_p1"] = make_pair(K892_1_p1_a,K892_1_p1_b); helJ_map["892_1_m1"] = make_pair(K892_1_m1_a,K892_1_m1_b); // from Belle
   //helJ_map["892_1_0"] = make_pair(0.775,0.); helJ_map["892_1_p1"] = make_pair(0.159,1.563); helJ_map["892_1_m1"] = make_pair(0.612,2.712); // from EvtGen
 
+  /*
   cout <<"Adding K*(800)..." <<endl;
   Kstar_spin.push_back( make_pair("800_0", make_pair(M800,G800) ) ) ;
   helJ_map["800_0_0"] = make_pair(K800_0_0_a,K800_0_0_b);
@@ -218,6 +225,7 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kTRUE, Bool_t bkgFlag = k
   cout <<"Adding K*(1430)_2..." <<endl;
   Kstar_spin.push_back( make_pair("1430_2", make_pair(M1430_2,G1430_2) ) ) ;
   helJ_map["1430_2_0"] = make_pair(K1430_2_0_a,K1430_2_0_b); helJ_map["1430_2_p1"] = make_pair(K1430_2_p1_a,K1430_2_p1_b); helJ_map["1430_2_m1"] = make_pair(K1430_2_m1_a,K1430_2_m1_b);
+ */
   /*
     cout <<"Adding K*(1780)_3..." <<endl;
     Kstar_spin.push_back( make_pair("1780_3", make_pair(M1780_3,G1780_3) ) ) ;
@@ -229,13 +237,16 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kTRUE, Bool_t bkgFlag = k
     helJ_map["2380_5_0"] = make_pair(1.,0.); helJ_map["2380_5_p1"] = make_pair(0.,0.); helJ_map["2380_5_m1"] = make_pair(0.,0.);
   */
   
+  
   vector< pair<TString, pair<const Double_t, const Double_t> > > Zc_spin;
+  cout <<"Adding Z(4200)..." <<endl;
   Zc_spin.push_back( make_pair("4200_1", make_pair(MZ4200,GZ4200) ) ) ;
   helJ_map["4200_1_0"] = make_pair(Z4200_1_0_a,Z4200_1_0_b); helJ_map["4200_1_p1"] = make_pair(Z4200_1_p1_a,Z4200_1_p1_b); helJ_map["4200_1_m1"] = make_pair(Z4200_1_m1_a,Z4200_1_m1_b); // from Belle
-  
+
+  cout <<"Adding Z(4430)..." <<endl;
   Zc_spin.push_back( make_pair("4430_1", make_pair(MZ4430,GZ4430) ) ) ;
   helJ_map["4430_1_0"] = make_pair(Z4430_1_0_a,Z4430_1_0_b); helJ_map["4430_1_p1"] = make_pair(Z4430_1_p1_a,Z4430_1_p1_b); helJ_map["4430_1_m1"] = make_pair(Z4430_1_m1_a,Z4430_1_m1_b); // from Belle
-
+  
   
   TString Hel = ""; //Hel = "_hel0"; //Hel = "_noHel0";
   if (Hel.Contains("_hel0"))
@@ -498,14 +509,15 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kTRUE, Bool_t bkgFlag = k
 
   RooAbsPdf* bkgPDF = BdToPsiPiK_PHSP; bkgPDF = 0;
 
-  Double_t totEvents = 2000; // Generation time does not scale with number of events up to at least 10k events, from 100k yes
+  Double_t totEvents = 5000; // Generation time does not scale with number of events up to at least 10k events, from 100k yes
   //totEvents *= 2;
   //totEvents *= 2.5;
   //totEvents *= 5;
-  totEvents *= 10;
-  totEvents *= 10; totEvents *= 5;
+  //totEvents *= 10;
+  //totEvents *= 10; totEvents *= 5;
   //totEvents *= 10; totEvents *= 3;
   //totEvents /= 2; totEvents /= 100;
+  
   RooRealVar nSig("nSig", "n_{SIG}", 0, 0, 1E6);
   //nSig.setVal( 10*nSig.getVal() ); // Does not work on the fly
   Float_t purity = 0.8;
@@ -932,9 +944,11 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kTRUE, Bool_t bkgFlag = k
 
     // Generate toy data from pdf and plot data and p.d.f on frame
     cout <<"\nGenerating " <<nEvents.getVal() <<" events according to " <<model->GetTitle() <<" pdf for " <<model->GetName() <<" with " <<B0beauty.getTitle() <<" = " <<B0beauty.getVal() <<endl;
+#ifdef TIME_INFO
     timeval genTime;
     gettimeofday(&start, NULL);
     startCPU = times(&startProc);
+#endif
     //
     TString dataGenName = "Generated_data_from_PDF"; TString dataGen_Name = dataGenName;
 
@@ -944,6 +958,7 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kTRUE, Bool_t bkgFlag = k
     // RooArgSet genSet = kinematicVars; genSet = kinematicVars_withBeauty;
     // RooDataSet* dataGenPDF = model->generate(genSet, nEvents.getVal(), Verbose(kTRUE), Name(dataGenName)) ; dataGenPDF->SetTitle(dataGenName.ReplaceAll("_"," "));
     //
+    /*
     stopCPU = times(&stopProc);
     gettimeofday(&stop, NULL);
     timersub(&stop, &start, &genTime);
@@ -956,14 +971,17 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kTRUE, Bool_t bkgFlag = k
     cout <<"My processes time: " << (genTimeProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
     //if (nEvents.getVal() > 100000)
     // dataGenPDF->write(TString::Format("%s/%s.txt",datasetsPath.Data(),model->GetName()));
-
+    */
+    
     TString flavour = "B0";
     if (B0BarFlag) flavour.Append("bar"); 
 
     dataGenPDF->write(TString::Format("%s/%s/%s%s.txt",datasetsPath.Data(),flavour.Data(),model->GetName(),selection.Data()));
     //dataGenPDFB0->write(TString::Format("%s/%s/%s%s__B0Flag.txt",datasetsPath.Data(),flavour.Data(),model->GetName(),selection.Data()));
 
-    return;
+    cout << "\nGeneration done..." << endl;
+    //return;
+    cout << "\nGeneration done..." << endl;
 
     dataToFit = dataGenPDF;
   }
@@ -1080,9 +1098,11 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kTRUE, Bool_t bkgFlag = k
   Bool_t fitting = kFALSE; fitting = kTRUE;
   if (!fitting) {
     cout <<"\nPlotting \"" <<model->GetName() <<"\" pdf..." <<endl;
+#ifdef TIME_INFO
     timeval plotModelTime;
     gettimeofday(&start, NULL);
     startCPU = times(&startProc);
+#endif
     //
     model->plotOn(var_frame[0],LineColor(fullModelColor),LineStyle(kDashed),Name(modelEntry)) ;
     // 2k events
@@ -1099,6 +1119,8 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kTRUE, Bool_t bkgFlag = k
       model->plotOn(var_frame[0],Components(*bkgPDF),LineColor(bkgColor),LineStyle(kDashed),Name("Bkg")) ;
     }
     //
+
+#ifdef TIME_INFO
     stopCPU = times(&stopProc);
     gettimeofday(&stop, NULL);
     timersub(&stop, &start, &plotModelTime);
@@ -1107,7 +1129,9 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kTRUE, Bool_t bkgFlag = k
     cout <<"Wallclock time: " << plotModelTime.tv_sec + plotModelTime.tv_usec/1000000.0 << " seconds\n" ;
     cout <<"Total CPU time: " << (plotModelCPU / CLOCKS_PER_SEC) <<" seconds\n" ;
     cout <<"My processes time: " << (plotModelProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
+#endif
   }
+  
   nLegendEntries++; // either for generation or fit
 
   Float_t topRightCorner = 0.9;
@@ -1149,9 +1173,13 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kTRUE, Bool_t bkgFlag = k
       RooAddition nllp("nllp","nllp",toMinimize);
       RooMinuit m(nllp); m.setVerbose();
     */
+    
+
+#ifdef TIME_INFO
     timeval fitModelTime;
     gettimeofday(&start, NULL);
     startCPU = times(&startProc);
+#endif
     //
     fitres = model->fitTo(*dataToFit, Hesse(kFALSE), Minos(kFALSE), Save(kTRUE), NumCPU(nCPU), Verbose(kTRUE), PrintLevel(3)) ;
     // 75' with 2k events, 8 Lambda*, 1 NumCPU; 80' with 2k events, 1 K*, 4 NumCPU;
@@ -1209,6 +1237,9 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kTRUE, Bool_t bkgFlag = k
       //m.minos() ;
       */
     //
+    
+    
+#ifdef TIME_INFO
     stopCPU = times(&stopProc);
     gettimeofday(&stop, NULL);
     timersub(&stop, &start, &fitModelTime);
@@ -1217,7 +1248,8 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kTRUE, Bool_t bkgFlag = k
     cout <<"\nWallclock time (" <<nCPU <<" CPUs) : " << fitModelTime.tv_sec + fitModelTime.tv_usec/1000000.0 << " seconds\n" ;
     cout <<"Total CPU time (" <<nCPU <<" CPUs) : " << (fitModelCPU / CLOCKS_PER_SEC) <<" seconds\n" ;
     cout <<"My processes time (" <<nCPU <<" CPUs) : " << (fitModelProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
-
+#endif
+    
     fitres->Print("v");
     dataToFit->plotOn(var_frame[0]);
     model->paramOn(var_frame[0], Parameters(amplitudeVars), Layout(xMin,0.99,yLegLow));
@@ -1309,11 +1341,18 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kTRUE, Bool_t bkgFlag = k
 	cout <<legName <<" fraction is: " <<fraction*100 <<"%" <<endl;
 	cout <<"\nPlotting " <<legName <<" only..." <<endl;
 
-	gettimeofday(&start, NULL);
+
+#ifdef TIME_INFO
+    gettimeofday(&start, NULL);
 	startCPU = times(&startProc);
 	//
+#endif
+    
 	model->plotOn(var_frame[0],LineColor(iKstar_S + fullModelColor+1), LineStyle(kDashed), Name(Kstar_name), Normalization(fraction,RooAbsReal::Relative)) ;
 	//
+    
+
+#ifdef TIME_INFO
 	stopCPU = times(&stopProc);
 	gettimeofday(&stop, NULL);
 	timersub(&stop, &start, &KstarPlotTime[iKstar_S]);
@@ -1322,7 +1361,8 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kTRUE, Bool_t bkgFlag = k
 	cout <<"Wallclock time: " << KstarPlotTime[iKstar_S].tv_sec + KstarPlotTime[iKstar_S].tv_usec/1000000.0 << " seconds\n" ;
 	cout <<"Total CPU time: " << (KstarPlotCPU[iKstar_S] / CLOCKS_PER_SEC) <<" seconds\n" ;
 	cout <<"My processes time: " << (KstarPlotProc[iKstar_S] / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
-
+#endif
+    
 	leg->AddEntry(var_frame[0]->findObject(Kstar_name),TString::Format("%s (%.1f%%)",legName.Data(),fraction*100),"l");
       }
     } // if (nKstars > 1)
