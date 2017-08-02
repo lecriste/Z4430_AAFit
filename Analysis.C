@@ -244,11 +244,11 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALS
   
   cout <<"Adding Z(4200)..." <<endl;
   Zc_spin.push_back( make_pair("4200_1", make_pair(MZ4200,GZ4200) ) ) ;
-  helJ_map["4200_1_0"] = make_pair(Z4200_1_0_a,Z4200_1_0_b); helJ_map["4200_1_p1"] = make_pair(Z4200_1_p1_a,Z4200_1_p1_b); helJ_map["4200_1_m1"] = make_pair(Z4200_1_m1_a,Z4200_1_m1_b); // from Belle
+  helJ_map["4200_1_0"] = make_pair(Z4200_1_0_a,Z4200_1_0_b); helJ_map["4200_1_m1"] = make_pair(Z4200_1_m1_a,Z4200_1_m1_b); //helJ_map["4200_1_p1"] = make_pair(Z4200_1_p1_a,Z4200_1_p1_b); // parity conservation
 
   cout <<"Adding Z(4430)..." <<endl;
   Zc_spin.push_back( make_pair("4430_1", make_pair(MZ4430,GZ4430) ) ) ;
-  helJ_map["4430_1_0"] = make_pair(Z4430_1_0_a,Z4430_1_0_b); helJ_map["4430_1_p1"] = make_pair(Z4430_1_p1_a,Z4430_1_p1_b); helJ_map["4430_1_m1"] = make_pair(Z4430_1_m1_a,Z4430_1_m1_b); // from Belle
+  helJ_map["4430_1_0"] = make_pair(Z4430_1_0_a,Z4430_1_0_b); helJ_map["4430_1_m1"] = make_pair(Z4430_1_m1_a,Z4430_1_m1_b); //helJ_map["4430_1_p1"] = make_pair(Z4430_1_p1_a,Z4430_1_p1_b); // parity conservation
   
   
   TString Hel = ""; //Hel = "_hel0"; //Hel = "_noHel0";
@@ -295,7 +295,7 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALS
 
   Int_t nZc = Zc_spin.size();
   for (Int_t iZc_S=0; iZc_S<nZc; ++iZc_S)
-    for (Int_t iHelJ=0; iHelJ<3; ++iHelJ) {
+    for (Int_t iHelJ=0; iHelJ<2; ++iHelJ) { // parity conservation
       if (Zc_spin[iZc_S].first.Contains("_0") && !helJ[iHelJ].EqualTo("0")) continue ;
       TString name = Zc_spin[iZc_S].first + "_" + helJ[iHelJ] ;
       if (helJ_map.find(name) != helJ_map.end()) {
