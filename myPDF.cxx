@@ -103,8 +103,8 @@ Double_t myPDF::evaluate() const
   Double_t mKP2 = mKP*mKP;
   Double_t mPsiP2 = mPsiP*mPsiP;
   Double_t MPsi_nS2 = MPsi_nS*MPsi_nS;
-  Double_t _cKs = costhetaHel(MBd2, mKP2, MKaon2, MPion2 , MPsi_nS2, mPsiP2);
-  Double_t _cZc = costhetaHel(MBd2, mPsiP2, MPsi_nS2, MPion2, MKaon2, mKP2);
+  Double_t _cKs = costhetaHel_host(MBd2, mKP2, MKaon2, MPion2 , MPsi_nS2, mPsiP2);
+  Double_t _cZc = costhetaHel_host(MBd2, mPsiP2, MPsi_nS2, MPion2, MKaon2, mKP2);
   //cout <<"_cKs = " <<_cKs <<" for mKP2 = " <<mKP2 <<" and mPsiP2 = " <<mPsiP2 <<endl;
     
   if (fabs(_cKs) > 1 && _cZc > 1) {
@@ -358,8 +358,8 @@ Double_t myPDF::BWGamma(Double_t RMass, Double_t RGamma, Int_t Lmin, Double_t D)
 Double_t myPDF::BWGamma(Double_t RMass, Double_t RGamma, Double_t RMassCalc, Double_t GDau1Mass, Double_t GDau2Mass, Int_t Lmin, Double_t D) const
 {
 
-  Double_t QRMassCalc = dec2mm(RMassCalc,GDau1Mass,GDau2Mass);
-  Double_t QRMass = dec2mm(RMass,GDau1Mass,GDau2Mass);
+  Double_t QRMassCalc = dec2mm_host(RMassCalc,GDau1Mass,GDau2Mass);
+  Double_t QRMass = dec2mm_host(RMass,GDau1Mass,GDau2Mass);
   Int_t expoterm = 2*Lmin + 1 ;
     
   Double_t BWG = ( RGamma * RMass * TMath::Power(QRMassCalc/QRMass,expoterm) * TMath::Power(BlattWeisskopf(Lmin, QRMassCalc, QRMass, D),2) ) / RMassCalc;
@@ -397,10 +397,10 @@ TComplex myPDF::BW(Double_t RMass, Double_t RGamma, Double_t RMassCalc, Double_t
 
 TComplex myPDF::RFunction(Double_t RMass, Double_t RGamma, Double_t RMassCalc, Double_t Dau2Mass, Double_t GDau1Mass, Double_t GDau2Mass, Double_t MomMass, Int_t LminMom, Int_t LminR, Double_t DB0, Double_t DKs) const
 {
-  Double_t PRMassCalc = dec2mm(MomMass,RMassCalc,Dau2Mass);
-  Double_t PRMass = dec2mm(MomMass,RMass,Dau2Mass);
-  Double_t QRMassCalc = dec2mm(RMassCalc,GDau1Mass,GDau2Mass);
-  Double_t QRMass = dec2mm(RMass,GDau1Mass,GDau2Mass);
+  Double_t PRMassCalc = dec2mm_host(MomMass,RMassCalc,Dau2Mass);
+  Double_t PRMass = dec2mm_host(MomMass,RMass,Dau2Mass);
+  Double_t QRMassCalc = dec2mm_host(RMassCalc,GDau1Mass,GDau2Mass);
+  Double_t QRMass = dec2mm_host(RMass,GDau1Mass,GDau2Mass);
     
   TComplex RFunc = BlattWeisskopf(LminMom, PRMassCalc, PRMass, DB0) * TMath::Power(PRMassCalc/MomMass,LminMom) * BW(RMass, RGamma, RMassCalc, GDau1Mass, GDau2Mass, LminR, DKs) * BlattWeisskopf(LminR, QRMassCalc, QRMass, DKs) * TMath::Power(QRMassCalc/RMassCalc,LminR);
 
