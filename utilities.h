@@ -1,6 +1,6 @@
 #include "TMath.h"
 #include <TLorentzVector.h>
-#include "constants.h"
+//#include "constants.h"
 #include "stdio.h"
 #include <iostream>
 using namespace std;
@@ -23,7 +23,7 @@ Double_t cosTheta_FromMasses_host(const Double_t sameSideM2, const Double_t oppo
 // Mom decays into Dau1 and Dau2, Dau1 decays into GDau1 and GDau2
 // The angle returned is the angle between GDau1 in Dau1 rest frame and initial direction of Dau1
 
-Double_t costhetaHel(const Double_t m2Mom, const Double_t m2Dau1, const Double_t m2GDau1, const Double_t m2GDau2, const Double_t m2Dau2, const Double_t m2Dau2GDau2) {
+Double_t costhetaHel_host(const Double_t m2Mom, const Double_t m2Dau1, const Double_t m2GDau1, const Double_t m2GDau2, const Double_t m2Dau2, const Double_t m2Dau2GDau2) {
 
     Double_t num      = 0.5*m2Dau1*(m2Mom-m2Dau2GDau2+m2GDau1)-0.25*(m2Mom-m2Dau2+m2Dau1)*(m2GDau1-m2GDau2+m2Dau1);
     Double_t denom2   = (0.25*(pow((m2Mom+m2Dau1-m2Dau2),2))-(m2Mom*m2Dau1))*(0.25*(pow((m2GDau1+m2Dau1-m2GDau2),2))-(m2GDau1*m2Dau1));
@@ -38,13 +38,13 @@ Double_t costhetaHel(const Double_t m2Mom, const Double_t m2Dau1, const Double_t
 //================ Decay Momentum ====================
 // Momentum in 2-particle decay : m0->m1+m2
 
-Double_t sq_calc(const Double_t x, const Double_t y, const Double_t z)
+Double_t sq_calc_host(const Double_t x, const Double_t y, const Double_t z)
 {
     return pow(x,2)+pow(y,2)+pow(z,2)-2.0*x*y-2.0*x*z-2.0*y*z; // corr sign
 }
-Double_t dec2mm (const Double_t m0, const Double_t m1, const Double_t m2)
+Double_t dec2mm_host (const Double_t m0, const Double_t m1, const Double_t m2)
 {
-    Double_t rootterm = sq_calc(m0*m0,m1*m1,m2*m2);
+    Double_t rootterm = sq_calc_host(m0*m0,m1*m1,m2*m2);
     if (rootterm >= 0) {
         return TMath::Sqrt(rootterm)/(2.0*m0);
     }
@@ -65,8 +65,8 @@ Double_t alpha(const Double_t theta, const Double_t phi, const Double_t m2kpi, c
     Double_t m2Jpsi = mJpsi*mJpsi;
     Double_t muon_mass = MMuon;
     
-    Double_t kmom = dec2mm(sqrt(m2kpi),MKaon,MPion);
-    Double_t costh_k = costhetaHel(MBd2,m2kpi,MKaon2,MPion2,m2Jpsi,m2jpsipi);
+    Double_t kmom = dec2mm_host(sqrt(m2kpi),MKaon,MPion);
+    Double_t costh_k = costhetaHel_host(MBd2,m2kpi,MKaon2,MPion2,m2Jpsi,m2jpsipi);
     
     TLorentzVector K;
     Double_t pkx = kmom*sin(acos(costh_k));
@@ -82,7 +82,7 @@ Double_t alpha(const Double_t theta, const Double_t phi, const Double_t m2kpi, c
     Pi.SetPxPyPzE(ppix,ppiy,ppiz,Epi);
     
     // Jpsi mom = K* mom in B0 rest frame
-    Double_t jpsimom = dec2mm(MBd,mJpsi,sqrt(m2kpi));
+    Double_t jpsimom = dec2mm_host(MBd,mJpsi,sqrt(m2kpi));
     TLorentzVector J_b0;
     J_b0.SetPxPyPzE(0.0,0.0,-jpsimom,sqrt(m2Jpsi+jpsimom*jpsimom));
     TLorentzVector Kstar_b0;
@@ -101,7 +101,7 @@ Double_t alpha(const Double_t theta, const Double_t phi, const Double_t m2kpi, c
     Pi_jpsi.Boost( -J_Kstar.BoostVector() );
     
     // Muon 4 momenta in Jpsi rest frame
-    Double_t mumom = dec2mm(mJpsi,muon_mass,muon_mass);
+    Double_t mumom = dec2mm_host(mJpsi,muon_mass,muon_mass);
     TLorentzVector muP;
     Double_t pmuPx = mumom*sin(theta)*cos(phi);
     Double_t pmuPy = -mumom*sin(theta)*sin(phi);
@@ -131,7 +131,7 @@ Double_t costhetatilde(const Double_t theta, const Double_t phi, const Double_t 
     Double_t muon_mass = MMuon;
     
     // K momentum in B0 frame
-    Double_t pk_B0 = dec2mm(MBd,sqrt(m2jpsipi),MKaon);
+    Double_t pk_B0 = dec2mm_host(MBd,sqrt(m2jpsipi),MKaon);
     TLorentzVector K_B0;
     K_B0.SetPxPyPzE(0.0,0.0,pk_B0,sqrt(MKaon2+pk_B0*pk_B0));
     
@@ -143,13 +143,13 @@ Double_t costhetatilde(const Double_t theta, const Double_t phi, const Double_t 
     K_Zc_old.Boost( -Zc_B0.BoostVector() );
     
     // 4 momenta in Zc rest frame (with a different coordinate system)
-    Double_t thetaz = acos(  costhetaHel(MBd2,m2jpsipi,m2Jpsi,MPion2,MKaon2,m2kpi)  );
+    Double_t thetaz = acos(  costhetaHel_host(MBd2,m2jpsipi,m2Jpsi,MPion2,MKaon2,m2kpi)  );
     Double_t pk = K_Zc_old.Pz();
     Double_t Ek = sqrt(MKaon2+pk*pk);
     TLorentzVector K_Zc;
     K_Zc.SetPxPyPzE(pk*sin(thetaz),0.0,pk*cos(thetaz),Ek);
     
-    Double_t ppi = dec2mm(sqrt(m2jpsipi),mJpsi,MPion);
+    Double_t ppi = dec2mm_host(sqrt(m2jpsipi),mJpsi,MPion);
     
     Double_t Epi = sqrt(MPion2+ppi*ppi);
     TLorentzVector Pi_Zc;
@@ -167,7 +167,7 @@ Double_t costhetatilde(const Double_t theta, const Double_t phi, const Double_t 
     Pi_jpsi.Boost( -Jpsi_Zc.BoostVector() );
     
     // Muon momenta in Jpsi rest frame
-    Double_t pmu = dec2mm(mJpsi,muon_mass,muon_mass);
+    Double_t pmu = dec2mm_host(mJpsi,muon_mass,muon_mass);
     Double_t Emu = sqrt(muon_mass*muon_mass + pmu*pmu);
     
     Double_t denom = sqrt( (0.25*pow((MBd2-m2kpi+m2Jpsi),2)-MBd2*m2Jpsi)*(0.25*m2Jpsi*m2Jpsi-muon_mass*muon_mass*m2Jpsi) );

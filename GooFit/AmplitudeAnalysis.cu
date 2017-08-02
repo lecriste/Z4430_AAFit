@@ -181,6 +181,8 @@ void printinstruction() {
 	    <<"\t-k1430_0 \t\t Add K*_0(1430) to p.d.f.\n"
 	    <<"\t-k1430_2 \t\t Add K*_2(1430) to p.d.f.\n"
 	    <<"\t-k1780 \t\t\t Add K*_3(1780) to p.d.f.\n"
+	    <<"\t-z4200 \t\t\t Add Z4200 to p.d.f.\n"
+	    <<"\t-z4430 \t\t\t Add Z4430 to p.d.f.\n"
 	    <<"\t-b0Var \t\t\t Add B0 - B0Bar flag as variable for each event candidate \n \t\t\t\t (Incompatible with -b0Var) \n"
 	    <<"\t-b0BarPdf \t\t Use B0Bar p.d.f. instead of B0 p.d.f. \n \t\t\t\t (Incompatible with -b0Var)\n"
 	    <<"\t-b0Flag \t\t Add B0 - B0Bar flag: multplying phi by -1\n"
@@ -206,6 +208,7 @@ int main(int argc, char** argv) {
 
   unsigned int events = 100000;
   unsigned int nKstars = 0;
+  unsigned int nZc = 0;
 
   vector <Int_t> bin; // same order as varNames
   bin.push_back(compBins); bin.push_back(compBins); bin.push_back(compBins); bin.push_back(compBins);
@@ -220,9 +223,10 @@ int main(int argc, char** argv) {
   TFile *effFile  = 0;
   TFile *bkgFile = 0;
   fptype aMax = +9999.;
-  fptype bMax = +9999.;
+  fptype bMax = devPi; //+9999.;
 
   bool k892Star = false, k800Star = false, k1410Star = false, k1430Star0 = false, k1430Star2 = false, k1780Star = false;
+  bool z4200 = false, z4430 = false;
 
   bool b0Var = false;
   bool b0Flag = false;
@@ -279,6 +283,7 @@ int main(int argc, char** argv) {
   plotsDir.Append("_");
   plotsDir.Append(std::to_string(Clock).data());
   std::vector< std::string> kStarNames;
+  std::vector< std::string> ZcNames;
   TString plotOption = "L";
 
   TH2F* relEffTH2Mass = 0 , *relEffTH2Ang = 0;
@@ -412,6 +417,14 @@ int main(int argc, char** argv) {
     else if (arg == "-k1780") {
       k1780Star = true;
       ++nKstars;
+    }
+    else if (arg == "-z4200") {
+      z4200 = true;
+      ++nZc;
+    }
+    else if (arg == "-z4430") {
+      z4430 = true;
+      ++nZc;
     }
     else if (arg == "-BkgPHSP") {
       bkgPhaseSpace = true;
@@ -667,15 +680,19 @@ int main(int argc, char** argv) {
   for (Int_t iVar=0; iVar<nProjVars; ++iVar)
     obserVariables[iVar]->numbins = bin[iVar];
 
-  if (!nKstars) {
-    cout <<"No K* selected (K892,K800,K1410,K1430) please see instructions below" <<endl;
+  if (!nKstars && !nZc) {
+    cout <<"No K* selected (K892,K800,K1410,K1430) or Z selected (Z4200,Z4430) please see instructions below" <<endl;
     printinstruction();
     return -1;
   } else {
-    cout <<"- Performing Amplitude Analysis fit with\n  " <<nKstars <<" K*(s) on\n  " <<events <<" events, using\n  " <<bin[0] <<" bins for normalisation & integration and\n  " <<plottingFine[0] <<" bins for p.d.f. plotting along m(KPi)" <<endl;
-    if (nKstars < 2) {
+    cout <<"- Performing Amplitude Analysis fit with\n  " <<nKstars <<" K*(s) \n and \n " <<nZc << " Z(s) on\n  " <<events <<" events, using\n  " <<bin[0] <<" bins for normalisation & integration and\n  " <<plottingFine[0] <<" bins for p.d.f. plotting along m(KPi)" <<endl;
+    if (nKstars < 2 && nZc == 0 ) {
       datasetName = "Kstar";
       underscores = "_"; }
+      
+    if (nKstars == 0 && nZc < 2) {
+      datasetName = "Zc";
+      underscores = "_"; }  
 
     if (k892Star) {
       cout <<"  - K*(892)" <<endl;
@@ -705,6 +722,16 @@ int main(int argc, char** argv) {
       cout <<"  - K*(1780_3)" <<endl;
       datasetName.Append(underscores+"1780_3"); plotsName.Append("__1780_3");
       kStarNames.push_back("K*_{3}(1780)");}
+    if (z4200) {
+      cout <<"  - Z4200" <<endl;
+      datasetName.Append(underscores+"Z4200"); plotsName.Append("__Z4200");
+      ZcNames.push_back("Z4200");
+    }
+    if (z4430) {
+      cout <<"  - Z4430" <<endl;
+      datasetName.Append(underscores+"Z4430"); plotsName.Append("__Z4430");
+      ZcNames.push_back("Z4430");
+    }  
     if (bkgPhaseSpace) {
       cout <<"  - Three Bodies Phase-space background" <<endl;
       datasetName.Append("__plus__BdToPsiPiK_PHSP"); plotsName.Append("_PHSP");
@@ -875,6 +902,36 @@ int main(int argc, char** argv) {
 
     as.push_back(new Variable("a_K_1780_3_m1",K1780_3_m1_a,aMin,aMax));
     bs.push_back(new Variable("b_K_1780_3_m1",K1780_3_m1_b,bMin,bMax));
+  }
+  
+  if (z4200) {
+    cout <<"Adding Z4200 ..." <<endl;
+    Masses.push_back(new Variable("Z_4200_Mass_0",MZ4200));
+    Gammas.push_back(new Variable("Z_4200_Gamma_0",GZ4200));
+    Spins.push_back(new Variable("Z_4200_Spin_0",1.0));
+    
+    as.push_back(new Variable("a_Z_4200_0",Z4200_1_0_a,aMin,aMax) );
+    bs.push_back(new Variable("b_Z_4200_0",Z4200_1_0_b,bMin,bMax) );
+    as.push_back(new Variable("a_Z_4200_p1",Z4200_1_p1_a,aMin,aMax) );
+    bs.push_back(new Variable("b_Z_4200_p1",Z4200_1_p1_b,bMin,bMax) );
+    // due to parity conservation, a(+1) = a(-1) and b(+1) = b(-1)
+    //as.push_back(new Variable("a_Z_4200_m1",Z4200_1_m1_a,aMin,aMax));
+    //bs.push_back(new Variable("b_Z_4200_m1",Z4200_1_m1_b,bMin,bMax));
+  }
+  
+  if (z4430) {
+    cout <<"Adding Z4430 ..." <<endl;
+    Masses.push_back(new Variable("Z_4430_Mass_0",MZ4430));
+    Gammas.push_back(new Variable("Z_4430_Gamma_0",GZ4430));
+    Spins.push_back(new Variable("Z_4430_Spin_0",1.0));
+    
+    as.push_back(new Variable("a_Z_4430_0",Z4430_1_0_a,aMin,aMax) );
+    bs.push_back(new Variable("b_Z_4430_0",Z4430_1_0_b,bMin,bMax) );
+    as.push_back(new Variable("a_Z_4430_p1",Z4430_1_p1_a,aMin,aMax) );
+    bs.push_back(new Variable("b_Z_4430_p1",Z4430_1_p1_b,bMin,bMax) );
+    // due to parity conservation, a(+1) = a(-1) and b(+1) = b(-1)
+    //as.push_back(new Variable("a_Z_4430_m1",Z4430_1_m1_a,aMin,aMax));
+    //bs.push_back(new Variable("b_Z_4430_m1",Z4430_1_m1_b,bMin,bMax));
   }
 
   Int_t nHelAmps = as.size();
@@ -1604,11 +1661,11 @@ if (!(relEffTH2Mass)) {
   //Variable* halfFrac = new Variable("halfFrac",0.25);
 
   if (b0Var)
-    matrix = new MatrixPdf("Kstars_signal", massKPi, massPsiPi, cosMuMu,phi, b0Beauty, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
+    matrix = new MatrixPdf("Kstars_signal", nKstars, nZc, massKPi, massPsiPi, cosMuMu,phi, b0Beauty, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
   else if (b0BarPdf)
-    matrix = new MatrixPdf("Kstars_signal", Masses, Gammas, Spins, as,bs,psi_nS,dRadB0,dRadKs,massKPi, massPsiPi, cosMuMu,phi);
+    matrix = new MatrixPdf("Kstars_signal", nKstars, nZc, Masses, Gammas, Spins, as,bs,psi_nS,dRadB0,dRadKs,massKPi, massPsiPi, cosMuMu,phi);
   else
-    matrix = new MatrixPdf("Kstars_signal", massKPi,massPsiPi, cosMuMu,phi,Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
+    matrix = new MatrixPdf("Kstars_signal", nKstars, nZc, massKPi,massPsiPi, cosMuMu,phi,Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
 
   //effFile->Close();
 
@@ -2277,18 +2334,18 @@ if (!(relEffTH2Mass)) {
   //GooPdf* bkgHistPlot;
 
   if (b0Var)
-    matrixTotPlot = new MatrixPdf("Signal Pdf Plot", massKPi, massPsiPi, cosMuMu, phi, b0Beauty, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
+    matrixTotPlot = new MatrixPdf("Signal Pdf Plot", nKstars, nZc, massKPi, massPsiPi, cosMuMu, phi, b0Beauty, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
   else if (b0BarPdf)
-    matrixTotPlot = new MatrixPdf("Signal Pdf Plot", Masses, Gammas, Spins, as,bs,psi_nS,dRadB0,dRadKs, massKPi, massPsiPi, cosMuMu, phi);
+    matrixTotPlot = new MatrixPdf("Signal Pdf Plot", nKstars, nZc, Masses, Gammas, Spins, as,bs,psi_nS,dRadB0,dRadKs, massKPi, massPsiPi, cosMuMu, phi);
   else
-    matrixTotPlot = new MatrixPdf("Signal Pdf Plot", massKPi, massPsiPi, cosMuMu, phi, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
+    matrixTotPlot = new MatrixPdf("Signal Pdf Plot", nKstars, nZc, massKPi, massPsiPi, cosMuMu, phi, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
 
   gettimeofday(&startTime, NULL);
   startC = times(&startProc);
   //
   // UnbinnedDataSet plottingGridData(obserVariables);
 
-  for (int id = 0; id < nKstars; ++id)
+  for (int id = 0; id < nKstars + nZc ; ++id)
     compData.push_back( UnbinnedDataSet(obserVariables) );
 
   std::vector<fptype> fractions;
@@ -2900,7 +2957,9 @@ if (!(relEffTH2Mass)) {
   Int_t nStatEntries = 0;
   Int_t amplitudeCounter = 0;
   Int_t KstarColor[nKstars]; Int_t startingCol = 3, noColor = 5;
+  Int_t ZcColor[nZc];
   Int_t KstarMarker[nKstars]; Int_t startingMar = 22;
+  Int_t ZcMarker[nZc];
   for (size_t u=0; u<nKstars; ++u) {
     fitStat->AddText(TString::Format("\n------------------  %s  ------------------", kStarNames[u].c_str()));
     KstarColor[u] = startingCol+u;
@@ -2916,7 +2975,29 @@ if (!(relEffTH2Mass)) {
       nStatEntries +=2 ;
     }
   }
+  
+  for (size_t u=nKstars; u<nKstars+nZc; ++u) {
+	Int_t v = u-nKstars; 
+    fitStat->AddText(TString::Format("\n------------------  %s  ------------------", ZcNames[v].c_str()));
+    ZcColor[v] = 11+v; //startingCol+u;
+    ZcMarker[v] = startingMar+u;
+    //if (ZcColor[v] >= noColor) ZcColor[v]++;
+    ((TText*)fitStat->GetListOfLines()->Last())->SetTextColor(ZcColor[v]);
+    addHelAmplStat(fitStat, "0", as[amplitudeCounter], bs[amplitudeCounter]); ++amplitudeCounter;
+    nStatEntries +=2 ;
+    if (Spins[u]->value > 0.) {
+      addHelAmplStat(fitStat, "+1", as[amplitudeCounter], bs[amplitudeCounter]); //parity conservation of Z, a,b(+) = a,b(-)
+      addHelAmplStat(fitStat, "-1", as[amplitudeCounter], bs[amplitudeCounter]); ++amplitudeCounter;
+      nStatEntries +=2 ;
+    }
+  }
 
+  //nsmod
+  cout << "a size : "<< as.size() << endl;
+  for (int i=0; i<as.size(); i++) {
+	  cout << "as["<< i << "] = " << as[i]->value << " bs["<<i<<"] = "<< bs[i]->value << endl;
+  }
+	 
   fitStat->SetTextAlign(12);
   fitStat->SetShadowColor(0);
   fitStat->SetFillColor(0);
@@ -2952,17 +3033,18 @@ if (!(relEffTH2Mass)) {
 
   std::vector< std::vector<TH1F*> > compHistos(nProjVars);
 
-  Bool_t plotSingleKstars = kTRUE; //plotSingleKstars = kFALSE;
+  //Bool_t plotSingleKstars = kTRUE; //plotSingleKstars = kFALSE;
+  Bool_t plotSingleResonances = kTRUE; //plotSingleResonances = kFALSE;
 
   int lastAmplitude = 0;
 
-  for (int i = 0; i < nKstars; ++i) {
+  for (int i = 0; i < nKstars+nZc; ++i) {
     MassesPlot.push_back(Masses[i]);
     GammasPlot.push_back(Gammas[i]);
     SpinsPlot.push_back(Spins[i]);
   }
 
-  for (int k = 0; k < nKstars; ++k) {
+  for (int k = 0; k < nKstars+nZc; ++k) {
     ////////////////////////////////////////////////////////////////////////////////
     //Initialising projection vectors
     // these have not been vectorised because their fill is not similar
@@ -2986,7 +3068,14 @@ if (!(relEffTH2Mass)) {
       compHistos[iVar].push_back(new TH1F(bufferstring,bufferstring,obserVariables[iVar]->numbins,histRange[iVar].first,histRange[iVar].second));
     }
 
-    cout <<"\n- Plotting " <<kStarNames[k] <<" component by setting all other components to zero" <<endl;
+    //cout <<"\n- Plotting " <<kStarNames[k] <<" component by setting all other components to zero" <<endl;
+    if (k<nKstars){
+		cout <<"\n- Plotting " <<kStarNames[k] <<" component by setting all other components to zero" <<endl;
+    }
+    else {
+		cout <<"\n- Plotting " <<ZcNames[k-nKstars] <<" component by setting all other components to zero" <<endl;
+    }	
+    
     sum = 0.0;
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -3004,15 +3093,16 @@ if (!(relEffTH2Mass)) {
 
     // std::cout<<" Plotting KStars - Mass : "<<Masses[k]->value<<" Spin : "<<Spins[k]->value<<"Last Amplitude : "<<lastAmplitude<<std::endl;
     //For Spin = 0.0 only one component
-    if (Spins[k]->value==0.0) {
+    if (k<nKstars) {
+		if (Spins[k]->value==0.0) {
 
-      as[lastAmplitude]->fixed;
-      bs[lastAmplitude]->fixed;
+			as[lastAmplitude]->fixed;
+			bs[lastAmplitude]->fixed;
       // std::cout<<" - Amplitude vector pushing: "<<lastAmplitude<<" index ";
       // asPlot.push_back(as[lastAmplitude]);
       // bsPlot.push_back(bs[lastAmplitude]);
-      asPlot[lastAmplitude]->value = originalAs[lastAmplitude];
-      bsPlot[lastAmplitude]->value = originalBs[lastAmplitude];
+			asPlot[lastAmplitude]->value = originalAs[lastAmplitude];
+			bsPlot[lastAmplitude]->value = originalBs[lastAmplitude];
 
       // for (int j = 0; j < nHelAmps; ++j) {
       //   if (j!=lastAmplitude) {
@@ -3021,27 +3111,48 @@ if (!(relEffTH2Mass)) {
       // 	  bsPlot.push_back(new Variable("zero_b",0.0));
       //   }
       // }
-      ++lastAmplitude;
-    } else {
-      // For Spin != 0 three components
-      for (int i = lastAmplitude; i <= lastAmplitude+2; ++i) {
-	// std::cout<<" - Amplitude vector pushing: "<<i<<" index ";
-	as[i]->fixed;
-	bs[i]->fixed;
-	// asPlot.push_back(as[i]);
-	// bsPlot.push_back(bs[i]);
-	asPlot[i]->value = originalAs[i];
-	bsPlot[i]->value = originalBs[i];
-      }
+			++lastAmplitude;
+		} else {
+		// For Spin != 0 three components
+			for (int i = lastAmplitude; i <= lastAmplitude+2; ++i) {
+		// std::cout<<" - Amplitude vector pushing: "<<i<<" index ";
+				as[i]->fixed;
+				bs[i]->fixed;
+		// asPlot.push_back(as[i]);
+		// bsPlot.push_back(bs[i]);
+				asPlot[i]->value = originalAs[i];
+				bsPlot[i]->value = originalBs[i];
+			}
       //     for (int d = 0; d < nHelAmps; ++d) {
       // if (d!=lastAmplitude && d!=lastAmplitude+1 && d!=lastAmplitude+2) {
       //   // std::cout<<" putting zero: "<<d<<" index "<<std::endl;
       //   asPlot.push_back(new Variable("zero_a",0.0));
       //   bsPlot.push_back(new Variable("zero_b",0.0));
       // }}
-      lastAmplitude += 3;
-    }
+		lastAmplitude += 3;
+		}
+	} else {
+		if (Spins[k]->value==0.0) {
 
+			as[lastAmplitude]->fixed;
+			bs[lastAmplitude]->fixed;
+			asPlot[lastAmplitude]->value = originalAs[lastAmplitude];
+			bsPlot[lastAmplitude]->value = originalBs[lastAmplitude];
+
+			++lastAmplitude;
+		} else {
+			// For Spin != 0 two components (parity conservation for Z)
+			for (int i = lastAmplitude; i <= lastAmplitude+1; ++i) {
+				as[i]->fixed;
+				bs[i]->fixed;
+
+				asPlot[i]->value = originalAs[i];
+				bsPlot[i]->value = originalBs[i];
+			}
+
+			lastAmplitude += 2; // parity conservation
+		}
+	}	
     // std::cout<<" --- "<<k<<std::endl;
     // for (size_t i = 0; i < asPlot.size(); i++) {
     //   std::cout<<" - "<<i+1<<" A : "<<asPlot[i]->value<<" B : "<<bsPlot[i]->value<<std::endl;
@@ -3055,11 +3166,11 @@ if (!(relEffTH2Mass)) {
     //GooPdf* effHistPlot;
 
     if (b0Var)
-      matrixPlot = new MatrixPdf(bufferstring, massKPi, massPsiPi, cosMuMu, phi, b0Beauty, Masses,Gammas,Spins,asPlot,bsPlot,psi_nS,dRadB0,dRadKs);
+      matrixPlot = new MatrixPdf(bufferstring, nKstars, nZc, massKPi, massPsiPi, cosMuMu, phi, b0Beauty, Masses,Gammas,Spins,asPlot,bsPlot,psi_nS,dRadB0,dRadKs);
     else if (b0BarPdf)
-      matrixPlot = new MatrixPdf(bufferstring, Masses, Gammas, Spins, asPlot,bsPlot,psi_nS,dRadB0,dRadKs,massKPi, massPsiPi, cosMuMu, phi);
+      matrixPlot = new MatrixPdf(bufferstring, nKstars, nZc, Masses, Gammas, Spins, asPlot,bsPlot,psi_nS,dRadB0,dRadKs,massKPi, massPsiPi, cosMuMu, phi);
     else
-      matrixPlot = new MatrixPdf(bufferstring, massKPi, massPsiPi, cosMuMu, phi,Masses,Gammas,Spins,asPlot,bsPlot,psi_nS,dRadB0,dRadKs);
+      matrixPlot = new MatrixPdf(bufferstring, nKstars, nZc, massKPi, massPsiPi, cosMuMu, phi,Masses,Gammas,Spins,asPlot,bsPlot,psi_nS,dRadB0,dRadKs);
 
     matrixPlot->setData(&plottingGridData);
     matrixPlot->copyParams();
@@ -3069,7 +3180,13 @@ if (!(relEffTH2Mass)) {
     fractions.push_back(compsIntegral/totalSigIntegral);
     //fractions.push_back(compsIntegral);
 
-    cout <<"Component " <<kStarNames[k] <<" normalisation factor : " <<compsIntegral <<" (fraction: " <<std::setprecision(3) <<compsIntegral/totalSigIntegral*100.0 <<"%)" <<endl;
+    //cout <<"Component " <<kStarNames[k] <<" normalisation factor : " <<compsIntegral <<" (fraction: " <<std::setprecision(3) <<compsIntegral/totalSigIntegral*100.0 <<"%)" <<endl;
+    
+    if (k<nKstars) {
+		cout <<"Component " <<kStarNames[k] <<" normalisation factor : " <<compsIntegral <<" (fraction: " <<std::setprecision(3) <<compsIntegral/totalSigIntegral*100.0 <<"%)" <<endl;
+	} else {
+		cout <<"Component " <<ZcNames[k-nKstars] <<" normalisation factor : " <<compsIntegral <<" (fraction: " <<std::setprecision(3) <<compsIntegral/totalSigIntegral*100.0 <<"%)" <<endl;
+	}
 
     matrixPlot->getCompProbsAtDataPoints(pdfCompValues);
 
@@ -3145,7 +3262,8 @@ if (!(relEffTH2Mass)) {
     }
     compHistos[3][k]->Scale(ratios[3]);
 
-    if (bkgFlag  ||  (nKstars > 1  &&  plotSingleKstars)) {
+    //if (bkgFlag  ||  (nKstars > 1  &&  plotSingleKstars)) {
+	if (bkgFlag  ||  ( (nKstars > 1 || nZc > 1)  &&  plotSingleResonances)) {	
       // Kstars components points array for each projection
       for (Int_t iVar=0; iVar<nProjVars; ++iVar) {
 	fptype pointsXComp[obserVariables[iVar]->numbins], pointsYComp[obserVariables[iVar]->numbins];
@@ -3155,10 +3273,15 @@ if (!(relEffTH2Mass)) {
 	  pointsYComp[l] = compHistos[iVar][k]->GetBinContent(l+1);
 	}
 
-	compHistos[iVar][k]->SetMarkerColor(KstarColor[k]);
-	compHistos[iVar][k]->SetLineColor(KstarColor[k]);
-	compHistos[iVar][k]->SetMarkerStyle(KstarMarker[k]);
-
+    if (k<nKstars){
+		compHistos[iVar][k]->SetMarkerColor(KstarColor[k]);
+		compHistos[iVar][k]->SetLineColor(KstarColor[k]);
+		compHistos[iVar][k]->SetMarkerStyle(KstarMarker[k]);
+	} else {
+		compHistos[iVar][k]->SetMarkerColor(ZcColor[k-nKstars]);
+		compHistos[iVar][k]->SetLineColor(ZcColor[k-nKstars]);
+		compHistos[iVar][k]->SetMarkerStyle(ZcMarker[k-nKstars]);
+    }
 	plotYMax[iVar] = TMath::Max(compHistos[iVar][k]->GetMaximum(),plotYMax[iVar]);
 	// std::cout<<compHistos[iVar][k]->GetMaximum()<<" "<<plotYMax[iVar]<<std::endl;
 	//plotXMax[iVar] = TMath::Max(compHistos[iVar][k]->GetXaxis()->GetBinUpEdge(compHistos[iVar][k]->GetNbinsX()),plotYMax[iVar]);
@@ -3166,7 +3289,12 @@ if (!(relEffTH2Mass)) {
 
 	// Filling components projections graphs
 	TGraph* signalCompPlot = new TGraph(obserVariables[iVar]->numbins, pointsXComp, pointsYComp);
-	signalCompPlot->SetLineColor(KstarColor[k]); signalCompPlot->SetLineWidth(3); signalCompPlot->SetLineStyle(kDashed);
+	if (k<nKstars){
+		signalCompPlot->SetLineColor(KstarColor[k]);
+	} else {
+		signalCompPlot->SetLineColor(ZcColor[k-nKstars]);
+	}		 
+	signalCompPlot->SetLineWidth(3); signalCompPlot->SetLineStyle(kDashed);
 	signalCompPlot->GetXaxis()->SetTitle( varHistos[iVar]->GetXaxis()->GetTitle() );
 	sprintf(bufferstring,"Events / (%.3f)",(obserVariables[iVar]->upperlimit - obserVariables[iVar]->lowerlimit)/obserVariables[iVar]->numbins);
 	signalCompPlot->GetYaxis()->SetTitle(bufferstring);
@@ -3174,7 +3302,11 @@ if (!(relEffTH2Mass)) {
 	multiGraphs[iVar]->Add(signalCompPlot,"L");
 
 	if (iVar==0) {
-	  sprintf(bufferstring,"%s [%.2f %]",kStarNames[k].c_str(), compsIntegral/totalSigIntegral*100.);
+	  if (k<nKstars){
+		sprintf(bufferstring,"%s [%.2f %]",kStarNames[k].c_str(), compsIntegral/totalSigIntegral*100.);
+	  } else {
+		sprintf(bufferstring,"%s [%.2f %]",ZcNames[k-nKstars].c_str(), compsIntegral/totalSigIntegral*100.);
+	  }	  	
 	  if (!hPlots)
 	    legPlot->AddEntry(signalCompPlot,bufferstring, "l");
 	  else
@@ -3263,8 +3395,8 @@ if (!(relEffTH2Mass)) {
       for (int k = 0; k < nKstars; ++k)
       {
         compHistos[iVar][k]->SetLineStyle(7);
-	      compHistos[iVar][k]->Draw("hist same");
-	      compHistos[iVar][k]->Draw("p same");
+	    compHistos[iVar][k]->Draw("hist same");
+	    compHistos[iVar][k]->Draw("p same");
       }
 
   //     if (bkgPdfHist)
