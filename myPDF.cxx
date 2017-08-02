@@ -478,11 +478,15 @@ Double_t myPDF::Wignerd_R(Double_t cR, TString spinR, string helJ) const
 }
 
 //TComplex myPDF::AngularTerm(string R, string spinR, string helJ, string helDmu) const
-TComplex myPDF::AngularTerm(Double_t cR, TString R, TString spinR, string helJ, string helDmu, Double_t cJR, Double_t phiT) const
+TComplex myPDF::AngularTerm(Double_t cR, TString R, TString spinR, string helJ, string helDmu, Double_t cJR, Double_t phiT, Bool_t isZc) const
 {
   //cout <<"\nAngularTerm for K* " <<R <<" and helDmu = " <<helDmu <<" and helJ = " <<helJ <<" is made of Wignerd_R(spinR, helJ) * cWignerD_J(helJ, helDmu, phi) = " <<Wignerd_R(spinR, helJ) <<" * " <<cWignerD_J( WignerD_J(helJ, helDmu, phi) ) <<endl;
   //cout <<"It is multiplied by H(R,helJ) = H(" <<R <<"," <<helJ <<") = " <<H(R,helJ) <<endl;
-  return H(R,helJ) * Wignerd_R(cR, spinR, helJ) * cWignerD_J( WignerD_J(helJ, helDmu, cJR, phiT) ) ;
+  if ( isZc == kTRUE && helJ == "p1") {
+    return H(R,"m1") * Wignerd_R(cR, spinR, helJ) * cWignerD_J( WignerD_J(helJ, helDmu, cJR, phiT) ) ;
+  } else {
+    return H(R,helJ) * Wignerd_R(cR, spinR, helJ) * cWignerD_J( WignerD_J(helJ, helDmu, cJR, phiT) ) ;
+  }
     
 }
 /*
@@ -517,6 +521,8 @@ TComplex myPDF::ME( Bool_t Ks_check, Bool_t Zc_check, Double_t cKs, string helDm
   Double_t alphaTrue;
   if (helDmu == "p1") alphaTrue = alph;
   if (helDmu == "m1") alphaTrue = -1.0*alph;
+  
+  Bool_t isZc = kFALSE;
     
   if (Ks_check == kTRUE) {
     // K+ and pi- have 0 spin -> third last argument of K* RFunction is = spin(K*)
@@ -527,10 +533,10 @@ TComplex myPDF::ME( Bool_t Ks_check, Bool_t Zc_check, Double_t cKs, string helDm
       TComplex matrixElement_R = 0.;
       if (spin.EqualTo("0")) { // for spin0 K*, fourth last argument = spin(psi_nS) = spin.Atoi() + 1 = 1
 	matrixElement_R = RFunction(Kstar_spin[iKstar_S].second.first, Kstar_spin[iKstar_S].second.second, mKP,MPsi_nS, MKaon, MPion, MBd, spin.Atoi()+1, spin.Atoi(), dRadB0, dRadKs) *
-	  AngularTerm(cKs, R, spin, "0", helDmu, cJ, phiTrue) ;
+	  AngularTerm(cKs, R, spin, "0", helDmu, cJ, phiTrue, isZc) ;
       } else { // for non-0 spin K*, fourth last argument = spin(K*) - spin(psi_nS) = spin.Atoi() - 1
 	matrixElement_R = RFunction(Kstar_spin[iKstar_S].second.first, Kstar_spin[iKstar_S].second.second, mKP,MPsi_nS, MKaon, MPion, MBd, spin.Atoi()-1, spin.Atoi(), dRadB0, dRadKs) *
-	  ( AngularTerm(cKs, R, spin, "m1", helDmu, cJ, phiTrue) + AngularTerm(cKs, R, spin, "0", helDmu, cJ, phiTrue) + AngularTerm(cKs, R, spin, "p1", helDmu, cJ, phiTrue) ) ;
+	  ( AngularTerm(cKs, R, spin, "m1", helDmu, cJ, phiTrue, isZc) + AngularTerm(cKs, R, spin, "0", helDmu, cJ, phiTrue, isZc) + AngularTerm(cKs, R, spin, "p1", helDmu, cJ, phiTrue, isZc) ) ;
       }
       //cout <<"\nAngularTerm.Rho() for " <<R <<" = " <<(AngularTerm(R, spin, "0", helDmu)).Rho() <<endl;
       //cout <<"matrixElement for (R,helDmu) = (" <<R <<"," <<helDmu <<") = H(R,helJ) * RFunction * AngularTerm = " <<matrixElement_R <<endl;
@@ -540,6 +546,7 @@ TComplex myPDF::ME( Bool_t Ks_check, Bool_t Zc_check, Double_t cKs, string helDm
   }
     
   if (Zc_check == kTRUE) {
+    isZc = kTRUE;
     for (Int_t iZc_S=0; iZc_S<(Int_t)Zc_spin.size(); ++iZc_S) {
       TString R = Zc_spin[iZc_S].first ;
       TString spin = R(Zc_spin[iZc_S].first.Length() -1) ;
@@ -547,11 +554,11 @@ TComplex myPDF::ME( Bool_t Ks_check, Bool_t Zc_check, Double_t cKs, string helDm
       TComplex matrixElement_RZ = 0.;
       if (spin.EqualTo("0")) { // for spin0 Zc, fourth last argument = spin(psi_nS) = spin.Atoi() + 1 = 1
 	matrixElement_RZ = RFunction(Zc_spin[iZc_S].second.first, Zc_spin[iZc_S].second.second, mPsiP, MKaon, MPsi_nS, MPion, MBd, spin.Atoi()+1, spin.Atoi(), dRadB0, dRadKs) *
-	  AngularTerm(cZc, R, spin, "0", helDmu, cJTld, phiTrue) *
+	  AngularTerm(cZc, R, spin, "0", helDmu, cJTld, phiTrue, isZc) *
       TComplex::Exp(TComplex::I()*alphaTrue) ;
       } else { // for non-0 spin Zc, fourth last argument = spin(Zc) - spin(psi_nS) = spin.Atoi() - 1
 	matrixElement_RZ = RFunction(Zc_spin[iZc_S].second.first, Zc_spin[iZc_S].second.second, mPsiP, MKaon, MPsi_nS, MPion, MBd, spin.Atoi()-1, spin.Atoi(), dRadB0, dRadKs)*
-	  ( AngularTerm(cZc, R, spin, "m1", helDmu, cJTld, phiTrue) + AngularTerm(cZc, R, spin, "0", helDmu, cJTld, phiTrue) + AngularTerm(cZc, R, spin, "p1", helDmu, cJTld, phiTrue) ) *
+	  ( AngularTerm(cZc, R, spin, "m1", helDmu, cJTld, phiTrue, isZc) + AngularTerm(cZc, R, spin, "0", helDmu, cJTld, phiTrue, isZc) + AngularTerm(cZc, R, spin, "p1", helDmu, cJTld, phiTrue, isZc) ) *
        TComplex::Exp(TComplex::I()*alphaTrue) ;
       }
       //cout <<"\nAngularTerm.Rho() for " <<R <<" = " <<(AngularTerm(R, spin, "0", helDmu)).Rho() <<endl;
