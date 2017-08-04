@@ -180,7 +180,11 @@ void printinstruction() {
 	    <<"\t-k1410 \t\t\t Add K*_1(1410) to p.d.f.\n"
 	    <<"\t-k1430_0 \t\t Add K*_0(1430) to p.d.f.\n"
 	    <<"\t-k1430_2 \t\t Add K*_2(1430) to p.d.f.\n"
+	    <<"\t-k1680 \t\t\t Add K*_1(1680) to p.d.f.\n"
 	    <<"\t-k1780 \t\t\t Add K*_3(1780) to p.d.f.\n"
+	    <<"\t-k1950 \t\t\t Add K*_0(1950) to p.d.f.\n"
+	    <<"\t-k1980 \t\t\t Add K*_2(1980) to p.d.f.\n"
+	    <<"\t-k2045 \t\t\t Add K*_4(2045) to p.d.f.\n"
 	    <<"\t-z4200 \t\t\t Add Z4200 to p.d.f.\n"
 	    <<"\t-z4430 \t\t\t Add Z4430 to p.d.f.\n"
 	    <<"\t-b0Var \t\t\t Add B0 - B0Bar flag as variable for each event candidate \n \t\t\t\t (Incompatible with -b0Var) \n"
@@ -206,7 +210,7 @@ int main(int argc, char** argv) {
 
   char bufferstring[1024];
 
-  unsigned int events = 200000;
+  unsigned int events = 100000;
   unsigned int nKstars = 0;
   unsigned int nZc = 0;
 
@@ -225,7 +229,7 @@ int main(int argc, char** argv) {
   fptype aMax = +9999.;
   fptype bMax = devPi; //+9999.;
 
-  bool k892Star = false, k800Star = false, k1410Star = false, k1430Star0 = false, k1430Star2 = false, k1780Star = false;
+  bool k892Star = false, k800Star = false, k1410Star = false, k1430Star0 = false, k1430Star2 = false, k1680Star = false, k1780Star = false, k1950Star = false, k1980Star = false, k2045Star = false;
   bool z4200 = false, z4430 = false;
 
   bool b0Var = false;
@@ -414,8 +418,24 @@ int main(int argc, char** argv) {
       k1430Star2 = true;
       ++nKstars;
     }
+    else if (arg == "-k1680") {
+      k1680Star = true;
+      ++nKstars;
+    }
     else if (arg == "-k1780") {
       k1780Star = true;
+      ++nKstars;
+    }
+    else if (arg == "-k1950") {
+      k1950Star = true;
+      ++nKstars;
+    }
+    else if (arg == "-k1980") {
+      k1980Star = true;
+      ++nKstars;
+    }
+    else if (arg == "-k2045") {
+      k2045Star = true;
       ++nKstars;
     }
     else if (arg == "-z4200") {
@@ -642,7 +662,7 @@ int main(int argc, char** argv) {
       cout <<"WARNING! Bins for normalisation & integration along " <<varNames[iVar] <<"(" <<bin[iVar] <<") are more than bins for p.d.f. plotting (" <<plottingFine[iVar] <<")\n" <<endl;
 
   TString plotsName = "";
-  TString extension = "eps"; extension = "png"; extension = "root";
+  TString extension = "eps"; extension = "png";
 
   std::cout <<"\n- Generating plotting dataset" <<std::endl;
 
@@ -681,7 +701,7 @@ int main(int argc, char** argv) {
     obserVariables[iVar]->numbins = bin[iVar];
 
   if (!nKstars && !nZc) {
-    cout <<"No K* selected (K892,K800,K1410,K1430) or Z selected (Z4200,Z4430) please see instructions below" <<endl;
+    cout <<"No K* selected (K892,K800,K1410,K1430_0,K1430_2,K1680,K1780,K1950,K1980,K2045) or Z selected (Z4200,Z4430) please see instructions below" <<endl;
     printinstruction();
     return -1;
   } else {
@@ -700,7 +720,7 @@ int main(int argc, char** argv) {
       kStarNames.push_back("K*_{1}(892)");
     }
     if (k800Star) {
-      cout <<"  - K*(800)" <<endl;
+      cout <<"  - K*(800_0)" <<endl;
       datasetName.Append(underscores+"800_0"); plotsName.Append("__800_0");
       kStarNames.push_back("K*_{0}(800)");
     }
@@ -717,11 +737,33 @@ int main(int argc, char** argv) {
     if (k1430Star2) {
       cout <<"  - K*(1430_2)" <<endl;
       datasetName.Append(underscores+"1430_2"); plotsName.Append("__1430_2");
-      kStarNames.push_back("K*_{2}(1430)");}
+      kStarNames.push_back("K*_{2}(1430)");
+    }
+    if (k1680Star) {
+      cout <<"  - K*(1680)" <<endl;
+      datasetName.Append(underscores+"1680_1"); plotsName.Append("__1680_1");
+      kStarNames.push_back("K*_{1}(1680)");
+    }  
     if (k1780Star) {
       cout <<"  - K*(1780_3)" <<endl;
       datasetName.Append(underscores+"1780_3"); plotsName.Append("__1780_3");
-      kStarNames.push_back("K*_{3}(1780)");}
+      kStarNames.push_back("K*_{3}(1780)");
+    }
+    if (k1950Star) {
+      cout <<"  - K*(1950_0)" <<endl;
+      datasetName.Append(underscores+"1950_0"); plotsName.Append("__1950_0");
+      kStarNames.push_back("K*_{0}(1950)");
+    }
+    if (k1980Star) {
+      cout <<"  - K*(1980_2)" <<endl;
+      datasetName.Append(underscores+"1980_2"); plotsName.Append("__1980_2");
+      kStarNames.push_back("K*_{2}(1980)");
+    }
+    if (k2045Star) {
+      cout <<"  - K*(2045_4)" <<endl;
+      datasetName.Append(underscores+"2045_4"); plotsName.Append("__2045_4");
+      kStarNames.push_back("K*_{4}(2045)");
+    }
     if (z4200) {
       cout <<"  - Z4200" <<endl;
       datasetName.Append(underscores+"Z4200"); plotsName.Append("__Z4200");
@@ -885,7 +927,20 @@ int main(int argc, char** argv) {
     as.push_back(new Variable("a_K_1430_2_m1",K1430_2_m1_a,aMin,aMax));
     bs.push_back(new Variable("b_K_1430_2_m1",K1430_2_m1_b,bMin,bMax));
   }
+  if (k1680Star) {
+    cout <<"Adding K*(1680) ..." <<endl;
 
+    Masses.push_back(new Variable("K_1680_Mass_0",M1680));
+    Gammas.push_back(new Variable("K_1680_Gamma_0",G1680));
+    Spins.push_back(new Variable("K_1680_Spin_0",1.0));
+    as.push_back(new Variable("a_K_1680_0",K1680_1_0_a,aMin,aMax) );
+    bs.push_back(new Variable("b_K_1680_0",K1680_1_0_b,bMin,bMax) );
+
+    as.push_back(new Variable("a_K_1680_p1",K1680_1_p1_a,aMin,aMax) );
+    bs.push_back(new Variable("b_K_1680_p1",K1680_1_p1_b,bMin,bMax) );
+    as.push_back(new Variable("a_K_1680_m1",K1680_1_m1_a,aMin,aMax));
+    bs.push_back(new Variable("b_K_1680_m1",K1680_1_m1_b,bMin,bMax));
+  }
   if (k1780Star) {
     cout <<"Adding K*(1780)_3 ..." <<endl;
 
@@ -903,7 +958,47 @@ int main(int argc, char** argv) {
     as.push_back(new Variable("a_K_1780_3_m1",K1780_3_m1_a,aMin,aMax));
     bs.push_back(new Variable("b_K_1780_3_m1",K1780_3_m1_b,bMin,bMax));
   }
-  
+  if (k1950Star) {
+    cout <<"Adding K*(1950_0) ..." <<endl;
+
+    Masses.push_back(new Variable("K_1950_0_Mass_0",M1950_0));
+    Gammas.push_back(new Variable("K_1950_0_Gamma_0",G1950_0));
+    Spins.push_back(new Variable("K_1950_0_Spin_0",0.0));
+    as.push_back(new Variable("a_K_1950_0_0",K1950_0_0_a,aMin,aMax) );
+    bs.push_back(new Variable("b_K_1950_0_0",K1950_0_0_b,bMin,bMax) );
+  }
+  if (k1980Star) {
+    cout <<"Adding K*(1980_2) ..." <<endl;
+
+    Masses.push_back(new Variable("K_1980_2_Mass_0",M1980));
+    Gammas.push_back(new Variable("K_1980_2_Gamma_0",G1980));
+    Spins.push_back(new Variable("K_1980_2_Spin_0",2.0));
+    as.push_back(new Variable("a_K_1980_2_0",K1980_2_0_a,aMin,aMax) );
+    bs.push_back(new Variable("b_K_1980_2_0",K1980_2_0_b,bMin,bMax) );
+    //as.push_back(new Variable("a_K_1980_2_0",0.844));
+    //bs.push_back(new Variable("b_K_1980_2_0",3.14,bMin,bMax));
+
+    as.push_back(new Variable("a_K_1980_2_p1",K1980_2_p1_a,aMin,aMax) );
+    bs.push_back(new Variable("b_K_1980_2_p1",K1980_2_p1_b,bMin,bMax) );
+    as.push_back(new Variable("a_K_1980_2_m1",K1980_2_m1_a,aMin,aMax));
+    bs.push_back(new Variable("b_K_1980_2_m1",K1980_2_m1_b,bMin,bMax));
+  }
+  if (k2045Star) {
+    cout <<"Adding K*(2045_4) ..." <<endl;
+
+    Masses.push_back(new Variable("K_2045_4_Mass_0",M2045));
+    Gammas.push_back(new Variable("K_2045_4_Gamma_0",G2045));
+    Spins.push_back(new Variable("K_2045_4_Spin_0",4.0));
+    as.push_back(new Variable("a_K_2045_4_0",K2045_4_0_a,aMin,aMax) );
+    bs.push_back(new Variable("b_K_2045_4_0",K2045_4_0_b,bMin,bMax) );
+    //as.push_back(new Variable("a_K_2045_4_0",0.844));
+    //bs.push_back(new Variable("b_K_2045_4_0",3.14,bMin,bMax));
+
+    as.push_back(new Variable("a_K_2045_4_p1",K2045_4_p1_a,aMin,aMax) );
+    bs.push_back(new Variable("b_K_2045_4_p1",K2045_4_p1_b,bMin,bMax) );
+    as.push_back(new Variable("a_K_2045_4_m1",K2045_4_m1_a,aMin,aMax));
+    bs.push_back(new Variable("b_K_2045_4_m1",K2045_4_m1_b,bMin,bMax));
+  }      
   if (z4200) {
     cout <<"Adding Z4200 ..." <<endl;
     Masses.push_back(new Variable("Z_4200_Mass_0",MZ4200));

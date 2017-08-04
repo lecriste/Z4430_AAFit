@@ -210,10 +210,8 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALS
   helJ_map["892_1_0"] = make_pair(K892_1_0_a,K892_1_0_b); helJ_map["892_1_p1"] = make_pair(K892_1_p1_a,K892_1_p1_b); helJ_map["892_1_m1"] = make_pair(K892_1_m1_a,K892_1_m1_b); // from Belle
 
   //helJ_map["892_1_0"] = make_pair(0.775,0.); helJ_map["892_1_p1"] = make_pair(0.159,1.563); helJ_map["892_1_m1"] = make_pair(0.612,2.712); // from EvtGen
-
-
-/*  
-  cout <<"Adding K*(800)..." <<endl;
+  
+  cout <<"Adding K*(800)_0..." <<endl;
   Kstar_spin.push_back( make_pair("800_0", make_pair(M800,G800) ) ) ;
   helJ_map["800_0_0"] = make_pair(K800_0_0_a,K800_0_0_b);
 
@@ -229,14 +227,29 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALS
   cout <<"Adding K*(1430)_2..." <<endl;
   Kstar_spin.push_back( make_pair("1430_2", make_pair(M1430_2,G1430_2) ) ) ;
   helJ_map["1430_2_0"] = make_pair(K1430_2_0_a,K1430_2_0_b); helJ_map["1430_2_p1"] = make_pair(K1430_2_p1_a,K1430_2_p1_b); helJ_map["1430_2_m1"] = make_pair(K1430_2_m1_a,K1430_2_m1_b);
- 
+
+  cout <<"Adding K*(1680)..." <<endl;
+  Kstar_spin.push_back( make_pair("1680_1", make_pair(M1680,G1680) ) ) ;
+  helJ_map["1680_1_0"] = make_pair(K1680_1_0_a,K1680_1_0_b); helJ_map["1680_1_p1"] = make_pair(K1680_1_p1_a,K1680_1_p1_b); helJ_map["1680_1_m1"] = make_pair(K1680_1_m1_a,K1680_1_m1_b);
   
-    cout <<"Adding K*(1780)_3..." <<endl;
-    Kstar_spin.push_back( make_pair("1780_3", make_pair(M1780_3,G1780_3) ) ) ;
-    helJ_map["1780_3_0"] = make_pair(K1780_3_0_a,K1780_3_0_b); helJ_map["1780_3_p1"] = make_pair(K1780_3_p1_a,K1780_3_p1_b); helJ_map["1780_3_m1"] = make_pair(K1780_3_m1_a,K1780_3_m1_b);
+  cout <<"Adding K*(1780)_3..." <<endl;
+  Kstar_spin.push_back( make_pair("1780_3", make_pair(M1780_3,G1780_3) ) ) ;
+  helJ_map["1780_3_0"] = make_pair(K1780_3_0_a,K1780_3_0_b); helJ_map["1780_3_p1"] = make_pair(K1780_3_p1_a,K1780_3_p1_b); helJ_map["1780_3_m1"] = make_pair(K1780_3_m1_a,K1780_3_m1_b);
+
+  cout <<"Adding K*(1950)_0..." <<endl;
+  Kstar_spin.push_back( make_pair("1950_0", make_pair(M1950_0,G1950_0) ) ) ;
+  helJ_map["1950_0_0"] = make_pair(K1950_0_0_a,K1950_0_0_b);
+
+  cout <<"Adding K*(1980)_2..." <<endl;
+  Kstar_spin.push_back( make_pair("1980_2", make_pair(M1980_2,G1980_2) ) ) ;
+  helJ_map["1980_2_0"] = make_pair(K1980_2_0_a,K1980_2_0_b); helJ_map["1980_2_p1"] = make_pair(K1980_2_p1_a,K1980_2_p1_b); helJ_map["1980_2_m1"] = make_pair(K1980_2_m1_a,K1980_2_m1_b);
+
+  cout <<"Adding K*(2045)_4..." <<endl;
+  Kstar_spin.push_back( make_pair("2045_4", make_pair(M2045_4,G2045_4) ) ) ;
+  helJ_map["2045_4_0"] = make_pair(K2045_4_0_a,K2045_4_0_b); helJ_map["2045_4_p1"] = make_pair(K2045_4_p1_a,K2045_4_p1_b); helJ_map["2045_4_m1"] = make_pair(K2045_4_m1_a,K2045_4_m1_b);
   
 
-  
+/*
     cout <<"Adding K*(2380)_5..." <<endl;
     Kstar_spin.push_back( make_pair("2380_5", make_pair(M2380_5,G2380_5) ) ) ;
     helJ_map["2380_5_0"] = make_pair(1.,0.); helJ_map["2380_5_p1"] = make_pair(0.,0.); helJ_map["2380_5_m1"] = make_pair(0.,0.);
