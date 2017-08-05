@@ -111,7 +111,7 @@ public:
     //
     //Double_t Wignerd_R(string spinR, string helJ) const ;
     //Double_t Wignerd_R(Double_t cKs, TString spinR, string helJ) const ;
-    Double_t Wignerd_R(Double_t cR, TString spinR, string helJ) const;
+    Double_t Wignerd_R(Double_t cR, TString spinR, string helJ, Bool_t isZc) const;
     /*
     TComplex HLb1600(string helLs, string helJ) const ;
     TComplex HLb1670(string helLs, string helJ) const ;
