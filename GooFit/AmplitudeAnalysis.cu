@@ -210,7 +210,7 @@ int main(int argc, char** argv) {
 
   char bufferstring[1024];
 
-  unsigned int events = 100000;
+  unsigned int events = 200000;
   unsigned int nKstars = 0;
   unsigned int nZc = 0;
 
@@ -662,7 +662,7 @@ int main(int argc, char** argv) {
       cout <<"WARNING! Bins for normalisation & integration along " <<varNames[iVar] <<"(" <<bin[iVar] <<") are more than bins for p.d.f. plotting (" <<plottingFine[iVar] <<")\n" <<endl;
 
   TString plotsName = "";
-  TString extension = "eps"; extension = "png";
+  TString extension = "eps"; extension = "png"; extension = "root";
 
   std::cout <<"\n- Generating plotting dataset" <<std::endl;
 
@@ -3060,6 +3060,7 @@ if (!(relEffTH2Mass)) {
     KstarColor[u] = startingCol+u;
     KstarMarker[u] = startingMar+u;
     if (KstarColor[u] >= noColor) KstarColor[u]++;
+    if (KstarColor[u] >= 10) KstarColor[u]++;
     ((TText*)fitStat->GetListOfLines()->Last())->SetTextColor(KstarColor[u]);
     addHelAmplStat(fitStat, "0", as[amplitudeCounter], bs[amplitudeCounter]); ++amplitudeCounter;
     nStatEntries +=2 ;
@@ -3074,7 +3075,7 @@ if (!(relEffTH2Mass)) {
   for (size_t u=nKstars; u<nKstars+nZc; ++u) {
 	Int_t v = u-nKstars; 
     fitStat->AddText(TString::Format("\n------------------  %s  ------------------", ZcNames[v].c_str()));
-    ZcColor[v] = 11+v; //startingCol+u;
+    ZcColor[v] = 30+v; //startingCol+u;
     ZcMarker[v] = startingMar+u;
     //if (ZcColor[v] >= noColor) ZcColor[v]++;
     ((TText*)fitStat->GetListOfLines()->Last())->SetTextColor(ZcColor[v]);
