@@ -61,12 +61,10 @@ Double_t dec2mm_host (const Double_t m0, const Double_t m1, const Double_t m2)
 //================ Alpha =============================
 Double_t alpha(const Double_t theta, const Double_t phi, const Double_t m2kpi, const Double_t m2jpsipi, const Double_t mPsi_nS )
 {
-    Double_t mJpsi = mPsi_nS;
-    Double_t m2Jpsi = mJpsi*mJpsi;
-    Double_t muon_mass = MMuon;
+    Double_t m2Psi = mPsi_nS*mPsi_nS;
     
     Double_t kmom = dec2mm_host(sqrt(m2kpi),MKaon,MPion);
-    Double_t costh_k = costhetaHel_host(MBd2,m2kpi,MKaon2,MPion2,m2Jpsi,m2jpsipi);
+    Double_t costh_k = costhetaHel_host(MBd2,m2kpi,MKaon2,MPion2,m2Psi,m2jpsipi);
     
     TLorentzVector K;
     Double_t pkx = kmom*sin(acos(costh_k));
@@ -82,9 +80,9 @@ Double_t alpha(const Double_t theta, const Double_t phi, const Double_t m2kpi, c
     Pi.SetPxPyPzE(ppix,ppiy,ppiz,Epi);
     
     // Jpsi mom = K* mom in B0 rest frame
-    Double_t jpsimom = dec2mm_host(MBd,mJpsi,sqrt(m2kpi));
+    Double_t jpsimom = dec2mm_host(MBd,mPsi_nS,sqrt(m2kpi));
     TLorentzVector J_b0;
-    J_b0.SetPxPyPzE(0.0,0.0,-jpsimom,sqrt(m2Jpsi+jpsimom*jpsimom));
+    J_b0.SetPxPyPzE(0.0,0.0,-jpsimom,sqrt(m2Psi+jpsimom*jpsimom));
     TLorentzVector Kstar_b0;
     Kstar_b0.SetPxPyPzE(0.0,0.0,jpsimom,sqrt(m2kpi+jpsimom*jpsimom));
     
@@ -101,12 +99,12 @@ Double_t alpha(const Double_t theta, const Double_t phi, const Double_t m2kpi, c
     Pi_jpsi.Boost( -J_Kstar.BoostVector() );
     
     // Muon 4 momenta in Jpsi rest frame
-    Double_t mumom = dec2mm_host(mJpsi,muon_mass,muon_mass);
+    Double_t mumom = dec2mm_host(mPsi_nS,MMuon,MMuon);
     TLorentzVector muP;
     Double_t pmuPx = mumom*sin(theta)*cos(phi);
     Double_t pmuPy = -mumom*sin(theta)*sin(phi);
     Double_t pmuPz = -mumom*cos(theta);
-    Double_t EmuP = sqrt(muon_mass*muon_mass+mumom*mumom);
+    Double_t EmuP = sqrt(MMuon*MMuon+mumom*mumom);
     muP.SetPxPyPzE(pmuPx,pmuPy,pmuPz,EmuP);
     
     TVector3	MuPPiPlane	=	muP.Vect().Cross(Pi_jpsi.Vect()); //muP.Vect().Cross(Pi_jpsi.Vect());
@@ -126,9 +124,7 @@ Double_t alpha(const Double_t theta, const Double_t phi, const Double_t m2kpi, c
 //================ Theta tilde =======================
 Double_t costhetatilde(const Double_t theta, const Double_t phi, const Double_t m2kpi, const Double_t m2jpsipi, const Double_t mPsi_nS)
 {
-    Double_t mJpsi = mPsi_nS;
-    Double_t m2Jpsi = mJpsi*mJpsi;
-    Double_t muon_mass = MMuon;
+    Double_t m2Psi = mPsi_nS*mPsi_nS;
     
     // K momentum in B0 frame
     Double_t pk_B0 = dec2mm_host(MBd,sqrt(m2jpsipi),MKaon);
@@ -143,19 +139,19 @@ Double_t costhetatilde(const Double_t theta, const Double_t phi, const Double_t 
     K_Zc_old.Boost( -Zc_B0.BoostVector() );
     
     // 4 momenta in Zc rest frame (with a different coordinate system)
-    Double_t thetaz = acos(  costhetaHel_host(MBd2,m2jpsipi,m2Jpsi,MPion2,MKaon2,m2kpi)  );
+    Double_t thetaz = acos(  costhetaHel_host(MBd2,m2jpsipi,m2Psi,MPion2,MKaon2,m2kpi)  );
     Double_t pk = K_Zc_old.Pz();
     Double_t Ek = sqrt(MKaon2+pk*pk);
     TLorentzVector K_Zc;
     K_Zc.SetPxPyPzE(pk*sin(thetaz),0.0,pk*cos(thetaz),Ek);
     
-    Double_t ppi = dec2mm_host(sqrt(m2jpsipi),mJpsi,MPion);
+    Double_t ppi = dec2mm_host(sqrt(m2jpsipi),mPsi_nS,MPion);
     
     Double_t Epi = sqrt(MPion2+ppi*ppi);
     TLorentzVector Pi_Zc;
     Pi_Zc.SetPxPyPzE(0.0,0.0,ppi,Epi);
     
-    Double_t Epsi = sqrt(m2Jpsi+ppi*ppi);
+    Double_t Epsi = sqrt(m2Psi+ppi*ppi);
     TLorentzVector Jpsi_Zc;
     Jpsi_Zc.SetPxPyPzE(0.0,0.0,-ppi,Epsi);
     
@@ -167,11 +163,11 @@ Double_t costhetatilde(const Double_t theta, const Double_t phi, const Double_t 
     Pi_jpsi.Boost( -Jpsi_Zc.BoostVector() );
     
     // Muon momenta in Jpsi rest frame
-    Double_t pmu = dec2mm_host(mJpsi,muon_mass,muon_mass);
-    Double_t Emu = sqrt(muon_mass*muon_mass + pmu*pmu);
+    Double_t pmu = dec2mm_host(mPsi_nS,MMuon,MMuon);
+    Double_t Emu = sqrt(MMuon*MMuon + pmu*pmu);
     
-    Double_t denom = sqrt( (0.25*pow((MBd2-m2kpi+m2Jpsi),2)-MBd2*m2Jpsi)*(0.25*m2Jpsi*m2Jpsi-muon_mass*muon_mass*m2Jpsi) );
-    Double_t m2kpimu = 0.5*( MBd2+m2kpi+2.0*muon_mass*muon_mass-m2Jpsi-4.0*cos(theta)*denom/m2Jpsi );
+    Double_t denom = sqrt( (0.25*pow((MBd2-m2kpi+m2Psi),2)-MBd2*m2Psi)*(0.25*m2Psi*m2Psi-MMuon*MMuon*m2Psi) );
+    Double_t m2kpimu = 0.5*( MBd2+m2kpi+2.0*MMuon*MMuon-m2Psi-4.0*cos(theta)*denom/m2Psi );
     
     Double_t Ek_jpsi = K_jpsi.E();
     Double_t pkx = K_jpsi.Px();
