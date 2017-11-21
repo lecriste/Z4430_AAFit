@@ -45,8 +45,8 @@
 //#include "RooNDKeysPdf.h"
 #include "RooBinning.h"
 
-//#include <sys/time.h> // for timeval
-//#include <sys/times.h> // for tms
+#include <sys/time.h> // for timeval
+#include <sys/times.h> // for tms
 //#include <time.h>
 //#include <ctime> 
 #include "TSystem.h" // to get number of CPUs
@@ -66,11 +66,9 @@
 
 #include "initialAmpVal.h"
 
-//#define TIME_INFO
-
-
 using namespace RooFit ;
 
+//#define TIME_INFO
 #ifdef TIME_INFO
 timeval start, stop;
 clock_t startCPU, stopCPU;
@@ -180,9 +178,8 @@ void plotting(const RooDataHist* hist, const TString name, const RooRealVar* x, 
 }
 
 
-void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kTRUE, Bool_t effFlag = kFALSE, Bool_t B0BarFlag = kFALSE, Int_t bkgMassOrd = 1, Int_t bkgAngOrd = 1, Int_t effMassOrd = 1, Int_t effAngOrd = 1)
+void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALSE, Bool_t effFlag = kFALSE, Bool_t B0BarFlag = kTRUE, Int_t bkgMassOrd = 1, Int_t bkgAngOrd = 1, Int_t effMassOrd = 1, Int_t effAngOrd = 1)
 {
-//  nEvt = 100000
   cout <<"With cut-based efficiency the linear interpolation (effOrd=1) of masses does not work" <<endl;
 
   SysInfo_t* s = new SysInfo_t();
@@ -204,13 +201,11 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kTRUE
   vector< pair<TString, pair<const Double_t, const Double_t> > > Zc_spin;
   map< TString, pair<Double_t, Double_t> > helJ_map;
 
-  
   cout <<"Adding K*(892)..." <<endl;
   Kstar_spin.push_back( make_pair("892_1", make_pair(M892,G892) ) ) ;
   helJ_map["892_1_0"] = make_pair(K892_1_0_a,K892_1_0_b); helJ_map["892_1_p1"] = make_pair(K892_1_p1_a,K892_1_p1_b); helJ_map["892_1_m1"] = make_pair(K892_1_m1_a,K892_1_m1_b); // from Belle
-
   //helJ_map["892_1_0"] = make_pair(0.775,0.); helJ_map["892_1_p1"] = make_pair(0.159,1.563); helJ_map["892_1_m1"] = make_pair(0.612,2.712); // from EvtGen
-  
+
   cout <<"Adding K*(800)_0..." <<endl;
   Kstar_spin.push_back( make_pair("800_0", make_pair(M800,G800) ) ) ;
   helJ_map["800_0_0"] = make_pair(K800_0_0_a,K800_0_0_b);
@@ -227,11 +222,11 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kTRUE
   cout <<"Adding K*(1430)_2..." <<endl;
   Kstar_spin.push_back( make_pair("1430_2", make_pair(M1430_2,G1430_2) ) ) ;
   helJ_map["1430_2_0"] = make_pair(K1430_2_0_a,K1430_2_0_b); helJ_map["1430_2_p1"] = make_pair(K1430_2_p1_a,K1430_2_p1_b); helJ_map["1430_2_m1"] = make_pair(K1430_2_m1_a,K1430_2_m1_b);
-
+/*
   cout <<"Adding K*(1680)..." <<endl;
   Kstar_spin.push_back( make_pair("1680_1", make_pair(M1680,G1680) ) ) ;
   helJ_map["1680_1_0"] = make_pair(K1680_1_0_a,K1680_1_0_b); helJ_map["1680_1_p1"] = make_pair(K1680_1_p1_a,K1680_1_p1_b); helJ_map["1680_1_m1"] = make_pair(K1680_1_m1_a,K1680_1_m1_b);
-  
+
   cout <<"Adding K*(1780)_3..." <<endl;
   Kstar_spin.push_back( make_pair("1780_3", make_pair(M1780_3,G1780_3) ) ) ;
   helJ_map["1780_3_0"] = make_pair(K1780_3_0_a,K1780_3_0_b); helJ_map["1780_3_p1"] = make_pair(K1780_3_p1_a,K1780_3_p1_b); helJ_map["1780_3_m1"] = make_pair(K1780_3_m1_a,K1780_3_m1_b);
@@ -247,14 +242,14 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kTRUE
   cout <<"Adding K*(2045)_4..." <<endl;
   Kstar_spin.push_back( make_pair("2045_4", make_pair(M2045_4,G2045_4) ) ) ;
   helJ_map["2045_4_0"] = make_pair(K2045_4_0_a,K2045_4_0_b); helJ_map["2045_4_p1"] = make_pair(K2045_4_p1_a,K2045_4_p1_b); helJ_map["2045_4_m1"] = make_pair(K2045_4_m1_a,K2045_4_m1_b);
-  
+*/
 
-/*
+  /*
     cout <<"Adding K*(2380)_5..." <<endl;
     Kstar_spin.push_back( make_pair("2380_5", make_pair(M2380_5,G2380_5) ) ) ;
     helJ_map["2380_5_0"] = make_pair(1.,0.); helJ_map["2380_5_p1"] = make_pair(0.,0.); helJ_map["2380_5_m1"] = make_pair(0.,0.);
-*/  
-  
+  */
+  /*
   cout <<"Adding Z(4200)..." <<endl;
   Zc_spin.push_back( make_pair("4200_1", make_pair(MZ4200,GZ4200) ) ) ;
   helJ_map["4200_1_0"] = make_pair(Z4200_1_0_a,Z4200_1_0_b); helJ_map["4200_1_m1"] = make_pair(Z4200_1_m1_a,Z4200_1_m1_b); //helJ_map["4200_1_p1"] = make_pair(Z4200_1_p1_a,Z4200_1_p1_b); // parity conservation
@@ -262,7 +257,7 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kTRUE
   cout <<"Adding Z(4430)..." <<endl;
   Zc_spin.push_back( make_pair("4430_1", make_pair(MZ4430,GZ4430) ) ) ;
   helJ_map["4430_1_0"] = make_pair(Z4430_1_0_a,Z4430_1_0_b); helJ_map["4430_1_m1"] = make_pair(Z4430_1_m1_a,Z4430_1_m1_b); //helJ_map["4430_1_p1"] = make_pair(Z4430_1_p1_a,Z4430_1_p1_b); // parity conservation
-  
+  */
   
   TString Hel = ""; //Hel = "_hel0"; //Hel = "_noHel0";
   if (Hel.Contains("_hel0"))
@@ -344,18 +339,17 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kTRUE
   // B^0 -> psi(nS) K* -> mu+ mu- K- pi+
   TString massKPi_name = "massKPi"; TString mass2KPi_name = massKPi_name; mass2KPi_name.ReplaceAll("mass","mass2");
   TString massKPi_title = "m(K^{-}#pi^{+})";
-  Float_t massKPi_min = 0.6, massKPi_max = 2.2;   
-  RooRealVar massKPi(massKPi_name, massKPi_title+" [GeV]", TMath::Sqrt(0.7),massKPi_min,massKPi_max); 
-
- // RooRealVar massKPi(massKPi_name,"m(K^{-}#pi^{+}) [GeV]",TMath::Sqrt(0.7),0.,9.2);
+  Float_t massKPi_min = 0.6, massKPi_max = 2.2;
+  RooRealVar massKPi(massKPi_name, massKPi_title+" [GeV]", TMath::Sqrt(0.7),massKPi_min,massKPi_max);
+  //RooRealVar massKPi(massKPi_name,"m(K^{-}#pi^{+}) [GeV]",TMath::Sqrt(0.7),0.,9.2);
   TString mass2KPi_title = massKPi_title; mass2KPi_title.ReplaceAll("m(","m^{2}(");
   RooFormulaVar mass2KPiFor(mass2KPi_name+"For",mass2KPi_title+" [GeV^{2}]","pow(massKPi,2)",massKPi);
   RooRealVar mass2KPi(mass2KPi_name,mass2KPiFor.getTitle(),TMath::Power(massKPi.getVal(),2),TMath::Power(massKPi.getMin(),2),TMath::Power(massKPi.getMax(),2));
 
   TString massPsiPi_name = "massMuMuPi"; TString mass2PsiPi_name = massPsiPi_name; mass2PsiPi_name.ReplaceAll("mass","mass2");
   TString massPsiPi_title = "m(#psi#pi^{+})";
-  Float_t massPsiPi_min = 3.2, massPsiPi_max = 4.9; 
-  RooRealVar massPsiPi(massPsiPi_name,massPsiPi_title+" [GeV]",4,massPsiPi_min,massPsiPi_max); 
+  Float_t massPsiPi_min = 3.2, massPsiPi_max = 4.9;
+  RooRealVar massPsiPi(massPsiPi_name,massPsiPi_title+" [GeV]",4,massPsiPi_min,massPsiPi_max);
   //RooRealVar massPsiPi(massPsiPi_name,massPsiPi_title+" [GeV]",4,0.,99.9);
   TString mass2PsiPi_title = massPsiPi_title; mass2PsiPi_title.ReplaceAll("m(","m^{2}(");
   RooFormulaVar mass2PsiPiFor(mass2PsiPi_name+"For",mass2PsiPi_title+" [GeV^{2}]","pow(massMuMuPi,2)",massPsiPi);
@@ -451,29 +445,29 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kTRUE
 
   TString sigName, sigTitle;
   if (nKstars>0) {
-  sigName = "Kstar_", sigTitle = "K*s signal";
-  if (nKstars == 1) {
-    sigName.Append(Kstar_spin.front().first);
-    sigTitle.ReplaceAll("K*s","K*");
-  } else {
-    sigName.ReplaceAll("Kstar_","Kstars");
-    for (Int_t iKstar_S=0; iKstar_S<nKstars; ++iKstar_S)
-      sigName.Append("__"+Kstar_spin[iKstar_S].first);
-  }
-  sigName.Append(Hel);
+    sigName = "Kstar_", sigTitle = "K*s signal";
+    if (nKstars == 1) {
+      sigName.Append(Kstar_spin.front().first);
+      sigTitle.ReplaceAll("K*s","K*");
+    } else {
+      sigName.ReplaceAll("Kstar_","Kstars");
+      for (Int_t iKstar_S=0; iKstar_S<nKstars; ++iKstar_S)
+	sigName.Append("__"+Kstar_spin[iKstar_S].first);
+    }
+    sigName.Append(Hel);
   }
   if (nZc>0) {
-  sigName.Append("_Zc_");
-  sigTitle.Append( "_Zcs signal");
-  if (nZc == 1) {
-    sigName.Append(Zc_spin.front().first);
-    sigTitle.ReplaceAll("_Zcs","_Zc");
-  } else {
-    sigName.ReplaceAll("_Zc_","_Zcs_");
-    for (Int_t iZc_S=0; iZc_S<nZc; ++iZc_S)
-      sigName.Append("__"+Zc_spin[iZc_S].first);
-  }
-  sigName.Append(Hel);
+    sigName.Append("_Zc_");
+    sigTitle.Append( "_Zcs signal");
+    if (nZc == 1) {
+      sigName.Append(Zc_spin.front().first);
+      sigTitle.ReplaceAll("_Zcs","_Zc");
+    } else {
+      sigName.ReplaceAll("_Zc_","_Zcs_");
+      for (Int_t iZc_S=0; iZc_S<nZc; ++iZc_S)
+	sigName.Append("__"+Zc_spin[iZc_S].first);
+    }
+    sigName.Append(Hel);
   }
   
   pair<TString, TString> sigPDF_varNameTitle[4] = {make_pair(massKPi.GetName(),massKPi_title), make_pair(cosMuMu.GetName(),cosMuMu.GetTitle()), make_pair(massPsiPi.GetName(),massPsiPi_title), make_pair(phi.GetName(),phi.GetTitle())};
@@ -527,7 +521,7 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kTRUE
 
   RooAbsPdf* bkgPDF = BdToPsiPiK_PHSP; bkgPDF = 0;
 
-  Double_t totEvents = 200000; // Generation time does not scale with number of events up to at least 10k events, from 100k yes
+  Double_t totEvents = 1000000; // Generation time does not scale with number of events up to at least 10k events, from 100k yes
   //totEvents *= 2;
   //totEvents *= 2.5;
   //totEvents *= 5;
@@ -535,7 +529,7 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kTRUE
   //totEvents *= 10; totEvents *= 5;
   //totEvents *= 10; totEvents *= 3;
   //totEvents /= 2; totEvents /= 100;
-  
+
   RooRealVar nSig("nSig", "n_{SIG}", 0, 0, 2E6);
   //nSig.setVal( 10*nSig.getVal() ); // Does not work on the fly
   Float_t purity = 0.8;
@@ -586,8 +580,7 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kTRUE
     dir.Append("JPsi");
   else if (psi_nS.EqualTo("2"))
     dir.Append("psi2S");
-  TString extension = ".png";//".png"; //extension.Prepend("_test");
-  extension.Prepend("_fn2");
+  TString extension = ".png"; //extension.Prepend("_test");
 
   gStyle->SetOptStat( 10 ) ;
 
@@ -977,7 +970,7 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kTRUE
     // RooArgSet genSet = kinematicVars; genSet = kinematicVars_withBeauty;
     // RooDataSet* dataGenPDF = model->generate(genSet, nEvents.getVal(), Verbose(kTRUE), Name(dataGenName)) ; dataGenPDF->SetTitle(dataGenName.ReplaceAll("_"," "));
     //
-    /*
+#ifdef TIME_INFO
     stopCPU = times(&stopProc);
     gettimeofday(&stop, NULL);
     timersub(&stop, &start, &genTime);
@@ -990,8 +983,8 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kTRUE
     cout <<"My processes time: " << (genTimeProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
     //if (nEvents.getVal() > 100000)
     // dataGenPDF->write(TString::Format("%s/%s.txt",datasetsPath.Data(),model->GetName()));
-    */
-    
+#endif
+
     TString flavour = "B0";
     if (B0BarFlag) flavour.Append("bar"); 
 
@@ -1123,7 +1116,7 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kTRUE
     startCPU = times(&startProc);
 #endif
     //
-//    model->plotOn(var_frame[0],LineColor(fullModelColor),LineStyle(kDashed),Name(modelEntry)) ;
+    model->plotOn(var_frame[0],LineColor(fullModelColor),LineStyle(kDashed),Name(modelEntry)) ;
     // 2k events
     // 5h20' with K*(892) + PHSP (1K+1K events)
     // 20' with K*_0(800) + K*_0(1430) + K*_2(1430)
@@ -1150,7 +1143,6 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kTRUE
     cout <<"My processes time: " << (plotModelProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
 #endif
   }
- 
   nLegendEntries++; // either for generation or fit
 
   Float_t topRightCorner = 0.9;
@@ -1192,7 +1184,6 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kTRUE
       RooAddition nllp("nllp","nllp",toMinimize);
       RooMinuit m(nllp); m.setVerbose();
     */
-    
 
 #ifdef TIME_INFO
     timeval fitModelTime;
@@ -1200,7 +1191,7 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kTRUE
     startCPU = times(&startProc);
 #endif
     //
-//nsmod    fitres = model->fitTo(*dataToFit, Hesse(kFALSE), Minos(kFALSE), Save(kTRUE), NumCPU(nCPU), Verbose(kTRUE), PrintLevel(3)) ;
+    fitres = model->fitTo(*dataToFit, Hesse(kFALSE), Minos(kFALSE), Save(kTRUE), NumCPU(nCPU), Verbose(kTRUE), PrintLevel(3)) ;
     // 75' with 2k events, 8 Lambda*, 1 NumCPU; 80' with 2k events, 1 K*, 4 NumCPU;
     // with cos(theta_K*) formula in the wrong place:
     // 15h with 2k events, K*(892), 24 CPUs
@@ -1256,8 +1247,7 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kTRUE
       //m.minos() ;
       */
     //
-    
-    
+
 #ifdef TIME_INFO
     stopCPU = times(&stopProc);
     gettimeofday(&stop, NULL);
@@ -1268,7 +1258,7 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kTRUE
     cout <<"Total CPU time (" <<nCPU <<" CPUs) : " << (fitModelCPU / CLOCKS_PER_SEC) <<" seconds\n" ;
     cout <<"My processes time (" <<nCPU <<" CPUs) : " << (fitModelProc / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
 #endif
-/* nsmod    
+
     fitres->Print("v");
     dataToFit->plotOn(var_frame[0]);
     model->paramOn(var_frame[0], Parameters(amplitudeVars), Layout(xMin,0.99,yLegLow));
@@ -1277,7 +1267,6 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kTRUE
     leg->AddEntry(var_frame[0]->findObject("4D fit projection"),"4D fit projection","l");
     plotName += "_fit";
     //return;
-*/ //nsmod
   }
 
   //massKPr_frame->SetAxisRange(0,140,"Y") ;
@@ -1361,16 +1350,14 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kTRUE
 	cout <<legName <<" fraction is: " <<fraction*100 <<"%" <<endl;
 	cout <<"\nPlotting " <<legName <<" only..." <<endl;
 
-
 #ifdef TIME_INFO
-    gettimeofday(&start, NULL);
+	gettimeofday(&start, NULL);
 	startCPU = times(&startProc);
 	//
 #endif
     
 	model->plotOn(var_frame[0],LineColor(iKstar_S + fullModelColor+1), LineStyle(kDashed), Name(Kstar_name), Normalization(fraction,RooAbsReal::Relative)) ;
 	//
-    
 
 #ifdef TIME_INFO
 	stopCPU = times(&stopProc);
@@ -1382,7 +1369,7 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kTRUE
 	cout <<"Total CPU time: " << (KstarPlotCPU[iKstar_S] / CLOCKS_PER_SEC) <<" seconds\n" ;
 	cout <<"My processes time: " << (KstarPlotProc[iKstar_S] / CLOCKS_PER_SEC) << " seconds (differences due to other users' processes on the same CPU)" << endl ;
 #endif
-    
+
 	leg->AddEntry(var_frame[0]->findObject(Kstar_name),TString::Format("%s (%.1f%%)",legName.Data(),fraction*100),"l");
       }
     } // if (nKstars > 1)
