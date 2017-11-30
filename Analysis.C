@@ -212,7 +212,7 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALS
   //helJ_map["892_1_0"] = make_pair(0.775,0.); helJ_map["892_1_p1"] = make_pair(0.159,1.563); helJ_map["892_1_m1"] = make_pair(0.612,2.712); // from EvtGen
 
 
-/*  
+  
   cout <<"Adding K*(800)..." <<endl;
   Kstar_spin.push_back( make_pair("800_0", make_pair(M800,G800) ) ) ;
   helJ_map["800_0_0"] = make_pair(K800_0_0_a,K800_0_0_b);
@@ -236,7 +236,7 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALS
     helJ_map["1780_3_0"] = make_pair(K1780_3_0_a,K1780_3_0_b); helJ_map["1780_3_p1"] = make_pair(K1780_3_p1_a,K1780_3_p1_b); helJ_map["1780_3_m1"] = make_pair(K1780_3_m1_a,K1780_3_m1_b);
   
 
-  
+  /*
     cout <<"Adding K*(2380)_5..." <<endl;
     Kstar_spin.push_back( make_pair("2380_5", make_pair(M2380_5,G2380_5) ) ) ;
     helJ_map["2380_5_0"] = make_pair(1.,0.); helJ_map["2380_5_p1"] = make_pair(0.,0.); helJ_map["2380_5_m1"] = make_pair(0.,0.);

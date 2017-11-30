@@ -206,7 +206,7 @@ int main(int argc, char** argv) {
 
   char bufferstring[1024];
 
-  unsigned int events = 200000;
+  unsigned int events = 100000;
   unsigned int nKstars = 0;
   unsigned int nZc = 0;
 
@@ -642,7 +642,7 @@ int main(int argc, char** argv) {
       cout <<"WARNING! Bins for normalisation & integration along " <<varNames[iVar] <<"(" <<bin[iVar] <<") are more than bins for p.d.f. plotting (" <<plottingFine[iVar] <<")\n" <<endl;
 
   TString plotsName = "";
-  TString extension = "eps"; extension = "png"; extension = "root";
+  TString extension = "eps"; extension = "png";
 
   std::cout <<"\n- Generating plotting dataset" <<std::endl;
 
