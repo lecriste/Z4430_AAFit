@@ -142,7 +142,7 @@ public:
     */
     //
     //TComplex AngularTerm(Double_t cKs, TString R, TString spinR, string helJ, string helDmu, Double_t phiTrue) const ;
-    TComplex AngularTerm(Double_t cR, TString R, TString spinR, string helJ, string helDmu, Double_t cJR, Double_t phiT, Bool_t isZc) const ;
+    TComplex AngularTerm(Double_t cR, TString R, TString spinR, string helJ, string helDmu, Double_t cJR, Double_t phiT) const ;
     //TComplex ME(Double_t cKs, string helDmu, Double_t phiTrue) const ;
     TComplex ME( Bool_t Ks_check, Bool_t Zc_check, Double_t cKs, string helDmu, Double_t phiTrue, Double_t cZc, Double_t cJTld, Double_t alph ) const ;
     //
