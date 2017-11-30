@@ -23,7 +23,7 @@ const Double_t K1780_3_0_a = 16.8, K1780_3_0_b = -1.43;
 const Double_t K1780_3_p1_a = 19.1, K1780_3_p1_b = 2.03;
 const Double_t K1780_3_m1_a = 10.2, K1780_3_m1_b = 1.55;
 
-const Double_t K1950_0_0_a = 0.241, K1950_0_0_b = -2.39;
+const Double_t K1950_0_0_a = 0.241, K1950_0_0_a = -2.39;
 
 const Double_t K1980_2_0_a = 4.53, K1980_2_0_b = -0.26;
 const Double_t K1980_2_p1_a = 3.78, K1980_2_p1_b = 3.08;
