@@ -261,7 +261,7 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALS
 
   // set boundaries:
   Double_t aMin = 0.; //aMin = -aMax;
-  Double_t bMin = -TMath::Pi(); //-9999.; //bMin = -TMath::Pi();
+  Double_t bMin = -9999.; //bMin = -TMath::Pi();
 
   Double_t bMax = -bMin;
   TString helJ[] = {"m1","0","p1"} ;
@@ -509,7 +509,7 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALS
 
   RooAbsPdf* bkgPDF = BdToPsiPiK_PHSP; bkgPDF = 0;
 
-  Double_t totEvents = 10000; // Generation time does not scale with number of events up to at least 10k events, from 100k yes
+  Double_t totEvents = 5000; // Generation time does not scale with number of events up to at least 10k events, from 100k yes
   //totEvents *= 2;
   //totEvents *= 2.5;
   //totEvents *= 5;
@@ -568,7 +568,7 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALS
     dir.Append("JPsi");
   else if (psi_nS.EqualTo("2"))
     dir.Append("psi2S");
-  TString extension = ".root";//".png"; //extension.Prepend("_test");
+  TString extension = ".png"; //extension.Prepend("_test");
 
   gStyle->SetOptStat( 10 ) ;
 
