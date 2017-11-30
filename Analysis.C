@@ -180,7 +180,7 @@ void plotting(const RooDataHist* hist, const TString name, const RooRealVar* x, 
 }
 
 
-void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kTRUE, Bool_t effFlag = kFALSE, Bool_t B0BarFlag = kFALSE, Int_t bkgMassOrd = 1, Int_t bkgAngOrd = 1, Int_t effMassOrd = 1, Int_t effAngOrd = 1)
+void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALSE, Bool_t effFlag = kFALSE, Bool_t B0BarFlag = kFALSE, Int_t bkgMassOrd = 1, Int_t bkgAngOrd = 1, Int_t effMassOrd = 1, Int_t effAngOrd = 1)
 {
 //  nEvt = 100000
   cout <<"With cut-based efficiency the linear interpolation (effOrd=1) of masses does not work" <<endl;
@@ -384,8 +384,7 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kTRUE
 
 
   // not accessible on cmssusyX
-  TString path = "/lustre/home/nsur/AAFit_files/";
-  //"/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/";
+  TString path = "/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/";
   //path = "/lustre/home/adrianodif/RootFiles/Z4430/";
   //TString inputFileName = "MC_K892_JPsi_Bd2MuMuKpi_2p0Sig_4p0to6p0SB.root"; Bool_t tmva = kFALSE;
   TString inputFileName = "MC_K892_JPsi_Bd2MuMuKpi_B0massConstraint.root"; Bool_t tmva = kFALSE;
@@ -536,11 +535,11 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kTRUE
   //totEvents *= 10; totEvents *= 3;
   //totEvents /= 2; totEvents /= 100;
   
-  RooRealVar nSig("nSig", "n_{SIG}", 0, 0, 2E6);
+  RooRealVar nSig("nSig", "n_{SIG}", 0, 0, 1E6);
   //nSig.setVal( 10*nSig.getVal() ); // Does not work on the fly
   Float_t purity = 0.8;
   if (tmva) purity = 0.75;
-  RooRealVar nBkg("nBkg", "n_{BKG}", nSig.getVal() * (1-purity), 0, 2E6);
+  RooRealVar nBkg("nBkg", "n_{BKG}", nSig.getVal() * (1-purity), 0, 1E6);
   //RooExtendPdf *extendedBkgPDF = new RooExtendPdf("extendedBkgPDF", "Signal 0 PDF", *bkgPDF, nBkg) ;
   //RooPlot* test_frame = massKPi.frame() ; test_frame->SetTitle( "Projection of "+massKPi.getTitle() ); extendedBkgPDF->plotOn(test_frame) ; test_frame->Draw() ; return;
 

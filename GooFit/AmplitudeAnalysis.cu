@@ -798,7 +798,7 @@ int main(int argc, char** argv) {
   if (datasetName.Contains("InvEff")) // as of now this can only happens if (txtfile)
     plotsName.ReplaceAll("withEff","withInvEff");
 
-  fptype aMin = 0.0; //-aMax;
+  fptype aMin = -aMax;
   fptype bMin = -bMax;
 
 
@@ -1130,9 +1130,8 @@ int main(int argc, char** argv) {
   if (localRead)
     path = "./rootfiles/"; //path = "/lustre/home/adrianodif/RootFiles/Z4430/TMVA/";
   else {
-    //path = "/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/";
-    path = "/lustre/home/nsur/AAFit_files/"; 
-   if (tmva) path.Append("TMVA/");
+    path = "/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/";
+    if (tmva) path.Append("TMVA/");
   }
 
   TString dataFileName = path+fileName;
@@ -2485,8 +2484,8 @@ if (!(relEffTH2Mass)) {
       totalBkgProj[iVar].push_back(0.0);
     }
   }
-  fptype sumSig = 0.0;
-  fptype sumBkg = 0.0;
+  //fptype sumSig = 0.0;
+  //fptype sumBkg = 0.0;
 
   std::cout <<"\n- Starting plotting cycle" ;
 
@@ -2558,10 +2557,10 @@ if (!(relEffTH2Mass)) {
 
       if (effPdfHist) pdfTotalValues[0][k] *= effCorrection[k];
 
-     // if (bkgPhaseSpace) {
-     //    pdfTotalValues[1][k] *= effDataCont;
-     //    pdfTotalValues[2][k] *= effDataCont;
-     // }
+      // if (bkgPhaseSpace) {
+      //    pdfTotalValues[1][k] *= effDataCont;
+      //     pdfTotalValues[2][k] *= effDataCont;
+      // }
 
     }
 
@@ -2572,10 +2571,10 @@ if (!(relEffTH2Mass)) {
   for (int k = 0; k < pdfTotalValues[0].size(); k++) {
     //std::cout <<mkpTotalProjection[k]*events/sum<<std::endl;
     sum += pdfTotalValues[0][k];
-    //if (bkgPhaseSpace) {
+    // if (bkgPhaseSpace) {
     //   sumSig += pdfTotalValues[1][k];
     //   sumBkg += pdfTotalValues[2][k];
-    //}
+    // }
   }
   //
   stopC = times(&stopProc);
@@ -2605,10 +2604,10 @@ if (!(relEffTH2Mass)) {
 
   for (int k = 0; k<pdfTotalValues[0].size(); ++k) {
     pdfTotalValues[0][k] *= events;
-    //if (bkgPhaseSpace) {
+    // if (bkgPhaseSpace) {
     //   pdfTotalValues[1][k] /= sumSig;
     //   pdfTotalValues[1][k] *= (events*sigFrac);
-    
+    //
     //   pdfTotalValues[2][k] /= sumBkg;
     //   pdfTotalValues[2][k] *= (events*bkgFrac);
     // }
@@ -2662,11 +2661,10 @@ if (!(relEffTH2Mass)) {
   for (int j = 0; j < massKPi->numbins; ++j) {
     for (int i = 0; i < notMPKBins; ++i) {
       totalProj[0][j] += pdfTotalValues[0][j  +  i * massKPi->numbins];
-      // nsmod
-      //if (bkgPhaseSpace) {
-      //	totalSigProj[0][j] += pdfTotalValues[1][j  +  i * massKPi->numbins];
-      //	totalBkgProj[0][j] += pdfTotalValues[2][j  +  i * massKPi->numbins];
-      //}
+      if (bkgPhaseSpace) {
+	totalSigProj[0][j] += pdfTotalValues[1][j  +  i * massKPi->numbins];
+	totalBkgProj[0][j] += pdfTotalValues[2][j  +  i * massKPi->numbins];
+      }
     }
   }
   // m(PsiPi)
@@ -2674,11 +2672,10 @@ if (!(relEffTH2Mass)) {
     for (int k = 0; k < phi->numbins * cosMuMu->numbins; ++k) {
       for (int i = 0; i < massKPi->numbins; ++i) {
 	totalProj[1][j] += pdfTotalValues[0][i  +  k * massKPi->numbins * massPsiPi->numbins  +  j * massKPi->numbins];
-        // nsmod
-	//if (bkgPhaseSpace) {
-	//  totalSigProj[1][j] += pdfTotalValues[1][i  +  k * massKPi->numbins * massPsiPi->numbins  +  j * massKPi->numbins];
-	//  totalBkgProj[1][j] += pdfTotalValues[2][i  +  k * massKPi->numbins * massPsiPi->numbins  +  j * massKPi->numbins];
-	//}
+	if (bkgPhaseSpace) {
+	  totalSigProj[1][j] += pdfTotalValues[1][i  +  k * massKPi->numbins * massPsiPi->numbins  +  j * massKPi->numbins];
+	  totalBkgProj[1][j] += pdfTotalValues[2][i  +  k * massKPi->numbins * massPsiPi->numbins  +  j * massKPi->numbins];
+	}
       }
     }
   }
@@ -2706,11 +2703,10 @@ if (!(relEffTH2Mass)) {
     for (int k = 0; k < phi->numbins; ++k) {
       for (int i = 0; i < massKPi->numbins*cosMuMu->numbins; ++i) {
 	totalProj[2][j] += pdfTotalValues[0][i  +  j * massKPi->numbins * massPsiPi->numbins  +  k * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
-        // nsmod
-	//if (bkgPhaseSpace) {
-	//  totalSigProj[2][j] += pdfTotalValues[1][i  +  j * massKPi->numbins * massPsiPi->numbins  +  k * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
-	//  totalBkgProj[2][j] += pdfTotalValues[2][i  +  j * massKPi->numbins * massPsiPi->numbins  +  k * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
-	//}
+	if (bkgPhaseSpace) {
+	  totalSigProj[2][j] += pdfTotalValues[1][i  +  j * massKPi->numbins * massPsiPi->numbins  +  k * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
+	  totalBkgProj[2][j] += pdfTotalValues[2][i  +  j * massKPi->numbins * massPsiPi->numbins  +  k * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
+	}
       }
     }
   }
@@ -2718,11 +2714,10 @@ if (!(relEffTH2Mass)) {
   for (int j = 0; j < phi->numbins; ++j) {
     for (int k = 0; k < massPsiPi->numbins * massKPi->numbins * cosMuMu->numbins; ++k) {
       totalProj[3][j] += pdfTotalValues[0][k  +  j * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
-      // nsmod
-      //if (bkgPhaseSpace) {
-      //	totalSigProj[3][j] += pdfTotalValues[1][k  +  j * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
-      //	totalBkgProj[3][j] += pdfTotalValues[2][k  +  j * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
-      //}
+      if (bkgPhaseSpace) {
+	totalSigProj[3][j] += pdfTotalValues[1][k  +  j * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
+	totalBkgProj[3][j] += pdfTotalValues[2][k  +  j * massKPi->numbins * cosMuMu->numbins * massPsiPi->numbins];
+      }
     }
   }
 
@@ -2812,9 +2807,9 @@ if (!(relEffTH2Mass)) {
       if (effPdfHist) pdfTotalValues[0][k] *= effCorrectionChi[k];
 
       // if (bkgPhaseSpace) {
-      //   pdfTotalValues[1][k] *= effDataCont;
-      //   pdfTotalValues[2][k] *= effDataCont;
-      //}
+      //    pdfTotalValues[1][k] *= effDataCont;
+      //     pdfTotalValues[2][k] *= effDataCont;
+      // }
 
     }
 
@@ -2825,10 +2820,10 @@ if (!(relEffTH2Mass)) {
   for (int k = 0; k < pdfTotalValues[0].size(); k++) {
     //std::cout <<mkpTotalProjection[k]*events/sum<<std::endl;
     sum += pdfTotalValues[0][k];
-    //if (bkgPhaseSpace) {
-    //  sumSig += pdfTotalValues[1][k];
-    //  sumBkg += pdfTotalValues[2][k];
-    //}
+    // if (bkgPhaseSpace) {
+    //   sumSig += pdfTotalValues[1][k];
+    //   sumBkg += pdfTotalValues[2][k];
+    // }
   }
   //
 
@@ -2848,13 +2843,13 @@ if (!(relEffTH2Mass)) {
 
   for (int k = 0; k<pdfTotalValues[0].size(); ++k) {
     pdfTotalValues[0][k] *= events;
-     //if (bkgPhaseSpace) {
-     //  pdfTotalValues[1][k] /= sumSig;
-     //  pdfTotalValues[1][k] *= (events*sigFrac);
-    
-     //  pdfTotalValues[2][k] /= sumBkg;
-     //  pdfTotalValues[2][k] *= (events*bkgFrac);
-     //}
+    // if (bkgPhaseSpace) {
+    //   pdfTotalValues[1][k] /= sumSig;
+    //   pdfTotalValues[1][k] *= (events*sigFrac);
+    //
+    //   pdfTotalValues[2][k] /= sumBkg;
+    //   pdfTotalValues[2][k] *= (events*bkgFrac);
+    // }
   }
 
   fptype massKPiStep = (massKPi->upperlimit-massKPi->lowerlimit)/(fptype)massKPi->numbins;
@@ -3109,11 +3104,11 @@ if (!(relEffTH2Mass)) {
   if (!hPlots){
 
     legPlot->AddEntry(&signalTotalPlot[0], "Total fit", "l");
-    // nsmod
-    //if (bkgPhaseSpace) {
-    //  legPlot->AddEntry(&signalTotalBkgPlot[0], "Phase space only", "l");
-    //  legPlot->AddEntry(&signalTotalSigPlot[0], "K* signal only", "l");
-    //}
+
+    if (bkgPhaseSpace) {
+      legPlot->AddEntry(&signalTotalBkgPlot[0], "Phase space only", "l");
+      legPlot->AddEntry(&signalTotalSigPlot[0], "K* signal only", "l");
+    }
 
   } else {
 
