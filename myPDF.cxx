@@ -440,7 +440,7 @@ return Cterm(helLs, helJ, help) *  cWignerD_J(WignerD_J(helJ, helDmu, phiMu)) ;
 }
 */
 //Double_t myPDF::Wignerd_R(string spinR, string helJ) const
-Double_t myPDF::Wignerd_R(Double_t cR, TString spinR, string helJ, Bool_t isZc) const
+Double_t myPDF::Wignerd_R(Double_t cR, TString spinR, string helJ) const
 {
   Double_t helJ_m1 = 0, helJ_0 = 0;
     
@@ -457,9 +457,6 @@ Double_t myPDF::Wignerd_R(Double_t cR, TString spinR, string helJ, Bool_t isZc) 
   } else if (spinR=="3") {
     helJ_0 = +(5*TMath::Power(cR,3) - 3*cR)/2. ;
     helJ_m1 = +(TMath::Sin(TMath::ACos(cR)) * (5*TMath::Cos(2*TMath::ACos(cR)) + 3.) * TMath::Sqrt(3.)/8.) ;
-  } else if (spinR=="4") {
-    helJ_0 = +(35*TMath::Power(cR,4) - 30*TMath::Power(cR,2) + 3)/8.;
-    helJ_m1 = +(TMath::Sin(2*TMath::ACos(cR)) * (7*TMath::Power(cR,2) - 3.) * TMath::Sqrt(5.)/8.) ;
   } else if (spinR=="5") {
     helJ_0 = +(63*TMath::Power(cR,5) - 70*TMath::Power(cR,3) + 15*cR)/8. ;
     helJ_m1 = +(TMath::Sin(2*TMath::ACos(cR)) * (21*TMath::Power(cR,4) - 14*TMath::Power(cR,2) + 1) * TMath::Sqrt(15./2.)) / 8. ;
@@ -467,27 +464,17 @@ Double_t myPDF::Wignerd_R(Double_t cR, TString spinR, string helJ, Bool_t isZc) 
     cout <<"spinR = " <<spinR <<" is not implemented for Wigner d^{spinR}_{helJ,0} functions at the moment. Returning 0 -> \"AngularTerm\" = 0" <<endl;
     return 0 ;
   }
-  
-  if (isZc == kTRUE){
-    if (helJ=="0")
-        return helJ_0 ;
-    else if (helJ=="m1")
-        return -helJ_m1 ;
-    else if (helJ=="p1")
-        return helJ_m1 ;
-    else { cout <<"helJ = " <<helJ <<" is not allowed for spinR-" <<spinR <<" Wigner d^{spinR}_{helJ,0} functions. Returning 0" <<endl;
-        return 0 ;
-  } else {
-    if (helJ=="0")
-        return helJ_0 ;
-    else if (helJ=="m1")
-        return helJ_m1 ;
-    else if (helJ=="p1")
-        return -helJ_m1 ;
-    else { cout <<"helJ = " <<helJ <<" is not allowed for spinR-" <<spinR <<" Wigner d^{spinR}_{helJ,0} functions. Returning 0" <<endl;
-        return 0 ;
-    }
+    
+  if (helJ=="0")
+    return helJ_0 ;
+  else if (helJ=="m1")
+    return helJ_m1 ;
+  else if (helJ=="p1")
+    return -helJ_m1 ;
+  else { cout <<"helJ = " <<helJ <<" is not allowed for spinR-" <<spinR <<" Wigner d^{spinR}_{helJ,0} functions. Returning 0" <<endl;
+    return 0 ;
   }
+    
 }
 
 //TComplex myPDF::AngularTerm(string R, string spinR, string helJ, string helDmu) const
@@ -496,9 +483,9 @@ TComplex myPDF::AngularTerm(Double_t cR, TString R, TString spinR, string helJ, 
   //cout <<"\nAngularTerm for K* " <<R <<" and helDmu = " <<helDmu <<" and helJ = " <<helJ <<" is made of Wignerd_R(spinR, helJ) * cWignerD_J(helJ, helDmu, phi) = " <<Wignerd_R(spinR, helJ) <<" * " <<cWignerD_J( WignerD_J(helJ, helDmu, phi) ) <<endl;
   //cout <<"It is multiplied by H(R,helJ) = H(" <<R <<"," <<helJ <<") = " <<H(R,helJ) <<endl;
   if ( isZc == kTRUE && helJ == "p1") {
-    return H(R,"m1") * Wignerd_R(cR, spinR, helJ, isZc) * cWignerD_J( WignerD_J(helJ, helDmu, cJR, phiT) ) ;
+    return H(R,"m1") * Wignerd_R(cR, spinR, helJ) * cWignerD_J( WignerD_J(helJ, helDmu, cJR, phiT) ) ;
   } else {
-    return H(R,helJ) * Wignerd_R(cR, spinR, helJ, isZc) * cWignerD_J( WignerD_J(helJ, helDmu, cJR, phiT) ) ;
+    return H(R,helJ) * Wignerd_R(cR, spinR, helJ) * cWignerD_J( WignerD_J(helJ, helDmu, cJR, phiT) ) ;
   }
     
 }
