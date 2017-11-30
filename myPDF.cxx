@@ -477,7 +477,6 @@ Double_t myPDF::Wignerd_R(Double_t cR, TString spinR, string helJ, Bool_t isZc) 
         return helJ_m1 ;
     else { cout <<"helJ = " <<helJ <<" is not allowed for spinR-" <<spinR <<" Wigner d^{spinR}_{helJ,0} functions. Returning 0" <<endl;
         return 0 ;
-    }
   } else {
     if (helJ=="0")
         return helJ_0 ;
