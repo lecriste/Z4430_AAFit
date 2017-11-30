@@ -20,12 +20,8 @@ const Double_t M800 = 0.682; const Double_t G800 = 0.547; // From PDG
 //const Double_t M800 = 0.931; const Double_t G800 = 0.578; // From Belle
 const Double_t M1410 = 1.414; const Double_t G1410 = 0.232;
 const Double_t M1430_0 = 1.425; const Double_t G1430_0 = 0.270;
-const Double_t M1430_2 = 1.4324; const Double_t G1430_2 = 0.109; // From PDG
-const Double_t M1680 = 1.718; const Double_t G1680_1 = 0.322; // From PDG
-const Double_t M1780_3 = 1.776; const Double_t G1780_3 = 0.159; // From PDG
-const Double_t M1950_0 = 1.945; const Double_t G1950_0 = 0.201; // From PDG
-const Double_t M1980_2 = 1.974; const Double_t G1980_2 = 0.376; // From PDG
-const Double_t M2045_4 = 2.045; const Double_t G2045_4 = 0.198; // From PDG
+const Double_t M1430_2 = 1.4324; const Double_t G1430_2 = 0.109; // From PDG neutral only
+const Double_t M1780_3 = 1.776; const Double_t G1780_3 = 0.159; // From PDG neutral only
 const Double_t M2380_5 = 2.382; const Double_t G2380_5 = 0.178; // From PDG
 
 //Zc Belle Values JP = 1+
