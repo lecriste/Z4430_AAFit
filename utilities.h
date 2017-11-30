@@ -237,6 +237,77 @@ Double_t costhetatilde(const Double_t theta, const Double_t phi, const Double_t 
 //================ Theta tilde =======================
 
 
+//================ phi tilde =======================
+Double_t phitilde(const Double_t theta, const Double_t phi, const Double_t m2kpi, const Double_t m2jpsipi, const Double_t mPsi_nS)
+{
+    Double_t mJpsi = mPsi_nS;
+    Double_t m2Jpsi = mJpsi*mJpsi;
+    Double_t muon_mass = MMuon;
+    
+    // K momentum in B0 frame
+    Double_t pk_B0 = dec2mm(MBd,sqrt(m2jpsipi),MKaon);
+    TLorentzVector K_B0;
+    K_B0.SetPxPyPzE(0.0,0.0,pk_B0,sqrt(MKaon2+pk_B0*pk_B0));
+    
+    TLorentzVector Zc_B0;
+    Zc_B0.SetPxPyPzE(0.0,0.0,-pk_B0,sqrt(m2jpsipi+pk_B0*pk_B0));
+    
+    // Boost K to Zc rest frame
+    TLorentzVector K_Zc_old = K_B0;
+    K_Zc_old.Boost( -Zc_B0.BoostVector() );
+    
+    // 4 momenta in Zc rest frame (with a different coordinate system)
+    Double_t thetaz = acos(  costhetaHel(MBd2,m2jpsipi,m2Jpsi,MPion2,MKaon2,m2kpi)  );
+    Double_t pk = K_Zc_old.Pz();
+    Double_t Ek = sqrt(MKaon2+pk*pk);
+    TLorentzVector K_Zc;
+    K_Zc.SetPxPyPzE(pk*sin(thetaz),0.0,pk*cos(thetaz),Ek);
+    
+    Double_t ppi = dec2mm(sqrt(m2jpsipi),mJpsi,MPion);
+    
+    Double_t Epi = sqrt(MPion2+ppi*ppi);
+    TLorentzVector Pi_Zc;
+    Pi_Zc.SetPxPyPzE(0.0,0.0,ppi,Epi);
+    
+    Double_t Epsi = sqrt(m2Jpsi+ppi*ppi);
+    TLorentzVector Jpsi_Zc;
+    Jpsi_Zc.SetPxPyPzE(0.0,0.0,-ppi,Epsi);
+    
+    // Boost everything to Jpsi frame
+    TLorentzVector K_jpsi = K_Zc;
+    K_jpsi.Boost( -Jpsi_Zc.BoostVector() );
+    
+    TLorentzVector Pi_jpsi = Pi_Zc;
+    Pi_jpsi.Boost( -Jpsi_Zc.BoostVector() );
+    
+    // Muon momenta in Jpsi rest frame
+    Double_t pmu = dec2mm(mJpsi,muon_mass,muon_mass);
+    Double_t Emu = sqrt(muon_mass*muon_mass + pmu*pmu);
+    
+    Double_t costhtilde = costhetatilde(theta, phi, m2kpi, m2jpsipi, mPsi_nS );
+    
+    if ( fabs(costhtilde)<=1.00 ) {
+        Double_t sinthtilde = TMath::Sin(TMath::ACos(costhtilde));
+        
+        TLorentzVector muP;
+        muP.SetPxPyPzE( pmu*sinthtilde*cos(phi), -pmu*sinthtilde*sin(phi), -pmu*costhtilde, Emu );
+        
+        TVector3	MuPPiPlane	=	muP.Vect().Cross(Pi_jpsi.Vect());
+        TVector3	KPiPlane	=	K_jpsi.Vect().Cross(Pi_jpsi.Vect());
+        Double_t phtld;
+        if	(	MuPPiPlane.Cross(KPiPlane).Dot(Pi_jpsi.Vect())	>	0.0	)
+            phtld	=	MuPPiPlane.Angle(KPiPlane);
+        else
+            phtld	=	-MuPPiPlane.Angle(KPiPlane);
+        
+        return phtld;
+    }
+    else {return 0.0;}
+    
+}
+//================ phi tilde =======================
+
+
 /*
 TString cosTheta_FromMasses_TFormula_host(const TString sameSideM2, const TString oppositeSideM2, const Double_t psi_nSM2, const Double_t motherM2, const Double_t refM2, const Double_t otherM2) {
 
