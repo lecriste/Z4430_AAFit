@@ -47,8 +47,6 @@
 
 #include <sys/time.h> // for timeval
 #include <sys/times.h> // for tms
-//#include <time.h>
-//#include <ctime> 
 #include "TSystem.h" // to get number of CPUs
 #include "TStyle.h" // to use gStyle
 #include <TFile.h>
@@ -175,7 +173,7 @@ void plotting(const RooDataHist* hist, const TString name, const RooRealVar* x, 
 }
 
 
-void Analysis(Int_t nEvt = 100000, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALSE, Bool_t effFlag = kFALSE, Bool_t B0BarFlag = kFALSE, Int_t bkgMassOrd = 1, Int_t bkgAngOrd = 1, Int_t effMassOrd = 1, Int_t effAngOrd = 1)
+void Analysis(Int_t nEvt = 100000, Bool_t generating = kFALSE, Bool_t bkgFlag = kFALSE, Bool_t effFlag = kFALSE, Bool_t B0BarFlag = kFALSE, Int_t bkgMassOrd = 1, Int_t bkgAngOrd = 1, Int_t effMassOrd = 1, Int_t effAngOrd = 1)
 {
   cout <<"With cut-based efficiency the linear interpolation (effOrd=1) of masses does not work" <<endl;
 
@@ -228,15 +226,6 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kTRUE, Bool_t bkgFlag = k
     Kstar_spin.push_back( make_pair("2380_5", make_pair(M2380_5,G2380_5) ) ) ;
     helJ_map["2380_5_0"] = make_pair(1.,0.); helJ_map["2380_5_p1"] = make_pair(0.,0.); helJ_map["2380_5_m1"] = make_pair(0.,0.);
   */
-  
-  vector< pair<TString, pair<const Double_t, const Double_t> > > Zc_spin;
-  Zc_spin.push_back( make_pair("4200_1", make_pair(MZ4200,GZ4200) ) ) ;
-  helJ_map["4200_1_0"] = make_pair(Z4200_1_0_a,Z4200_1_0_b); helJ_map["4200_1_p1"] = make_pair(Z4200_1_p1_a,Z4200_1_p1_b); helJ_map["4200_1_m1"] = make_pair(Z4200_1_m1_a,Z4200_1_m1_b); // from Belle
-  
-  Zc_spin.push_back( make_pair("4430_1", make_pair(MZ4430,GZ4430) ) ) ;
-  helJ_map["4430_1_0"] = make_pair(Z4430_1_0_a,Z4430_1_0_b); helJ_map["4430_1_p1"] = make_pair(Z4430_1_p1_a,Z4430_1_p1_b); helJ_map["4430_1_m1"] = make_pair(Z4430_1_m1_a,Z4430_1_m1_b); // from Belle
-
-  
   TString Hel = ""; //Hel = "_hel0"; //Hel = "_noHel0";
   if (Hel.Contains("_hel0"))
     cout <<"with helicity=0 amplitude only\n" <<endl;
@@ -260,30 +249,6 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kTRUE, Bool_t bkgFlag = k
     for (Int_t iHelJ=0; iHelJ<3; ++iHelJ) {
       if (Kstar_spin[iKstar_S].first.Contains("_0") && !helJ[iHelJ].EqualTo("0")) continue ;
       TString name = Kstar_spin[iKstar_S].first + "_" + helJ[iHelJ] ;
-      if (helJ_map.find(name) != helJ_map.end()) {
-
-	if (Hel.Contains("_hel0") && !helJ[iHelJ].EqualTo("0"))
-	  helJ_map.find(name)->second.first = 0.; // switching off any amplitude with helicity != 0
-	else if (Hel.Contains("_noHel0") && helJ[iHelJ].EqualTo("0"))
-	  helJ_map.find(name)->second.first = 0.; // switching off the amplitude with helicity == 0
-
-	pair<Double_t, Double_t> a_b = helJ_map.find(name)->second ;
-	TString aName = "a"+name; TString bName = "b"+name;
-	//a_b.first = aIvan; a_b.second = bIvan;
-	amplitudeRooRealVar.push_back( new RooRealVar(aName,aName, a_b.first, aMin, aMax) ) ; varNames.push_back( aName ) ;
-	amplitudeRooRealVar.push_back( new RooRealVar(bName,bName, a_b.second, bMin, bMax) ); varNames.push_back( bName ) ;
-      }
-      else {
-	cout <<"Element \"" <<name <<"\" not found in map helJ_map, please check map filling." <<endl;
-	return ;
-      }
-    }
-
-  Int_t nZc = Zc_spin.size();
-  for (Int_t iZc_S=0; iZc_S<nZc; ++iZc_S)
-    for (Int_t iHelJ=0; iHelJ<3; ++iHelJ) {
-      if (Zc_spin[iZc_S].first.Contains("_0") && !helJ[iHelJ].EqualTo("0")) continue ;
-      TString name = Zc_spin[iZc_S].first + "_" + helJ[iHelJ] ;
       if (helJ_map.find(name) != helJ_map.end()) {
 
 	if (Hel.Contains("_hel0") && !helJ[iHelJ].EqualTo("0"))
@@ -420,9 +385,7 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kTRUE, Bool_t bkgFlag = k
   */
   TString psi_nS = "1"; //psi_nS = "2";
 
-  TString sigName, sigTitle;
-  if (nKstars>0) {
-  sigName = "Kstar_", sigTitle = "K*s signal";
+  TString sigName = "Kstar_", sigTitle = "K*s signal";
   if (nKstars == 1) {
     sigName.Append(Kstar_spin.front().first);
     sigTitle.ReplaceAll("K*s","K*");
@@ -432,30 +395,16 @@ void Analysis(Int_t nEvt = 100000, Bool_t generating = kTRUE, Bool_t bkgFlag = k
       sigName.Append("__"+Kstar_spin[iKstar_S].first);
   }
   sigName.Append(Hel);
-  }
-  if (nZc>0) {
-  sigName.Append("_Zc_");
-  sigTitle.Append( "_Zcs signal");
-  if (nZc == 1) {
-    sigName.Append(Zc_spin.front().first);
-    sigTitle.ReplaceAll("_Zcs","_Zc");
-  } else {
-    sigName.ReplaceAll("_Zc_","_Zcs_");
-    for (Int_t iZc_S=0; iZc_S<nZc; ++iZc_S)
-      sigName.Append("__"+Zc_spin[iZc_S].first);
-  }
-  sigName.Append(Hel);
-  }
-  
+
   pair<TString, TString> sigPDF_varNameTitle[4] = {make_pair(massKPi.GetName(),massKPi_title), make_pair(cosMuMu.GetName(),cosMuMu.GetTitle()), make_pair(massPsiPi.GetName(),massPsiPi_title), make_pair(phi.GetName(),phi.GetTitle())};
   sigPDF = new myPDF(sigName, sigTitle,
 		     //massKPi, cosMuMu, massPsiPi, phi,
 		     (RooRealVar&)(kinematicVars[sigPDF_varNameTitle[0].first]), (RooRealVar&)(kinematicVars[sigPDF_varNameTitle[1].first]), (RooRealVar&)(kinematicVars[sigPDF_varNameTitle[2].first]), (RooRealVar&)(kinematicVars[sigPDF_varNameTitle[3].first]),
                      B0beauty,
-		     Kstar_spin, Zc_spin, varNames, amplitudeVars, psi_nS, dRadB0, dRadKs) ;
+		     Kstar_spin, varNames, amplitudeVars, psi_nS, dRadB0, dRadKs) ;
 
-  if (sigPDF && !nKstars && !nZc ) {
-    cout <<"sigPDF set up with no K* or Zc! Please check" <<endl;
+  if (sigPDF && !nKstars) {
+    cout <<"sigPDF set up with no K*! Please check" <<endl;
     return ;
   }
   //cout <<"\nsigPDF->getVal() = " <<sigPDF->getVal() <<endl; return;

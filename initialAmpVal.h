@@ -13,12 +13,3 @@ const Double_t K1430_2_m1_a = 1.26, K1430_2_m1_b = -1.92;
 const Double_t K1780_3_0_a = 16.8, K1780_3_0_b = -1.43;
 const Double_t K1780_3_p1_a = 19.1, K1780_3_p1_b = 2.03;
 const Double_t K1780_3_m1_a = 10.2, K1780_3_m1_b = 1.55;
-
-// Belle B0-> Zc(->J/psi Pi) K values
-const Double_t Z4200_1_0_a = 0.71, Z4200_1_0_b = 2.14;
-const Double_t Z4200_1_p1_a = 3.23, Z4200_1_p1_b = 3.00;
-const Double_t Z4200_1_m1_a = 3.23, Z4200_1_m1_b = 3.00;
-
-const Double_t Z4430_1_0_a = 1.12, Z4430_1_0_b = -0.031;
-const Double_t Z4430_1_p1_a = 1.17, Z4430_1_p1_b = 0.77;
-const Double_t Z4430_1_m1_a = 1.17, Z4430_1_m1_b = 0.77;
