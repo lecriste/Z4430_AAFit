@@ -87,6 +87,7 @@ public:
 	RooAbsReal& _B0beauty,
 	//const vector< pair<TString, pair< pair<Double_t, Double_t>, pair<Double_t, Double_t> > > >& _Kstar_spin,
 	const vector< pair<TString, pair<const Double_t, const Double_t> > >& _Kstar_spin,
+    const vector< pair<TString, pair<const Double_t, const Double_t> > >& _Zc_spin,
 	const vector< TString >& _varNames,
 	const RooArgSet _amplitudeVars,
 	const TString& _psi_nS,
@@ -104,11 +105,13 @@ public:
     TComplex WignerDLsSpinOneHalf(string helLs, string help) const ;
     TComplex cWignerDLsSpinOneHalf(TComplex WignerDLsSpinOneHalf) const ;
   */
-    TComplex WignerD_J(string helJ, string helDmu, Double_t angle) const ;
+    //TComplex WignerD_J(string helJ, string helDmu, Double_t angle) const ;
+    TComplex WignerD_J(string helJ, string helDmu, Double_t cJR, Double_t angle) const;
     TComplex cWignerD_J(TComplex WignerD_J) const ;
     //
     //Double_t Wignerd_R(string spinR, string helJ) const ;
-    Double_t Wignerd_R(Double_t cKs, TString spinR, string helJ) const ;
+    //Double_t Wignerd_R(Double_t cKs, TString spinR, string helJ) const ;
+    Double_t Wignerd_R(Double_t cR, TString spinR, string helJ, Bool_t isZc) const;
     /*
     TComplex HLb1600(string helLs, string helJ) const ;
     TComplex HLb1670(string helLs, string helJ) const ;
@@ -125,21 +128,28 @@ public:
 
     Double_t BlattWeisskopf_half(Int_t Lmin, Double_t qOrq0, Double_t D) const ;
     Double_t BlattWeisskopf(Int_t Lmin, Double_t q, Double_t q0, Double_t D) const ;
-    Double_t BWGamma(Double_t RMass, Double_t RGamma, Int_t Lmin, Double_t D) const ;
-    TComplex BW(Double_t RMass, Double_t RGamma, Int_t Lmin, Double_t D) const ;
-    TComplex RFunction(Double_t RMass, Double_t RGamma, Double_t MomMass, Int_t LminLb, Int_t LminLs, Double_t DB0, Double_t DKs) const ;
+    //Double_t BWGamma(Double_t RMass, Double_t RGamma, Int_t Lmin, Double_t D) const ;
+    Double_t BWGamma(Double_t RMass, Double_t RGamma, Double_t RMassCalc, Double_t GDau1Mass, Double_t GDau2Mass, Int_t Lmin, Double_t D) const;
+    //TComplex BW(Double_t RMass, Double_t RGamma, Int_t Lmin, Double_t D) const ;
+    TComplex BW(Double_t RMass, Double_t RGamma, Double_t RMassCalc, Double_t GDau1Mass, Double_t GDau2Mass, Int_t Lmin, Double_t D) const;
+    //TComplex RFunction(Double_t RMass, Double_t RGamma, Double_t MomMass, Int_t LminLb, Int_t LminLs, Double_t DB0, Double_t DKs) const ;
+    TComplex RFunction(Double_t RMass, Double_t RGamma, Double_t RMassCalc, Double_t Dau2Mass, Double_t GDau1Mass, Double_t GDau2Mass, Double_t MomMass, Int_t LminMom, Int_t LminR, Double_t DB0, Double_t DKs) const;
+    
     /*
     TComplex Cterm(string helLs, string helJ, string help) const ;
     TComplex Cfterm(string helLs, string helJ, string help, string helDmu) const ;
     TComplex ME(string helLb, string help, string helDmu) const ;
     */
     //
-    TComplex AngularTerm(Double_t cKs, TString R, TString spinR, string helJ, string helDmu, Double_t phiTrue) const ;
-    TComplex ME(Double_t cKs, string helDmu, Double_t phiTrue) const ;
+    //TComplex AngularTerm(Double_t cKs, TString R, TString spinR, string helJ, string helDmu, Double_t phiTrue) const ;
+    TComplex AngularTerm(Double_t cR, TString R, TString spinR, string helJ, string helDmu, Double_t cJR, Double_t phiT, Bool_t isZc) const ;
+    //TComplex ME(Double_t cKs, string helDmu, Double_t phiTrue) const ;
+    TComplex ME( Bool_t Ks_check, Bool_t Zc_check, Double_t cKs, string helDmu, Double_t phiTrue, Double_t cZc, Double_t cJTld, Double_t alph ) const ;
     //
-    Double_t ME2(Double_t cKs, Double_t phiTrue) const ;
-    Double_t PDF(Double_t cKs, Double_t phiTrue) const ;
-    
+    //Double_t ME2(Double_t cKs, Double_t phiTrue) const ;
+    Double_t ME2(Bool_t Ks_check, Bool_t Zc_check, Double_t cKs, Double_t phiTrue, Double_t cZc, Double_t cJTld, Double_t alph) const ;
+    //Double_t PDF(Double_t cKs, Double_t phiTrue) const ;
+    Double_t PDF(Bool_t Ks_check, Bool_t Zc_check, Double_t cKs, Double_t phiTrue, Double_t cZc, Double_t cJTld, Double_t alph) const ;
 
 protected:
 
@@ -161,6 +171,7 @@ private:
   Double_t MPsi_nS;
   //vector< pair<TString, pair< pair<Double_t, Double_t>, pair<Double_t, Double_t> > > > Kstar_spin;
   vector< pair<TString, pair<const Double_t, const Double_t> > > Kstar_spin;
+  vector< pair<TString, pair<const Double_t, const Double_t> > > Zc_spin;
   vector< TString > varNames;
   RooArgSet amplitudeVars;
   map< TString,RooRealProxy* > amplitudeVarProxy_map;

@@ -40,6 +40,7 @@
 
 #include "BiDimHistoPdf.hh"
 #include "QuadDimHistoKStarPdf.hh"
+#include "QuadDimHistoKStarB0BarPdf.hh"
 
 #include "../utilities.h"
 // #include "../Angles_contour.h"
@@ -180,7 +181,13 @@ void printinstruction() {
 	    <<"\t-k1410 \t\t\t Add K*_1(1410) to p.d.f.\n"
 	    <<"\t-k1430_0 \t\t Add K*_0(1430) to p.d.f.\n"
 	    <<"\t-k1430_2 \t\t Add K*_2(1430) to p.d.f.\n"
+	    <<"\t-k1680 \t\t\t Add K*_1(1680) to p.d.f.\n"
 	    <<"\t-k1780 \t\t\t Add K*_3(1780) to p.d.f.\n"
+	    <<"\t-k1950 \t\t\t Add K*_0(1950) to p.d.f.\n"
+	    <<"\t-k1980 \t\t\t Add K*_2(1980) to p.d.f.\n"
+	    <<"\t-k2045 \t\t\t Add K*_4(2045) to p.d.f.\n"
+	    <<"\t-z4200 \t\t\t Add Z4200 to p.d.f.\n"
+	    <<"\t-z4430 \t\t\t Add Z4430 to p.d.f.\n"
 	    <<"\t-b0Var \t\t\t Add B0 - B0Bar flag as variable for each event candidate \n \t\t\t\t (Incompatible with -b0Var) \n"
 	    <<"\t-b0BarPdf \t\t Use B0Bar p.d.f. instead of B0 p.d.f. \n \t\t\t\t (Incompatible with -b0Var)\n"
 	    <<"\t-b0Flag \t\t Add B0 - B0Bar flag: multplying phi by -1\n"
@@ -204,8 +211,10 @@ int main(int argc, char** argv) {
 
   char bufferstring[1024];
 
-  unsigned int events = 100000;
+  unsigned int events = 200000;
   unsigned int nKstars = 0;
+  unsigned int nZc = 0;
+  unsigned int nResonance = 0;
 
   vector <Int_t> bin; // same order as varNames
   bin.push_back(compBins); bin.push_back(compBins); bin.push_back(compBins); bin.push_back(compBins);
@@ -222,7 +231,8 @@ int main(int argc, char** argv) {
   fptype aMax = +9999.;
   fptype bMax = +9999.;
 
-  bool k892Star = false, k800Star = false, k1410Star = false, k1430Star0 = false, k1430Star2 = false, k1780Star = false;
+  bool k892Star = false, k800Star = false, k1410Star = false, k1430Star0 = false, k1430Star2 = false, k1680Star = false, k1780Star = false, k1950Star = false, k1980Star = false, k2045Star = false;
+  bool z4200 = false, z4430 = false;
 
   bool b0Var = false;
   bool b0Flag = false;
@@ -279,6 +289,8 @@ int main(int argc, char** argv) {
   plotsDir.Append("_");
   plotsDir.Append(std::to_string(Clock).data());
   std::vector< std::string> kStarNames;
+  std::vector< std::string> ZcNames;
+  std::vector< std::string> resonanceNames;
   TString plotOption = "L";
 
   TH2F* relEffTH2Mass = 0 , *relEffTH2Ang = 0;
@@ -409,9 +421,33 @@ int main(int argc, char** argv) {
       k1430Star2 = true;
       ++nKstars;
     }
+    else if (arg == "-k1680") {
+      k1680Star = true;
+      ++nKstars;
+    }
     else if (arg == "-k1780") {
       k1780Star = true;
       ++nKstars;
+    }
+    else if (arg == "-k1950") {
+      k1950Star = true;
+      ++nKstars;
+    }
+    else if (arg == "-k1980") {
+      k1980Star = true;
+      ++nKstars;
+    }
+    else if (arg == "-k2045") {
+      k2045Star = true;
+      ++nKstars;
+    }
+    else if (arg == "-z4200") {
+      z4200 = true;
+      ++nZc;
+    }
+    else if (arg == "-z4430") {
+      z4430 = true;
+      ++nZc;
     }
     else if (arg == "-BkgPHSP") {
       bkgPhaseSpace = true;
@@ -565,6 +601,8 @@ int main(int argc, char** argv) {
     printinstruction();
     return -1;
   }
+  
+  nResonance = nKstars + nZc;
 
   TString massKPi_name = "massKPi", cosMuMu_name = "cosMuMu", massPsiPi_name = "massPsiPi", phi_name = "phi";
   vector <TString> varNames; // this order must be followed hereafter
@@ -629,7 +667,7 @@ int main(int argc, char** argv) {
       cout <<"WARNING! Bins for normalisation & integration along " <<varNames[iVar] <<"(" <<bin[iVar] <<") are more than bins for p.d.f. plotting (" <<plottingFine[iVar] <<")\n" <<endl;
 
   TString plotsName = "";
-  TString extension = "eps"; extension = "png";
+  TString extension = "eps"; extension = "png"; extension = "root";
 
   std::cout <<"\n- Generating plotting dataset" <<std::endl;
 
@@ -667,15 +705,19 @@ int main(int argc, char** argv) {
   for (Int_t iVar=0; iVar<nProjVars; ++iVar)
     obserVariables[iVar]->numbins = bin[iVar];
 
-  if (!nKstars) {
-    cout <<"No K* selected (K892,K800,K1410,K1430) please see instructions below" <<endl;
+  if (!nKstars && !nZc) {
+    cout <<"No K* selected (K892,K800,K1410,K1430_0,K1430_2,K1680,K1780,K1950,K1980,K2045) or Z selected (Z4200,Z4430) please see instructions below" <<endl;
     printinstruction();
     return -1;
   } else {
-    cout <<"- Performing Amplitude Analysis fit with\n  " <<nKstars <<" K*(s) on\n  " <<events <<" events, using\n  " <<bin[0] <<" bins for normalisation & integration and\n  " <<plottingFine[0] <<" bins for p.d.f. plotting along m(KPi)" <<endl;
-    if (nKstars < 2) {
+    cout <<"- Performing Amplitude Analysis fit with\n  " <<nKstars <<" K*(s) \n and \n " <<nZc << " Z(s) on\n  " <<events <<" events, using\n  " <<bin[0] <<" bins for normalisation & integration and\n  " <<plottingFine[0] <<" bins for p.d.f. plotting along m(KPi)" <<endl;
+    if (nKstars < 2 && nZc == 0 ) {
       datasetName = "Kstar";
       underscores = "_"; }
+      
+    if (nKstars == 0 && nZc < 2) {
+      datasetName = "Zc";
+      underscores = "_"; }  
 
     if (k892Star) {
       cout <<"  - K*(892)" <<endl;
@@ -683,7 +725,7 @@ int main(int argc, char** argv) {
       kStarNames.push_back("K*_{1}(892)");
     }
     if (k800Star) {
-      cout <<"  - K*(800)" <<endl;
+      cout <<"  - K*(800_0)" <<endl;
       datasetName.Append(underscores+"800_0"); plotsName.Append("__800_0");
       kStarNames.push_back("K*_{0}(800)");
     }
@@ -700,11 +742,43 @@ int main(int argc, char** argv) {
     if (k1430Star2) {
       cout <<"  - K*(1430_2)" <<endl;
       datasetName.Append(underscores+"1430_2"); plotsName.Append("__1430_2");
-      kStarNames.push_back("K*_{2}(1430)");}
+      kStarNames.push_back("K*_{2}(1430)");
+    }
+    if (k1680Star) {
+      cout <<"  - K*(1680)" <<endl;
+      datasetName.Append(underscores+"1680_1"); plotsName.Append("__1680_1");
+      kStarNames.push_back("K*_{1}(1680)");
+    }  
     if (k1780Star) {
       cout <<"  - K*(1780_3)" <<endl;
       datasetName.Append(underscores+"1780_3"); plotsName.Append("__1780_3");
-      kStarNames.push_back("K*_{3}(1780)");}
+      kStarNames.push_back("K*_{3}(1780)");
+    }
+    if (k1950Star) {
+      cout <<"  - K*(1950_0)" <<endl;
+      datasetName.Append(underscores+"1950_0"); plotsName.Append("__1950_0");
+      kStarNames.push_back("K*_{0}(1950)");
+    }
+    if (k1980Star) {
+      cout <<"  - K*(1980_2)" <<endl;
+      datasetName.Append(underscores+"1980_2"); plotsName.Append("__1980_2");
+      kStarNames.push_back("K*_{2}(1980)");
+    }
+    if (k2045Star) {
+      cout <<"  - K*(2045_4)" <<endl;
+      datasetName.Append(underscores+"2045_4"); plotsName.Append("__2045_4");
+      kStarNames.push_back("K*_{4}(2045)");
+    }
+    if (z4200) {
+      cout <<"  - Z4200" <<endl;
+      datasetName.Append(underscores+"Z4200"); plotsName.Append("__Z4200");
+      ZcNames.push_back("Z4200");
+    }
+    if (z4430) {
+      cout <<"  - Z4430" <<endl;
+      datasetName.Append(underscores+"Z4430"); plotsName.Append("__Z4430");
+      ZcNames.push_back("Z4430");
+    }
     if (bkgPhaseSpace) {
       cout <<"  - Three Bodies Phase-space background" <<endl;
       datasetName.Append("__plus__BdToPsiPiK_PHSP"); plotsName.Append("_PHSP");
@@ -722,6 +796,9 @@ int main(int argc, char** argv) {
       datasetName.Append("__B0Bar"); plotsName.Append("__B0Bar");
     }
   }
+  
+  resonanceNames = kStarNames;
+  resonanceNames.insert(resonanceNames.end(),ZcNames.begin(),ZcNames.end() );
 
   if (txtfile)
     datasetName = inPath;
@@ -729,7 +806,7 @@ int main(int argc, char** argv) {
   if (datasetName.Contains("InvEff")) // as of now this can only happens if (txtfile)
     plotsName.ReplaceAll("withEff","withInvEff");
 
-  fptype aMin = -aMax;
+  fptype aMin = 0.0; //-aMax;
   fptype bMin = -bMax;
 
 
@@ -788,6 +865,11 @@ int main(int argc, char** argv) {
       bs.push_back(new Variable("b_K_892_p1",K892_1_p1_b,bMin,bMax) );
       as.push_back(new Variable("a_K_892_m1",K892_1_m1_a,aMin,aMax));
       bs.push_back(new Variable("b_K_892_m1",K892_1_m1_b,bMin,bMax));
+//      as.push_back(new Variable("a_K_892_p1",1.0,aMin,aMax) );
+//      bs.push_back(new Variable("b_K_892_p1",0.0,bMin,bMax) );
+//      as.push_back(new Variable("a_K_892_m1",1.0,aMin,aMax));
+//      bs.push_back(new Variable("b_K_892_m1",0.0,bMin,bMax));
+
     } else {
       Masses.push_back(new Variable("K_892_Mass_0",M892e));
       Gammas.push_back(new Variable("K_892_Gamma_0",G892e));
@@ -840,6 +922,8 @@ int main(int argc, char** argv) {
     Spins.push_back(new Variable("K_1430_0_Spin_0",0.0));
     as.push_back(new Variable("a_K_1430_0_0",K1430_0_0_a,aMin,aMax) );
     bs.push_back(new Variable("b_K_1430_0_0",K1430_0_0_b,bMin,bMax) );
+//    as.push_back(new Variable("a_K_1430_0_0",1.0,aMin,aMax) );
+//    bs.push_back(new Variable("b_K_1430_0_0",0.0,bMin,bMax) );
   }
 
   if (k1430Star2) {
@@ -857,8 +941,29 @@ int main(int argc, char** argv) {
     bs.push_back(new Variable("b_K_1430_2_p1",K1430_2_p1_b,bMin,bMax) );
     as.push_back(new Variable("a_K_1430_2_m1",K1430_2_m1_a,aMin,aMax));
     bs.push_back(new Variable("b_K_1430_2_m1",K1430_2_m1_b,bMin,bMax));
+    
+//    as.push_back(new Variable("a_K_1430_2_0",1.0,aMin,aMax) );
+//    bs.push_back(new Variable("b_K_1430_2_0",0.0,bMin,bMax) );
+//    as.push_back(new Variable("a_K_1430_2_p1",1.0,aMin,aMax) );
+//    bs.push_back(new Variable("b_K_1430_2_p1",0.0,bMin,bMax) );
+//    as.push_back(new Variable("a_K_1430_2_m1",1.0,aMin,aMax));
+//    bs.push_back(new Variable("b_K_1430_2_m1",0.0,bMin,bMax));    
+    
   }
+  if (k1680Star) {
+    cout <<"Adding K*(1680) ..." <<endl;
 
+    Masses.push_back(new Variable("K_1680_Mass_0",M1680));
+    Gammas.push_back(new Variable("K_1680_Gamma_0",G1680));
+    Spins.push_back(new Variable("K_1680_Spin_0",1.0));
+    as.push_back(new Variable("a_K_1680_0",K1680_1_0_a,aMin,aMax) );
+    bs.push_back(new Variable("b_K_1680_0",K1680_1_0_b,bMin,bMax) );
+
+    as.push_back(new Variable("a_K_1680_p1",K1680_1_p1_a,aMin,aMax) );
+    bs.push_back(new Variable("b_K_1680_p1",K1680_1_p1_b,bMin,bMax) );
+    as.push_back(new Variable("a_K_1680_m1",K1680_1_m1_a,aMin,aMax));
+    bs.push_back(new Variable("b_K_1680_m1",K1680_1_m1_b,bMin,bMax));
+  }
   if (k1780Star) {
     cout <<"Adding K*(1780)_3 ..." <<endl;
 
@@ -875,6 +980,76 @@ int main(int argc, char** argv) {
 
     as.push_back(new Variable("a_K_1780_3_m1",K1780_3_m1_a,aMin,aMax));
     bs.push_back(new Variable("b_K_1780_3_m1",K1780_3_m1_b,bMin,bMax));
+  }
+  if (k1950Star) {
+    cout <<"Adding K*(1950_0) ..." <<endl;
+
+    Masses.push_back(new Variable("K_1950_0_Mass_0",M1950_0));
+    Gammas.push_back(new Variable("K_1950_0_Gamma_0",G1950_0));
+    Spins.push_back(new Variable("K_1950_0_Spin_0",0.0));
+    as.push_back(new Variable("a_K_1950_0_0",K1950_0_0_a,aMin,aMax) );
+    bs.push_back(new Variable("b_K_1950_0_0",K1950_0_0_b,bMin,bMax) );
+  }
+  if (k1980Star) {
+    cout <<"Adding K*(1980_2) ..." <<endl;
+
+    Masses.push_back(new Variable("K_1980_2_Mass_0",M1980));
+    Gammas.push_back(new Variable("K_1980_2_Gamma_0",G1980));
+    Spins.push_back(new Variable("K_1980_2_Spin_0",2.0));
+    as.push_back(new Variable("a_K_1980_2_0",K1980_2_0_a,aMin,aMax) );
+    bs.push_back(new Variable("b_K_1980_2_0",K1980_2_0_b,bMin,bMax) );
+    //as.push_back(new Variable("a_K_1980_2_0",0.844));
+    //bs.push_back(new Variable("b_K_1980_2_0",3.14,bMin,bMax));
+
+    as.push_back(new Variable("a_K_1980_2_p1",K1980_2_p1_a,aMin,aMax) );
+    bs.push_back(new Variable("b_K_1980_2_p1",K1980_2_p1_b,bMin,bMax) );
+    as.push_back(new Variable("a_K_1980_2_m1",K1980_2_m1_a,aMin,aMax));
+    bs.push_back(new Variable("b_K_1980_2_m1",K1980_2_m1_b,bMin,bMax));
+  }
+  if (k2045Star) {
+    cout <<"Adding K*(2045_4) ..." <<endl;
+
+    Masses.push_back(new Variable("K_2045_4_Mass_0",M2045));
+    Gammas.push_back(new Variable("K_2045_4_Gamma_0",G2045));
+    Spins.push_back(new Variable("K_2045_4_Spin_0",4.0));
+    as.push_back(new Variable("a_K_2045_4_0",K2045_4_0_a,aMin,aMax) );
+    bs.push_back(new Variable("b_K_2045_4_0",K2045_4_0_b,bMin,bMax) );
+    //as.push_back(new Variable("a_K_2045_4_0",0.844));
+    //bs.push_back(new Variable("b_K_2045_4_0",3.14,bMin,bMax));
+
+    as.push_back(new Variable("a_K_2045_4_p1",K2045_4_p1_a,aMin,aMax) );
+    bs.push_back(new Variable("b_K_2045_4_p1",K2045_4_p1_b,bMin,bMax) );
+    as.push_back(new Variable("a_K_2045_4_m1",K2045_4_m1_a,aMin,aMax));
+    bs.push_back(new Variable("b_K_2045_4_m1",K2045_4_m1_b,bMin,bMax));
+  }      
+  if (z4200) {
+    cout <<"Adding Z4200 ..." <<endl;
+    Masses.push_back(new Variable("Z_4200_Mass_0",MZ4200));
+    Gammas.push_back(new Variable("Z_4200_Gamma_0",GZ4200));
+    Spins.push_back(new Variable("Z_4200_Spin_0",1.0));
+    
+    as.push_back(new Variable("a_Z_4200_0",Z4200_1_0_a,aMin,aMax) );
+    bs.push_back(new Variable("b_Z_4200_0",Z4200_1_0_b,bMin,bMax) );
+    as.push_back(new Variable("a_Z_4200_p1",Z4200_1_p1_a,aMin,aMax) );
+    bs.push_back(new Variable("b_Z_4200_p1",Z4200_1_p1_b,bMin,bMax) );
+    // due to parity conservation, a(+1) = a(-1) and b(+1) = b(-1)
+    //as.push_back(new Variable("a_Z_4200_m1",Z4200_1_m1_a,aMin,aMax));
+    //bs.push_back(new Variable("b_Z_4200_m1",Z4200_1_m1_b,bMin,bMax));
+  }
+  
+  if (z4430) {
+    cout <<"Adding Z4430 ..." <<endl;
+    Masses.push_back(new Variable("Z_4430_Mass_0",MZ4430));
+    Gammas.push_back(new Variable("Z_4430_Gamma_0",GZ4430));
+    Spins.push_back(new Variable("Z_4430_Spin_0",1.0));
+    
+    as.push_back(new Variable("a_Z_4430_0",Z4430_1_0_a,aMin,aMax) );
+    bs.push_back(new Variable("b_Z_4430_0",Z4430_1_0_b,bMin,bMax) );
+    as.push_back(new Variable("a_Z_4430_p1",Z4430_1_p1_a,aMin,aMax) );
+    bs.push_back(new Variable("b_Z_4430_p1",Z4430_1_p1_b,bMin,bMax) );
+    // due to parity conservation, a(+1) = a(-1) and b(+1) = b(-1)
+    //as.push_back(new Variable("a_Z_4430_m1",Z4430_1_m1_a,aMin,aMax));
+    //bs.push_back(new Variable("b_Z_4430_m1",Z4430_1_m1_b,bMin,bMax));
   }
 
   Int_t nHelAmps = as.size();
@@ -978,7 +1153,8 @@ int main(int argc, char** argv) {
   if (localRead)
     path = "./rootfiles/"; //path = "/lustre/home/adrianodif/RootFiles/Z4430/TMVA/";
   else {
-    path = "/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/";
+    //path = "/lustrehome/cristella/work/Z_analysis/exclusive/clean_14ott/original/CMSSW_5_3_22/src/UserCode/MuMuPiKPAT/test/sanjay/selector/";
+    path = "/lustre/home/nsur/AAFit_files/"; 
     if (tmva) path.Append("TMVA/");
   }
 
@@ -1091,9 +1267,25 @@ if (!(relEffTH2Mass)) {
       ifstream theoryTxt(theory_datasetName.Data());
       if ( theoryTxt.good() ) cout <<"\n- Reading also " <<events <<" events from " <<theory_datasetName <<" and filling corresponding variables histograms" <<endl;
 
+      std::string line, temp;
+      std::stringstream ss;
+      int ncols = 0;
+      getline(dataTxt,line);
+      ss.clear();
+      ss<<line;
+      while (ss >> temp){
+      	++ncols;
+      }
+      cout << "no of vars in dataset : " << ncols << endl;
       //while( (evt < events)  &&  (dataTxt >> var1 >> var2 >> var3 >> var4 >> var5) ) { // need to add a check for var5 and skip it if not present in the file
-      while( (evt < events)  &&  (dataTxt >> var1 >> var2 >> var3 >> var4) ) {
+//      while( (evt < events)  &&  (dataTxt >> var1 >> var2 >> var3 >> var4) ) {
+      while (evt < events) {
 	evt++;
+        if (ncols == 4) {
+          dataTxt >> var1 >> var2 >> var3 >> var4;
+        } else {
+          dataTxt >> var1 >> var2 >> var3 >> var4 >> var5;
+        }
 	massKPi->value = var1; massPsiPi->value = var2; cosMuMu->value = var3; phi->value = var4;
 	if (b0Var)
 	  b0Beauty->value = var5;
@@ -1404,7 +1596,12 @@ if (!(relEffTH2Mass)) {
     else if (effHistInt) {
       //effHistAng = new BiDimHistoPdf("EfficienciesPdfAng",effDatasetAngles,obserVariables);
       //effHistMas = new BiDimHistoPdf("EfficienciesPdfMas",effDatasetMasses,obserVariables);
-      effHist = new QuadDimHistoKStarPdf("EfficienciesPdf",effDataset,obserVariables);
+      if(b0Var){
+        effHist = new QuadDimHistoKStarB0BarPdf("EfficienciesPdf",effDataset,obserVariables);  
+      }
+      else {
+        effHist = new QuadDimHistoKStarPdf("EfficienciesPdf",effDataset,obserVariables);
+      }
     }
 
 
@@ -1604,11 +1801,11 @@ if (!(relEffTH2Mass)) {
   //Variable* halfFrac = new Variable("halfFrac",0.25);
 
   if (b0Var)
-    matrix = new MatrixPdf("Kstars_signal", massKPi, massPsiPi, cosMuMu,phi, b0Beauty, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
+    matrix = new MatrixPdf("Kstars_signal", nKstars, nZc, massKPi, massPsiPi, cosMuMu,phi, b0Beauty, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
   else if (b0BarPdf)
-    matrix = new MatrixPdf("Kstars_signal", Masses, Gammas, Spins, as,bs,psi_nS,dRadB0,dRadKs,massKPi, massPsiPi, cosMuMu,phi);
+    matrix = new MatrixPdf("Kstars_signal", nKstars, nZc, Masses, Gammas, Spins, as,bs,psi_nS,dRadB0,dRadKs,massKPi, massPsiPi, cosMuMu,phi);
   else
-    matrix = new MatrixPdf("Kstars_signal", massKPi,massPsiPi, cosMuMu,phi,Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
+    matrix = new MatrixPdf("Kstars_signal", nKstars, nZc, massKPi,massPsiPi, cosMuMu,phi,Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
 
   //effFile->Close();
 
@@ -1755,14 +1952,24 @@ if (!(relEffTH2Mass)) {
       else if (bkgHistInt) {
 	//bkgHistMasses = new BiDimHistoPdf("bkgHistMasses",bkgDatasetMasses,obserVariables);
 	//bkgHistAngles = new BiDimHistoPdf("bkgHistAngles",bkgDatasetAngles,obserVariables);
-	bkgHistPdf = new QuadDimHistoKStarPdf("bkgHistPdf",bkgDataset,obserVariables);
+        if (b0Var){
+          bkgHistPdf = new QuadDimHistoKStarB0BarPdf("bkgHistPdf",bkgDataset,obserVariables);
+        }
+        else {
+          bkgHistPdf = new QuadDimHistoKStarPdf("bkgHistPdf",bkgDataset,obserVariables);
+        }
       }
 
       bkgHistos[0] = bkgTH2Mass->ProjectionX(); bkgHistos[1] = bkgTH2Mass->ProjectionY();
       bkgHistos[2] = bkgTH2Ang->ProjectionX(); bkgHistos[3] = bkgTH2Ang->ProjectionY();
 
-      if (bkgHistInt)
-	bkgHistPdfPlot = new QuadDimHistoKStarPdf("bkgHistPdf",bkgDataset,obserVariables);
+      if (bkgHistInt) {
+        if (b0Var) {
+          bkgHistPdfPlot = new QuadDimHistoKStarB0BarPdf("bkgHistPdf",bkgDataset,obserVariables);
+        } else {
+	  bkgHistPdfPlot = new QuadDimHistoKStarPdf("bkgHistPdf",bkgDataset,obserVariables);
+        }
+      }
       else if (bkgHistMap)
 	bkgHistPdfPlot = new FlatHistoPdf("bkgHistPdf",bkgDataset,obserVariables);
 
@@ -2277,18 +2484,18 @@ if (!(relEffTH2Mass)) {
   //GooPdf* bkgHistPlot;
 
   if (b0Var)
-    matrixTotPlot = new MatrixPdf("Signal Pdf Plot", massKPi, massPsiPi, cosMuMu, phi, b0Beauty, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
+    matrixTotPlot = new MatrixPdf("Signal Pdf Plot", nKstars, nZc, massKPi, massPsiPi, cosMuMu, phi, b0Beauty, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
   else if (b0BarPdf)
-    matrixTotPlot = new MatrixPdf("Signal Pdf Plot", Masses, Gammas, Spins, as,bs,psi_nS,dRadB0,dRadKs, massKPi, massPsiPi, cosMuMu, phi);
+    matrixTotPlot = new MatrixPdf("Signal Pdf Plot", nKstars, nZc, Masses, Gammas, Spins, as,bs,psi_nS,dRadB0,dRadKs, massKPi, massPsiPi, cosMuMu, phi);
   else
-    matrixTotPlot = new MatrixPdf("Signal Pdf Plot", massKPi, massPsiPi, cosMuMu, phi, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
+    matrixTotPlot = new MatrixPdf("Signal Pdf Plot", nKstars, nZc, massKPi, massPsiPi, cosMuMu, phi, Masses,Gammas,Spins,as,bs,psi_nS,dRadB0,dRadKs);
 
   gettimeofday(&startTime, NULL);
   startC = times(&startProc);
   //
   // UnbinnedDataSet plottingGridData(obserVariables);
 
-  for (int id = 0; id < nKstars; ++id)
+  for (int id = 0; id < nResonance ; ++id)
     compData.push_back( UnbinnedDataSet(obserVariables) );
 
   std::vector<fptype> fractions;
@@ -2899,24 +3106,46 @@ if (!(relEffTH2Mass)) {
 
   Int_t nStatEntries = 0;
   Int_t amplitudeCounter = 0;
-  Int_t KstarColor[nKstars]; Int_t startingCol = 3, noColor = 5;
-  Int_t KstarMarker[nKstars]; Int_t startingMar = 22;
-  for (size_t u=0; u<nKstars; ++u) {
-    fitStat->AddText(TString::Format("\n------------------  %s  ------------------", kStarNames[u].c_str()));
-    KstarColor[u] = startingCol+u;
-    KstarMarker[u] = startingMar+u;
-    if (KstarColor[u] >= noColor) KstarColor[u]++;
-    ((TText*)fitStat->GetListOfLines()->Last())->SetTextColor(KstarColor[u]);
-    addHelAmplStat(fitStat, "0", as[amplitudeCounter], bs[amplitudeCounter]); ++amplitudeCounter;
-    nStatEntries +=2 ;
+  Int_t resonanceColor[nResonance]; Int_t startingCol = 3, noColor = 5;
+  Int_t resonanceMarker[nResonance]; Int_t startingMar = 22;
 
-    if (Spins[u]->value > 0.) {
-      addHelAmplStat(fitStat, "+1", as[amplitudeCounter], bs[amplitudeCounter]); ++amplitudeCounter;
-      addHelAmplStat(fitStat, "-1", as[amplitudeCounter], bs[amplitudeCounter]); ++amplitudeCounter;
+  for (size_t u=0; u<nResonance; ++u) {
+    Int_t v = u-nKstars;
+    fitStat->AddText(TString::Format("\n------------------  %s  ------------------", resonanceNames[u].c_str()));
+    if(u<nKstars) {
+      resonanceColor[u] = startingCol+u;
+      resonanceMarker[u] = startingMar+u;
+      if (resonanceColor[u] >= noColor) resonanceColor[u]++;
+      if (resonanceColor[u] >= 10) resonanceColor[u]++;
+      ((TText*)fitStat->GetListOfLines()->Last())->SetTextColor(resonanceColor[u]);
+      addHelAmplStat(fitStat, "0", as[amplitudeCounter], bs[amplitudeCounter]); ++amplitudeCounter;
       nStatEntries +=2 ;
+
+      if (Spins[u]->value > 0.) {
+	    addHelAmplStat(fitStat, "+1", as[amplitudeCounter], bs[amplitudeCounter]); ++amplitudeCounter;
+	    addHelAmplStat(fitStat, "-1", as[amplitudeCounter], bs[amplitudeCounter]); ++amplitudeCounter;
+	    nStatEntries +=2 ;
+      }
+    }
+    else {
+      resonanceColor[u] = 30+v;
+      resonanceMarker[u] = startingMar+u;
+      ((TText*)fitStat->GetListOfLines()->Last())->SetTextColor(resonanceColor[u]);
+      addHelAmplStat(fitStat, "0", as[amplitudeCounter], bs[amplitudeCounter]); ++amplitudeCounter;
+      nStatEntries +=2 ;
+      if (Spins[u]->value > 0.) {
+	    addHelAmplStat(fitStat, "+1", as[amplitudeCounter], bs[amplitudeCounter]); //parity conservation of Z, a,b(+) = a,b(-)
+	    addHelAmplStat(fitStat, "-1", as[amplitudeCounter], bs[amplitudeCounter]); ++amplitudeCounter;
+	    nStatEntries +=2 ;
+      }
     }
   }
 
+  cout << "a size : "<< as.size() << endl;
+  for (int i=0; i<as.size(); i++) {
+    cout << "as["<< i << "] = " << as[i]->value << " bs["<<i<<"] = "<< bs[i]->value << endl;
+  }
+	 
   fitStat->SetTextAlign(12);
   fitStat->SetShadowColor(0);
   fitStat->SetFillColor(0);
@@ -2952,17 +3181,18 @@ if (!(relEffTH2Mass)) {
 
   std::vector< std::vector<TH1F*> > compHistos(nProjVars);
 
-  Bool_t plotSingleKstars = kTRUE; //plotSingleKstars = kFALSE;
+  //Bool_t plotSingleKstars = kTRUE; //plotSingleKstars = kFALSE;
+  Bool_t plotSingleResonances = kTRUE; //plotSingleResonances = kFALSE;
 
   int lastAmplitude = 0;
 
-  for (int i = 0; i < nKstars; ++i) {
+  for (int i = 0; i < nResonance; ++i) {
     MassesPlot.push_back(Masses[i]);
     GammasPlot.push_back(Gammas[i]);
     SpinsPlot.push_back(Spins[i]);
   }
 
-  for (int k = 0; k < nKstars; ++k) {
+  for (int k = 0; k < nResonance; ++k) {
     ////////////////////////////////////////////////////////////////////////////////
     //Initialising projection vectors
     // these have not been vectorised because their fill is not similar
@@ -2986,7 +3216,7 @@ if (!(relEffTH2Mass)) {
       compHistos[iVar].push_back(new TH1F(bufferstring,bufferstring,obserVariables[iVar]->numbins,histRange[iVar].first,histRange[iVar].second));
     }
 
-    cout <<"\n- Plotting " <<kStarNames[k] <<" component by setting all other components to zero" <<endl;
+    cout <<"\n- Plotting " <<resonanceNames[k] <<" component by setting all other components to zero" <<endl;
     sum = 0.0;
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -3004,44 +3234,68 @@ if (!(relEffTH2Mass)) {
 
     // std::cout<<" Plotting KStars - Mass : "<<Masses[k]->value<<" Spin : "<<Spins[k]->value<<"Last Amplitude : "<<lastAmplitude<<std::endl;
     //For Spin = 0.0 only one component
-    if (Spins[k]->value==0.0) {
+    if (k<nKstars) {
+      if (Spins[k]->value==0.0) {
+        as[lastAmplitude]->fixed;
+        bs[lastAmplitude]->fixed;
+        // std::cout<<" - Amplitude vector pushing: "<<lastAmplitude<<" index ";
+        // asPlot.push_back(as[lastAmplitude]);
+        // bsPlot.push_back(bs[lastAmplitude]);
+        asPlot[lastAmplitude]->value = originalAs[lastAmplitude];
+        bsPlot[lastAmplitude]->value = originalBs[lastAmplitude];
 
-      as[lastAmplitude]->fixed;
-      bs[lastAmplitude]->fixed;
-      // std::cout<<" - Amplitude vector pushing: "<<lastAmplitude<<" index ";
-      // asPlot.push_back(as[lastAmplitude]);
-      // bsPlot.push_back(bs[lastAmplitude]);
-      asPlot[lastAmplitude]->value = originalAs[lastAmplitude];
-      bsPlot[lastAmplitude]->value = originalBs[lastAmplitude];
+        // for (int j = 0; j < nHelAmps; ++j) {
+        //   if (j!=lastAmplitude) {
+        //     // std::cout<<" putting zero: "<<j<<" index "<<std::endl;
+        // 	  asPlot.push_back(new Variable("zero_a",0.0));
+        // 	  bsPlot.push_back(new Variable("zero_b",0.0));
+        //   }
+        // }
+        ++lastAmplitude;
+	  }
+      else {
+        // For Spin != 0 three components
+        for (int i = lastAmplitude; i <= lastAmplitude+2; ++i) {
+		  // std::cout<<" - Amplitude vector pushing: "<<i<<" index ";
+		  as[i]->fixed;
+		  bs[i]->fixed;
+		  // asPlot.push_back(as[i]);
+		  // bsPlot.push_back(bs[i]);
+		  asPlot[i]->value = originalAs[i];
+		  bsPlot[i]->value = originalBs[i];
+		}
+        //     for (int d = 0; d < nHelAmps; ++d) {
+        // if (d!=lastAmplitude && d!=lastAmplitude+1 && d!=lastAmplitude+2) {
+        //   // std::cout<<" putting zero: "<<d<<" index "<<std::endl;
+        //   asPlot.push_back(new Variable("zero_a",0.0));
+        //   bsPlot.push_back(new Variable("zero_b",0.0));
+        // }}
+		lastAmplitude += 3;
+	  }
+	} 
+	else {
+	  if (Spins[k]->value==0.0) {
 
-      // for (int j = 0; j < nHelAmps; ++j) {
-      //   if (j!=lastAmplitude) {
-      //     // std::cout<<" putting zero: "<<j<<" index "<<std::endl;
-      // 	  asPlot.push_back(new Variable("zero_a",0.0));
-      // 	  bsPlot.push_back(new Variable("zero_b",0.0));
-      //   }
-      // }
-      ++lastAmplitude;
-    } else {
-      // For Spin != 0 three components
-      for (int i = lastAmplitude; i <= lastAmplitude+2; ++i) {
-	// std::cout<<" - Amplitude vector pushing: "<<i<<" index ";
-	as[i]->fixed;
-	bs[i]->fixed;
-	// asPlot.push_back(as[i]);
-	// bsPlot.push_back(bs[i]);
-	asPlot[i]->value = originalAs[i];
-	bsPlot[i]->value = originalBs[i];
-      }
-      //     for (int d = 0; d < nHelAmps; ++d) {
-      // if (d!=lastAmplitude && d!=lastAmplitude+1 && d!=lastAmplitude+2) {
-      //   // std::cout<<" putting zero: "<<d<<" index "<<std::endl;
-      //   asPlot.push_back(new Variable("zero_a",0.0));
-      //   bsPlot.push_back(new Variable("zero_b",0.0));
-      // }}
-      lastAmplitude += 3;
-    }
+		as[lastAmplitude]->fixed;
+		bs[lastAmplitude]->fixed;
+		asPlot[lastAmplitude]->value = originalAs[lastAmplitude];
+		bsPlot[lastAmplitude]->value = originalBs[lastAmplitude];
 
+		++lastAmplitude;
+		} 
+		else {
+		  // For Spin != 0 two components (parity conservation for Z)
+		  for (int i = lastAmplitude; i <= lastAmplitude+1; ++i) {
+			as[i]->fixed;
+			bs[i]->fixed;
+
+			asPlot[i]->value = originalAs[i];
+			bsPlot[i]->value = originalBs[i];
+		  }
+
+		  lastAmplitude += 2; // parity conservation
+		}
+	}	
     // std::cout<<" --- "<<k<<std::endl;
     // for (size_t i = 0; i < asPlot.size(); i++) {
     //   std::cout<<" - "<<i+1<<" A : "<<asPlot[i]->value<<" B : "<<bsPlot[i]->value<<std::endl;
@@ -3055,11 +3309,11 @@ if (!(relEffTH2Mass)) {
     //GooPdf* effHistPlot;
 
     if (b0Var)
-      matrixPlot = new MatrixPdf(bufferstring, massKPi, massPsiPi, cosMuMu, phi, b0Beauty, Masses,Gammas,Spins,asPlot,bsPlot,psi_nS,dRadB0,dRadKs);
+      matrixPlot = new MatrixPdf(bufferstring, nKstars, nZc, massKPi, massPsiPi, cosMuMu, phi, b0Beauty, Masses,Gammas,Spins,asPlot,bsPlot,psi_nS,dRadB0,dRadKs);
     else if (b0BarPdf)
-      matrixPlot = new MatrixPdf(bufferstring, Masses, Gammas, Spins, asPlot,bsPlot,psi_nS,dRadB0,dRadKs,massKPi, massPsiPi, cosMuMu, phi);
+      matrixPlot = new MatrixPdf(bufferstring, nKstars, nZc, Masses, Gammas, Spins, asPlot,bsPlot,psi_nS,dRadB0,dRadKs,massKPi, massPsiPi, cosMuMu, phi);
     else
-      matrixPlot = new MatrixPdf(bufferstring, massKPi, massPsiPi, cosMuMu, phi,Masses,Gammas,Spins,asPlot,bsPlot,psi_nS,dRadB0,dRadKs);
+      matrixPlot = new MatrixPdf(bufferstring, nKstars, nZc, massKPi, massPsiPi, cosMuMu, phi,Masses,Gammas,Spins,asPlot,bsPlot,psi_nS,dRadB0,dRadKs);
 
     matrixPlot->setData(&plottingGridData);
     matrixPlot->copyParams();
@@ -3069,7 +3323,7 @@ if (!(relEffTH2Mass)) {
     fractions.push_back(compsIntegral/totalSigIntegral);
     //fractions.push_back(compsIntegral);
 
-    cout <<"Component " <<kStarNames[k] <<" normalisation factor : " <<compsIntegral <<" (fraction: " <<std::setprecision(3) <<compsIntegral/totalSigIntegral*100.0 <<"%)" <<endl;
+    cout <<"Component " <<resonanceNames[k] <<" normalisation factor : " <<compsIntegral <<" (fraction: " <<std::setprecision(3) <<compsIntegral/totalSigIntegral*100.0 <<"%)" <<endl;
 
     matrixPlot->getCompProbsAtDataPoints(pdfCompValues);
 
@@ -3145,7 +3399,8 @@ if (!(relEffTH2Mass)) {
     }
     compHistos[3][k]->Scale(ratios[3]);
 
-    if (bkgFlag  ||  (nKstars > 1  &&  plotSingleKstars)) {
+    //if (bkgFlag  ||  (nKstars > 1  &&  plotSingleKstars)) {
+    if (bkgFlag  ||  ( (nKstars > 1 || nZc > 1)  &&  plotSingleResonances)) {
       // Kstars components points array for each projection
       for (Int_t iVar=0; iVar<nProjVars; ++iVar) {
 	fptype pointsXComp[obserVariables[iVar]->numbins], pointsYComp[obserVariables[iVar]->numbins];
@@ -3155,9 +3410,9 @@ if (!(relEffTH2Mass)) {
 	  pointsYComp[l] = compHistos[iVar][k]->GetBinContent(l+1);
 	}
 
-	compHistos[iVar][k]->SetMarkerColor(KstarColor[k]);
-	compHistos[iVar][k]->SetLineColor(KstarColor[k]);
-	compHistos[iVar][k]->SetMarkerStyle(KstarMarker[k]);
+	compHistos[iVar][k]->SetMarkerColor(resonanceColor[k]);
+	compHistos[iVar][k]->SetLineColor(resonanceColor[k]);
+	compHistos[iVar][k]->SetMarkerStyle(resonanceMarker[k]);
 
 	plotYMax[iVar] = TMath::Max(compHistos[iVar][k]->GetMaximum(),plotYMax[iVar]);
 	// std::cout<<compHistos[iVar][k]->GetMaximum()<<" "<<plotYMax[iVar]<<std::endl;
@@ -3166,7 +3421,7 @@ if (!(relEffTH2Mass)) {
 
 	// Filling components projections graphs
 	TGraph* signalCompPlot = new TGraph(obserVariables[iVar]->numbins, pointsXComp, pointsYComp);
-	signalCompPlot->SetLineColor(KstarColor[k]); signalCompPlot->SetLineWidth(3); signalCompPlot->SetLineStyle(kDashed);
+	signalCompPlot->SetLineColor(resonanceColor[k]); signalCompPlot->SetLineWidth(3); signalCompPlot->SetLineStyle(kDashed);
 	signalCompPlot->GetXaxis()->SetTitle( varHistos[iVar]->GetXaxis()->GetTitle() );
 	sprintf(bufferstring,"Events / (%.3f)",(obserVariables[iVar]->upperlimit - obserVariables[iVar]->lowerlimit)/obserVariables[iVar]->numbins);
 	signalCompPlot->GetYaxis()->SetTitle(bufferstring);
@@ -3174,7 +3429,7 @@ if (!(relEffTH2Mass)) {
 	multiGraphs[iVar]->Add(signalCompPlot,"L");
 
 	if (iVar==0) {
-	  sprintf(bufferstring,"%s [%.2f %]",kStarNames[k].c_str(), compsIntegral/totalSigIntegral*100.);
+	  sprintf(bufferstring,"%s [%.2f %]",resonanceNames[k].c_str(), compsIntegral/totalSigIntegral*100.);
 	  if (!hPlots)
 	    legPlot->AddEntry(signalCompPlot,bufferstring, "l");
 	  else
@@ -3260,11 +3515,11 @@ if (!(relEffTH2Mass)) {
       	projSigHistos[iVar]->Draw("E same");
       	projBkgHistos[iVar]->Draw("PE same");
       }
-      for (int k = 0; k < nKstars; ++k)
+      for (int k = 0; k < nResonance; ++k)
       {
         compHistos[iVar][k]->SetLineStyle(7);
-	      compHistos[iVar][k]->Draw("hist same");
-	      compHistos[iVar][k]->Draw("p same");
+        compHistos[iVar][k]->Draw("hist same");
+        compHistos[iVar][k]->Draw("p same");
       }
 
   //     if (bkgPdfHist)
