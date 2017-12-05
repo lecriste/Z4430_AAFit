@@ -44,6 +44,7 @@
 #include "RooDataHist.h"
 //#include "RooNDKeysPdf.h"
 #include "RooBinning.h"
+#include "RooGaussian.h"
 
 #include <sys/time.h> // for timeval
 #include <sys/times.h> // for tms
@@ -178,9 +179,10 @@ void plotting(const RooDataHist* hist, const TString name, const RooRealVar* x, 
 }
 
 
-void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALSE, Bool_t effFlag = kFALSE, Bool_t B0BarFlag = kTRUE, Int_t bkgMassOrd = 1, Int_t bkgAngOrd = 1, Int_t effMassOrd = 1, Int_t effAngOrd = 1)
+void Analysis(Int_t nEvt = 10000, Bool_t generating = kTRUE, Bool_t fitting = kFALSE, Bool_t bkgFlag = kFALSE, Bool_t effFlag = kFALSE, Bool_t B0BarFlag = kTRUE, Int_t bkgMassOrd = 1, Int_t bkgAngOrd = 1, Int_t effMassOrd = 1, Int_t effAngOrd = 1)
 {
-  cout <<"With cut-based efficiency the linear interpolation (effOrd=1) of masses does not work" <<endl;
+  cout <<"\nNOTE: With cut-based efficiency the linear interpolation (effOrd=1) of masses does not work" <<endl;
+  cout <<endl;
 
   SysInfo_t* s = new SysInfo_t();
   gSystem->GetSysInfo(s);
@@ -521,15 +523,6 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALS
 
   RooAbsPdf* bkgPDF = BdToPsiPiK_PHSP; bkgPDF = 0;
 
-  Double_t totEvents = 1000000; // Generation time does not scale with number of events up to at least 10k events, from 100k yes
-  //totEvents *= 2;
-  //totEvents *= 2.5;
-  //totEvents *= 5;
-  //totEvents *= 10;
-  //totEvents *= 10; totEvents *= 5;
-  //totEvents *= 10; totEvents *= 3;
-  //totEvents /= 2; totEvents /= 100;
-
   RooRealVar nSig("nSig", "n_{SIG}", 0, 0, 2E6);
   //nSig.setVal( 10*nSig.getVal() ); // Does not work on the fly
   Float_t purity = 0.8;
@@ -543,18 +536,18 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALS
 
   if (sigPDF) {
     cout <<"Building " <<sigPDF->GetTitle() <<endl;
-    nSig.setVal( totEvents );
+    nSig.setVal( nEvt );
     model = (RooAbsPdf*)sigPDF;
     if (bkgPDF) { // in case of efficiency model will be overridden
       cout <<"\nAdding " <<bkgPDF->GetTitle() <<endl;
-      nSig.setVal( totEvents/2 ); nBkg.setVal( totEvents/2 );
+      nSig.setVal( nEvt/2 ); nBkg.setVal( nEvt/2 );
       model = (RooAbsPdf*) new RooAddPdf("","",RooArgList(*sigPDF,*bkgPDF),RooArgList(nSig,nBkg)) ;
       model->SetName( TString::Format("%s__plus__%s",sigPDF->GetName(),bkgPDF->GetName()) );
       model->SetTitle( TString::Format("%s + %s",sigPDF->GetTitle(),bkgPDF->GetTitle()) );
     }
   } else if (bkgPDF) {
     cout <<"Building " <<bkgPDF->GetTitle() <<endl;
-    nBkg.setVal( totEvents );
+    nBkg.setVal( nEvt );
     //modelTitle = TString::Format("%s*(%s)",nBkg.GetTitle(),bkgPDF->GetTitle());
     model = bkgPDF ;
   } else {
@@ -956,6 +949,8 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALS
 
     // Generate toy data from pdf and plot data and p.d.f on frame
     cout <<"\nGenerating " <<nEvents.getVal() <<" events according to " <<model->GetTitle() <<" pdf for " <<model->GetName() <<" with " <<B0beauty.getTitle() <<" = " <<B0beauty.getVal() <<endl;
+    cout <<"\nNOTE: Generation time does not scale with number of events up to at least 10k events, from 100k yes" <<endl;
+
 #ifdef TIME_INFO
     timeval genTime;
     gettimeofday(&start, NULL);
@@ -1003,7 +998,7 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALS
   Float_t rightMargin = 0.12;
   Float_t cos_limit = 1.02; Float_t cos_margin = 0.02;
   Float_t phi_limit = 3.2; Float_t phi_margin = 0.05;
-  if ( totEvents < 50000 ) {
+  if ( nEvt < 50000 ) {
     phi_limit = 3.3; phi_margin = 0.1;
     cos_limit = 1.025; cos_margin = 0.025;
   }
@@ -1069,7 +1064,7 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALS
 
     cout <<"\nPlotting Dalitz..." <<endl;
     TCanvas* dalitz_C = new TCanvas("Dalitz_C","Dalitz",800,600) ; dalitz_C->SetRightMargin(rightMargin); dalitz_C->cd();
-    if ( totEvents < 20000 ) {KPiMass2_bins = 50; MuMuPiMass2_bins = 64;}
+    if ( nEvt < 20000 ) {KPiMass2_bins = 50; MuMuPiMass2_bins = 64;}
     TH2F* dalitz = (TH2F*)data_m2->createHistogram("Dalitz", mass2KPi, Binning(KPiMass2_bins,KPiMass2_low,KPiMass2_high), YVar(mass2PsiPi, Binning(MuMuPiMass2_bins,MuMuPiMass2_low,MuMuPiMass2_high)) ) ; dalitz->SetTitle( TString::Format("Dalitz;%s;%s",mass2KPi.GetTitle(),mass2PsiPi.GetTitle()) ) ;
     gStyle->SetOptStat( 10 ) ;
     dalitz->Draw("COLZ");
@@ -1106,7 +1101,6 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALS
   cout <<"\nPlotting m(KPi)..." <<endl;
   dataToFit->plotOn(var_frame[0]) ; nLegendEntries++;
   //
-  Bool_t fitting = kFALSE; //fitting = kTRUE;
   if (!fitting) {
     cout <<"\nPlotting \"" <<model->GetName() <<"\" pdf..." <<endl;
 
@@ -1165,7 +1159,7 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALS
     cout <<"\nFitting ..." <<endl ;
     vector <TString> toSetConst;
     toSetConst.push_back("a892_1_0"); toSetConst.push_back("b892_1_0"); // by convention
-    toSetConst.push_back("a892_1_m1"); toSetConst.push_back("b892_1_m1");
+    //toSetConst.push_back("a892_1_m1"); toSetConst.push_back("b892_1_m1");
     for (Int_t iConst=0; iConst<(Int_t)toSetConst.size(); ++iConst) {
       RooRealVar* toSetConstVar = (RooRealVar*)amplitudeVars.find(toSetConst[iConst]);
       if (toSetConstVar) toSetConstVar->setConstant(kTRUE);
@@ -1173,17 +1167,28 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALS
 
     RooAbsReal* nll = model->createNLL(*dataToFit,Extended(kTRUE),NumCPU(nCPU), Verbose(kTRUE), PrintLevel(3)) ;
     RooArgSet toMinimize(*nll);
-    vector <TString> toPenalize;
-    //toPenalize.push_back("a892_1_p1"); toPenalize.push_back("b892_1_p1");
-    //toPenalize.push_back("a892_1_m1"); toPenalize.push_back("b892_1_m1");
-    for (Int_t iPenalty=0; iPenalty<(Int_t)toPenalize.size(); ++iPenalty) {
-      RooFormulaVar penalty("penaltyFor_"+toPenalize[iPenalty],"pow(@0 - @1,2)", RooArgSet(*(RooRealVar*)amplitudeVars.find(toPenalize[iPenalty]), RooConstVar(toPenalize[iPenalty]+"_RooConst",toPenalize[iPenalty]+"_RooConst",helJ_map.find(toPenalize[iPenalty])->second.first)));
-      toMinimize.add( penalty );
+
+    // Add external constraints on fit parameters
+    // in case they are not fixed
+    Bool_t externConst = kFALSE; // to be moved within the constructor arguments list
+    vector <TString> toPenalize; vector <Float_t> centrVal;
+    //toPenalize.push_back("a892_1_p1"); centrVal.push_back(amplitudeVars.find("a892_1_p1")->getVal());
+    //toPenalize.push_back("b892_1_p1"); centrVal.push_back(amplitudeVars.find("b892_1_p1")->getVal());
+    //toPenalize.push_back("a892_1_m1"); centrVal.push_back(amplitudeVars.find("a892_1_m1")->getVal());
+    //toPenalize.push_back("b892_1_m1"); centrVal.push_back(amplitudeVars.find("b892_1_m1")->getVal());
+    RooArgSet externConstSet = RooArgSet();
+    if (externConst) {
+      cout <<"Applying constraint on " <<toPenalize.size() <<" parameters" <<endl ;
+      for (Int_t iPenalty=0; iPenalty<(Int_t)toPenalize.size(); ++iPenalty) {
+	// by hand
+	//RooFormulaVar penalty("penaltyFor_"+toPenalize[iPenalty],"pow(@0 - @1,2)", RooArgSet(*(RooRealVar*)amplitudeVars.find(toPenalize[iPenalty]), RooConstVar(toPenalize[iPenalty]+"_RooConst",toPenalize[iPenalty]+"_RooConst",helJ_map.find(toPenalize[iPenalty])->second.first)));
+	//toMinimize.add( penalty );
+	//
+	// by ExternalConstraints option
+	RooGaussian penalty("penaltyFor_"+toPenalize[iPenalty],"penalty",*(RooRealVar*)amplitudeVars.find(toPenalize[iPenalty]), RooConst(centrVal[iPenalty]), RooConst(centrVal[iPenalty]/10.)) ; // the sigma value can be improved
+	externConstSet.add( penalty );
+      }
     }
-    /*
-      RooAddition nllp("nllp","nllp",toMinimize);
-      RooMinuit m(nllp); m.setVerbose();
-    */
 
 #ifdef TIME_INFO
     timeval fitModelTime;
@@ -1191,7 +1196,13 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALS
     startCPU = times(&startProc);
 #endif
     //
-    fitres = model->fitTo(*dataToFit, Hesse(kFALSE), Minos(kFALSE), Save(kTRUE), NumCPU(nCPU), Verbose(kTRUE), PrintLevel(3)) ;
+    // by hand
+    //RooAddition nllp("nllp","nllp",toMinimize);
+    //RooMinuit m(nllp); m.setVerbose();
+    //
+    // by ExternalConstraints option
+    fitres = model->fitTo(*dataToFit, Hesse(kFALSE), Minos(kFALSE), ExternalConstraints(externConstSet), Save(kTRUE), NumCPU(nCPU), Verbose(kTRUE), PrintLevel(3)) ;
+
     // 75' with 2k events, 8 Lambda*, 1 NumCPU; 80' with 2k events, 1 K*, 4 NumCPU;
     // with cos(theta_K*) formula in the wrong place:
     // 15h with 2k events, K*(892), 24 CPUs
@@ -1262,7 +1273,6 @@ void Analysis(Int_t nEvt = 10, Bool_t generating = kTRUE, Bool_t bkgFlag = kFALS
     fitres->Print("v");
     dataToFit->plotOn(var_frame[0]);
     model->paramOn(var_frame[0], Parameters(amplitudeVars), Layout(xMin,0.99,yLegLow));
-    //model->paramOn(var_frame[0], Parameters(RooArgSet(a1600L0S1,b1600L0S1,a1600L1S1,b1600L1S1)), Layout(0.6,0.95,0.9));
     model->plotOn(var_frame[0], LineColor(fullModelColor), Name("4D fit projection")) ;
     leg->AddEntry(var_frame[0]->findObject("4D fit projection"),"4D fit projection","l");
     plotName += "_fit";
